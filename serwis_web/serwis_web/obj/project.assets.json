@@ -450,6 +450,19 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "ApiService/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "TokenService": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/ApiService.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ApiService.dll": {}
+        }
+      },
       "serwis_web.Client/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
@@ -461,6 +474,16 @@
         },
         "runtime": {
           "bin/placeholder/serwis_web.Client.dll": {}
+        }
+      },
+      "TokenService/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/TokenService.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TokenService.dll": {}
         }
       }
     }
@@ -1166,14 +1189,25 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "ApiService/1.0.0": {
+      "type": "project",
+      "path": "../../ApiService/ApiService.csproj",
+      "msbuildProject": "../../ApiService/ApiService.csproj"
+    },
     "serwis_web.Client/1.0.0": {
       "type": "project",
       "path": "../serwis_web.Client/serwis_web.Client.csproj",
       "msbuildProject": "../serwis_web.Client/serwis_web.Client.csproj"
+    },
+    "TokenService/1.0.0": {
+      "type": "project",
+      "path": "../../TokenService/TokenService.csproj",
+      "msbuildProject": "../../TokenService/TokenService.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "ApiService >= 1.0.0",
       "Microsoft.AspNetCore.Components.WebAssembly.Server >= 8.0.13",
       "serwis_web.Client >= 1.0.0"
     ]
@@ -1203,6 +1237,9 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
+            "/Users/oliwierszafranski/Documents/dotnet/serwis_web/ApiService/ApiService.csproj": {
+              "projectPath": "/Users/oliwierszafranski/Documents/dotnet/serwis_web/ApiService/ApiService.csproj"
+            },
             "/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web.Client/serwis_web.Client.csproj": {
               "projectPath": "/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web.Client/serwis_web.Client.csproj"
             }
@@ -1248,7 +1285,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/Users/oliwierszafranski/.dotnet/sdk/8.0.406/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

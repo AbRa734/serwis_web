@@ -22,16 +22,20 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web/Components/Pages/Error.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FcnJvci5yYXpvcg==
+[/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web/Components/Auth/Check.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BdXRoL0NoZWNrLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web/Components/Auth/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BdXRoL0xvZ2luLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web/Components/Auth/Register.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BdXRoL1JlZ2lzdGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web/Components/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web/Components/Pages/Weather.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9XZWF0aGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/oliwierszafranski/Documents/dotnet/serwis_web/serwis_web/serwis_web/Components/Routes.razor]

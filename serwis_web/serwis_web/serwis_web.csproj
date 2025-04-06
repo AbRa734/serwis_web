@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\ApiService\ApiService.csproj" />
         <ProjectReference Include="..\serwis_web.Client\serwis_web.Client.csproj"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.13"/>
     </ItemGroup>

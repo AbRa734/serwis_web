@@ -1,0 +1,63 @@
+@using ApiService
+@using ApiService.Helpers
+@using ApiService.Models
+@using TokenService
+@inject ApiService ApiService
+@inject TokenService TokenService
+<h3>Check</h3>
+
+<button @onclick="() => { GetToken(); }">Sprawdź token</button>
+<p>@(token == null ? "Nie jesteś zalogowany" : $"Jesteś zalogowany: {token}")</p>
+
+<button @onclick="() => { _ = GetUzytkownicy(); }">Sprawdź uprawnienia</button>
+
+<button @onclick="() => { ClearToken(); }">Wyczyść token</button>
+
+@{
+    if (isLoading)
+    {
+        <p>Ładowanie...</p>
+    }
+}
+
+@{
+    if (uzytkownicy != null)
+    {
+        if (uzytkownicy?.Error != null)
+        {
+            <p>Error: @uzytkownicy?.Error</p>
+        }
+
+        if (uzytkownicy?.Data != null)
+        {
+            <p>Result: W bazie mamy @(uzytkownicy.Data.Count) użytkowników</p>
+        }
+    }
+}
+
+@code {
+    bool isLoading = false;
+    Result<List<Uzytkownik>>? uzytkownicy;
+    string? token;
+
+    private async Task GetUzytkownicy()
+    {
+        isLoading = true;
+        uzytkownicy = await ApiService.UzytkownicyRepo.UzytkownicyGet();
+        isLoading = false;
+
+        StateHasChanged();
+    }
+
+    private void GetToken()
+    {
+        token = TokenService.GetToken();
+    }
+
+    private void ClearToken()
+    {
+        TokenService.ClearToken();
+        token = null;
+    }
+
+}

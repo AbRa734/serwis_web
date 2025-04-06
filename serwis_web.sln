@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "serwis_web", "serwis_web\se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "serwis_web.Client", "serwis_web\serwis_web.Client\serwis_web.Client.csproj", "{3EF3BEA4-4F81-41E9-B448-27A2DD6CCDD7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiService", "ApiService\ApiService.csproj", "{CC5861C0-FE75-4325-967C-FF41D7D856CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TokenService", "TokenService\TokenService.csproj", "{08F71C6A-7491-4501-8E0B-5C8B8A3276CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{3EF3BEA4-4F81-41E9-B448-27A2DD6CCDD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EF3BEA4-4F81-41E9-B448-27A2DD6CCDD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EF3BEA4-4F81-41E9-B448-27A2DD6CCDD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC5861C0-FE75-4325-967C-FF41D7D856CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC5861C0-FE75-4325-967C-FF41D7D856CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC5861C0-FE75-4325-967C-FF41D7D856CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC5861C0-FE75-4325-967C-FF41D7D856CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08F71C6A-7491-4501-8E0B-5C8B8A3276CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08F71C6A-7491-4501-8E0B-5C8B8A3276CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08F71C6A-7491-4501-8E0B-5C8B8A3276CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08F71C6A-7491-4501-8E0B-5C8B8A3276CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
