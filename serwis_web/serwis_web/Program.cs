@@ -1,15 +1,19 @@
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using serwis_web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddHttpClient();
-builder.Services.AddSingleton<TokenService.TokenService>();
-builder.Services.AddSingleton<ApiService.ApiService>();
+
+builder.Services.AddScoped<TokenService.TokenService>();
+builder.Services.AddScoped<ApiService.ApiService>();
+//zakomentować w sytuacji gdy nie ma potrzeby sprawdzania tokenu
+builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
+
 builder.Services.AddBootstrapBlazor();
 
 var app = builder.Build();
