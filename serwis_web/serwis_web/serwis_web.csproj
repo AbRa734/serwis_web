@@ -9,7 +9,14 @@
     <ItemGroup>
         <ProjectReference Include="..\..\ApiService\ApiService.csproj" />
         <ProjectReference Include="..\serwis_web.Client\serwis_web.Client.csproj"/>
+        <PackageReference Include="BootstrapBlazor" Version="9.5.3" />
+        <PackageReference Include="BootstrapBlazor.FontAwesome" Version="9.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.13"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css.map" />
     </ItemGroup>
 
 </Project>

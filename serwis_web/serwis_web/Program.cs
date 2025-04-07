@@ -10,6 +10,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<TokenService.TokenService>();
 builder.Services.AddSingleton<ApiService.ApiService>();
+builder.Services.AddBootstrapBlazor();
 
 var app = builder.Build();
 
