@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Atoms\" />
+      <Folder Include="Molecules\" />
+      <Folder Include="Organisms\" />
+      <Folder Include="Templates\" />
+      <Folder Include="Tokens\" />
+      <Folder Include="_img\" />
+    </ItemGroup>
+
+</Project>
