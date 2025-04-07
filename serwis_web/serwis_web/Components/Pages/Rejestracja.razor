@@ -1,0 +1,50 @@
+@page "/rejestracja"
+@rendermode InteractiveServer
+@using serwis_web.Components.Layout
+@using Colors = DesignSystem.Tokens.Colors
+@layout EmptyLayout
+
+<main
+    style="@($"background-color: {Colors.Primary}; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; background-image: url('/shape.png'); background-size: cover; background-position: center;"))">
+    <section style="@($"background-color: {Colors.White}; border-radius: 8px; padding: 40px 20px; margin: 0 20px; width: 80%; max-width: 700px;"))">
+        <h1 style="text-align: center">Zarejestruj się do aplikacji</h1>
+        <p style="text-align: center">Podaj swoje dane, aby utworzyć konto</p>
+        <div style="display: flex; justify-content: space-between;">
+            <div style="flex: 1; margin-right: 10px;">
+                <MudTextField @bind-Value="Imie" Label="Imię" Variant="Variant.Outlined" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
+                <MudTextField @bind-Value="Email" Label="Email" Variant="Variant.Outlined" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
+                <MudTextField @bind-Value="Haslo" Label="Hasło" Variant="Variant.Outlined" InputType="InputType.Password" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
+            </div>
+            <div style="flex: 1; margin-left: 10px;">
+                <MudTextField @bind-Value="Nazwisko" Label="Nazwisko" Variant="Variant.Outlined" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
+                <MudTextField @bind-Value="NumerTelefonu" Label="Numer telefonu" Variant="Variant.Outlined" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
+                <MudTextField @bind-Value="PowtorzHaslo" Label="Powtórz hasło" Variant="Variant.Outlined" InputType="InputType.Password" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
+            </div>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
+            Zarejestruj się
+        </MudButton>
+        <p style="text-align: right">Masz już konto? <a href="/"
+                                                        style=@($"color: {Colors.Primary}; text-decoration: none;")>Zaloguj się</a></p>
+        <div style="margin-top: 20px;">
+            <MudButton Variant="Variant.Filled"
+                       Style="@($"height: 42px; border-radius: 8px; width: 100%; background-color: {Colors.Gray}; display: flex; align-items: center; justify-content: center;")">
+                <i class="fab fa-google" style="margin-right: 16px;"></i> Zarejestruj się przez Google
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Style="@($"height: 42px; margin-top: 20px; border-radius: 8px; width: 100%; background-color: {Colors.Gray}; display: flex; align-items: center; justify-content: center;")">
+                <i class="fab fa-facebook" style="margin-right: 16px;"></i> Zarejestruj się przez Facebook
+            </MudButton>
+        </div>
+    </section>
+</main>
+
+@code {
+    public string Imie { get; set; } = string.Empty;
+    public string Nazwisko { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string NumerTelefonu { get; set; } = string.Empty;
+    public string Haslo { get; set; } = string.Empty;
+    public string PowtorzHaslo { get; set; } = string.Empty;
+}

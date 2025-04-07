@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.14" />
+        <PackageReference Include="MudBlazor" Version="8.5.1" />
         <ProjectReference Include="..\..\ApiService\ApiService.csproj" />
         <ProjectReference Include="..\..\AuthService\AuthService.csproj" />
         <ProjectReference Include="..\..\DesignSystem\DesignSystem.csproj" />
