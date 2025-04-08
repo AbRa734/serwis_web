@@ -9,8 +9,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddHttpClient();
 
-builder.Services.AddScoped<TokenService.TokenService>();
-builder.Services.AddScoped<ApiService.ApiService>();
+builder.Services.AddSingleton<TokenService.TokenService>(); //FIXME: zmienić na scoped
+builder.Services.AddSingleton<ApiService.ApiService>(); //FIXME: zmienić na scoped
 //zakomentować w sytuacji gdy nie ma potrzeby sprawdzania tokenu
 //builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
 
