@@ -2,8 +2,107 @@
 @rendermode InteractiveServer
 @using serwis_web.Components.Temp
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Strona Główna</PageTitle>
 
-<Login/>
-<Register/>
-<Check/>
+<div class="home-container">
+	<h2>Strona Główna</h2>
+
+	<div class="top-section">
+		<div class="tab-container">
+			<div class="tab-wrapper">
+				<h3>Nowe zlecenie</h3>
+				<p>Utwórz nowe zlecenie serwisowe</p>
+				<div class="order-box">
+					<i class="fa-solid fa-plus" style="color: #8280FF"></i>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-container">
+			<div class="tab-wrapper">
+				<h3>Statystyki</h3>
+				<p>Śledź ilość i status wykonanych zleceń</p>
+				<div class="statistics-box">
+					<i class="fa-solid fa-chart-simple" style="color: #4AD991"></i>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-container">
+			<div class="tab-wrapper">
+				<h3>Raport</h3>
+				<p>Podsumowanie wykonanych usług</p>
+				<div class="report-box">
+					<i class="fa-solid fa-file" style="color: #FF9066"></i>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="add-comment">
+		<div class="comment-top">
+			<div class="comment-box">
+				<i class="fa-regular fa-keyboard" style="color: #BA29FF; font-size: 32px;"></i>
+			</div>
+			<h3>Dodaj komentarz do usługi</h3>
+		</div>
+		<p>Podziel się swoją opinią na temat wykonanej usługi, aby ulepszyć jakość naszych usług</p>
+	</div>
+
+	<div class="add-rate">
+		<div class="rate-top">
+			<div class="rate-box">
+				<i class="fa-solid fa-star" style="color: #FEC53D; font-size: 32px;"></i>
+			</div>
+			<h3>Oceń wykonaną usługę</h3>
+		</div>
+		<p>Wystaw ocenę, aby wyrazić swoje zadowolenie z realizacji naszych usług</p>
+	</div>
+
+	<div class="recent-orders">
+		<div class="order-header">
+			<h3>Ostatnie zlecenia</h3>
+			<button class="see-more">Zobacz więcej</button>
+		</div>
+		<div class="order-details">
+			<h4>Numer zlecenia</h4>
+			<h4>Rodzaj</h4>
+			<h4>Data utworzenia</h4>
+			<h4>Data wykonania</h4>
+			<h4>Koszt</h4>
+			<h4>Status</h4>
+		</div>
+		<div class="single-order">
+			<div>000003</div>
+			<div>Instalacja</div>
+			<div>14 Marzec 2025</div>
+			<div>28 Marzec 2025</div>
+			<div>300 zł</div>
+			<div class="single-order-status">Zakończone</div>
+		</div>
+		<span class="single-order-line" />
+		<div class="single-order">
+			<div>000004</div>
+			<div>Przegląd</div>
+			<div>14 Pażdziernik 2025</div>
+			<div>28 Listopad 2025</div>
+			<div>Nie określono</div>
+			<div class="single-order-status">Zakończone</div>
+		</div>
+		<span class="single-order-line" />
+		<div class="single-order">
+			<div>000004</div>
+			<div>Przegląd</div>
+			<div>14 Pażdziernik 2025</div>
+			<div>28 Listopad 2025</div>
+			<div>Nie określono</div>
+			<div class="single-order-status">Zakończone</div>
+		</div>
+	</div>
+
+</div>
+
+@code {
+
+}
