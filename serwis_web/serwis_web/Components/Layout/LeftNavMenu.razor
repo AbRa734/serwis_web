@@ -1,0 +1,146 @@
+﻿@inject NavigationManager Navigation
+
+<div class="navbar-container">
+    <div class="mobile-navbar" @onclick="ToggleMobileMenu">
+        <span class="mobile-line"></span>
+        <span class="mobile-line"></span>
+        <span class="mobile-line"></span>
+    </div>
+
+    @if (isMobileMenuOpen)
+    {
+        <nav class="nav-links">
+
+            @if (user.Rola == "Client")
+            {
+                <div class="@(IsActive("/index"))">
+                    <i class="fa-solid fa-house" style="color: @(IsCurrentPage("/index") ? "#FFFFFF" : "#202224")"></i>
+                    <a class="@(IsCurrentPage("/index") ? "nav-link-active" : "nav-link")" href="/index">Strona Główna</a>
+                </div>
+            }
+            else if (user.Rola == "Serviceman" || user.Rola == "Administrator")
+            {
+                <div class="@(IsActive("/index"))">
+                    <i class="fa-solid fa-gauge" style="color: @(IsCurrentPage("/index") ? "#FFFFFF" : "#202224")"></i>
+                    <a class="@(IsCurrentPage("/index") ? "nav-link-active" : "nav-link")" href="/index">Panel Kontrolny</a>
+                </div>
+            }
+
+            <div class="@(IsActive("/orders"))">
+                <i class="fa-solid fa-list-check" style="color: @(IsCurrentPage("/orders") ? "#FFFFFF" : "#202224")"></i>
+                <a class="@(IsCurrentPage("/orders") ? "nav-link-active" : "nav-link")" href="orders">Lista Zleceń</a>
+            </div>
+
+            <div class="@(IsActive("/services"))">
+                <i class="fa-solid fa-database" style="color: @(IsCurrentPage("/services") ? "#FFFFFF" : "#202224")"></i>
+                <a class="@(IsCurrentPage("/services") ? "nav-link-active" : "nav-link")" href="services">Uslugi</a>
+            </div>
+
+            @if (user.Rola == "Administrator")
+            {
+                <div class="@(IsActive("/users"))">
+                    <i class="fa-solid fa-user-group" style="color: @(IsCurrentPage("/users") ? "#FFFFFF" : "#202224")"></i>
+                    <a class="@(IsCurrentPage("/users") ? "nav-link-active" : "nav-link")" href="users">Użytkownicy</a>
+                </div>
+            }
+
+            @if (user.Rola == "Administrator" || user.Rola == "Serviceman")
+            {
+                <div class="@(IsActive("/avability"))">
+                    <i class="fa-solid fa-calendar-days" style="color: @(IsCurrentPage("/avability") ? "#FFFFFF" : "#202224")"></i>
+                    <a class="@(IsCurrentPage("/avability") ? "nav-link-active" : "nav-link")" href="avability">Dostępność</a>
+                </div>
+            }
+
+            <span class="nav-line" />
+            <div class="@(IsActive("/report"))">
+                <i class="fa-solid fa-file" style="color: @(IsCurrentPage("/report") ? "#FFFFFF" : "#202224")"></i>
+                <a class="@(IsCurrentPage("/report") ? "nav-link-active" : "nav-link")" href="report">Raport</a>
+            </div>
+
+            @if (user.Rola == "Administrator" || user.Rola == "Serviceman")
+            {
+                <div class="@(IsActive("/statistics"))">
+                    <i class="fa-solid fa-chart-simple" style="color: @(IsCurrentPage("/statistics") ? "#FFFFFF" : "#202224")"></i>
+                    <a class="@(IsCurrentPage("/statistics") ? "nav-link-active" : "nav-link")" href="statistics">Statystyki</a>
+                </div>
+            }
+            <div class="@(IsActive("/contact"))">
+                <i class="fa-solid fa-user-group" style="color: @(IsCurrentPage("/contact") ? "#FFFFFF" : "#202224")"></i>
+                <a class="@(IsCurrentPage("/contact") ? "nav-link-active" : "nav-link")" href="contact">Kontakt</a>
+            </div>
+
+            <div class="@(IsActive("/settings"))">
+                <i class="fa-solid fa-gear" style="color: @(IsCurrentPage("/settings") ? "#FFFFFF" : "#202224")"></i>
+                <a class="@(IsCurrentPage("/settings") ? "nav-link-active" : "nav-link")" href="settings">Ustawienia</a>
+            </div>
+
+            <div class="nav-item">
+                <i class="fa-solid fa-power-off" style="font-size: 20px"></i>
+                <a class="nav-link" href="">Wyloguj</a>
+            </div>
+        </nav>
+    }
+
+
+</div>
+
+@code {
+    private Boolean isMobileMenuOpen = true;
+
+    private void ToggleMobileMenu()
+    {
+        isMobileMenuOpen = !isMobileMenuOpen;
+    }
+
+    private string currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        if (!currentUrl.StartsWith("/"))
+        {
+            currentUrl = "/" + currentUrl;
+        }
+    }
+
+    private bool IsCurrentPage(string path) => currentUrl == path;
+
+    private string IsActive(string path) => IsCurrentPage(path) ? "nav-item-active" : "nav-item";
+
+
+
+    private class User
+    {
+        public int Id { get; set; }
+        public string Imie { get; set; }
+        public string Nazwisko { get; set; }
+        public string Telefon { get; set; }
+        public string Email { get; set; }
+        public string Panstwo { get; set; }
+        public string Miasto { get; set; }
+        public string Ulica { get; set; }
+        public string NumerDomu { get; set; }
+        public string KodPocztowy { get; set; }
+        public string Rola { get; set; }
+        public DateTime DataUtworzenia { get; set; }
+        public DateTime DataAktualizacji { get; set; }
+    }
+
+    private User user = new User
+        {
+            Id = 1,
+            Imie = "Anna",
+            Nazwisko = "Nowak",
+            Telefon = "+48 123 456 789",
+            Email = "anowak@gmail.com",
+            Panstwo = "Polska",
+            Miasto = "Łódź",
+            Ulica = "Radwańska",
+            NumerDomu = "12",
+            KodPocztowy = "90-012",
+            Rola = "Client",
+            DataUtworzenia = DateTime.Now,
+            DataAktualizacji = DateTime.Now
+        };
+}
