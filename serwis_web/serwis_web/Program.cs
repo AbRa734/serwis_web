@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using serwis_web.Components;
 using MudBlazor.Services;
 
@@ -7,10 +8,13 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("ApiWithAuth", (sp, client) =>
+{
+    client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("SERWIS_API_URL") ?? ""); 
+});
+builder.Services.AddScoped<TokenService.TokenService>(); 
+builder.Services.AddScoped<ApiService.ApiService>();
 
-builder.Services.AddSingleton<TokenService.TokenService>(); //FIXME: zmienić na scoped
-builder.Services.AddSingleton<ApiService.ApiService>(); //FIXME: zmienić na scoped
 //zakomentować w sytuacji gdy nie ma potrzeby sprawdzania tokenu
 //builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
 

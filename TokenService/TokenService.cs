@@ -3,6 +3,7 @@
 public class TokenService
 {
     private string? _token;
+    private string? _userEmail;
 
     public void SetToken(string token)
     {
@@ -13,6 +14,17 @@ public class TokenService
     {
         return _token;
     }
+
+    public void SetUserEmail(string email)
+    {
+        _userEmail = email;
+    }
+
+    public string? GetUserEmail()
+    {
+        return _userEmail;
+    }
+
 
     public void ClearToken()
     {

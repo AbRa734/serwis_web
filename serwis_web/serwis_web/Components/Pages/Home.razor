@@ -1,9 +1,31 @@
 ﻿@page "/index"
 @rendermode InteractiveServer
+@using ApiService
+@using ApiService.Helpers
+@using ApiService.Models
 @using serwis_web.Components.Temp
+@using TokenService
+@using Console = BootstrapBlazor.Components.Console
+@inject ApiService ApiService
+@inject TokenService TokenService
 
 <PageTitle>Home</PageTitle>
 
 <Login/>
 <Register/>
 <Check/>
+
+@code{
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Result<List<Uzytkownik>> costam = await ApiService.UzytkownicyRepo.UzytkownicyGet();
+        System.Console.WriteLine(costam.Error);
+        System.Console.WriteLine("---");
+        System.Console.WriteLine(costam.Data);
+        System.Console.WriteLine(TokenService.GetUserEmail());
+    }
+
+}
