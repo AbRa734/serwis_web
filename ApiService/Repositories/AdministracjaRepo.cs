@@ -24,7 +24,11 @@ public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService 
         }
 
         var result = response.Content.ReadFromJsonAsync<Token>().Result;
-        if (result?.AccessToken != null) tokenService.SetToken(result.AccessToken);
+        if (result?.AccessToken != null)
+        {
+            tokenService.SetToken(result.AccessToken);
+            tokenService.SetUserEmail(autoryzacja.Email);
+        }
 
         return new Result<Token>
         {

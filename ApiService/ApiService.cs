@@ -7,6 +7,7 @@ public class ApiService
     private string BaseUrl { get; set; } = Environment.GetEnvironmentVariable("SERWIS_API_URL") ?? "";
 
     private readonly TokenService.TokenService _tokenService;
+    private readonly IHttpClientFactory _httpClientFactory;
     public UzytkownicyRepo UzytkownicyRepo { get; set; }
     public AdministracjaRepo AdministracjaRepo { get; set; }
     public ZamowieniaRepo ZamowieniaRepo { get; set; }
@@ -28,13 +29,12 @@ public class ApiService
     public AdresyEmailRepo AdresyEmailRepo { get; set; }
     public AdresyRepo AdresyRepo { get; set; }
 
-    public ApiService(TokenService.TokenService tokenService)
+    public ApiService(IHttpClientFactory httpClientFactory, TokenService.TokenService tokenService)
     {
-        var httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(BaseUrl)
-        };
+        this._httpClientFactory = httpClientFactory;
         _tokenService = tokenService;
+        
+        var httpClient = httpClientFactory.CreateClient("ApiWithAuth");
 
         UzytkownicyRepo = new UzytkownicyRepo(httpClient, tokenService);
         AdministracjaRepo = new AdministracjaRepo(httpClient, tokenService);
