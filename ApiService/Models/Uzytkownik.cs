@@ -32,6 +32,21 @@ public class Autoryzacja
     public string Haslo { get; set; } = null!;
 }
 
+public class LoginRequest
+{
+    public string Email { get; set; } = null!;
+    public string Haslo { get; set; } = null!;
+}
+
+public class RegisterRequest
+{
+    public string Email { get; set; } = null!;
+    public string Haslo { get; set; } = null!;
+    public string? Numer { get; set; }
+    public string? Imie { get; set; }
+    public string? Nazwisko { get; set; }
+}
+
 public class Token
 {
     public string TokenType { get; set; } = null!;

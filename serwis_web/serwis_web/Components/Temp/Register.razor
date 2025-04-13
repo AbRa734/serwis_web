@@ -35,7 +35,7 @@
      private async Task ZarejestrujUzytkownika()
      {
           isLoading = true;
-          wynik = await ApiService.AdministracjaRepo.RejestracjaPost(new Autoryzacja
+          wynik = await ApiService.AdministracjaRepo.RejestracjaPost(new RegisterRequest
           {
                Haslo = haslo,
                Email = email,

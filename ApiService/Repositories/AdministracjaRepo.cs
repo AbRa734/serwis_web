@@ -9,13 +9,19 @@ public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService 
     private const string RejestracjaPrefix = "/rejestracja";
     private const string LoginPrefix = "/logowanie";
 
-    public async Task<Result<bool>> RejestracjaPost(Autoryzacja autoryzacja)
+    public async Task<Result<bool>> RejestracjaPost(RegisterRequest autoryzacja)
     {
         var response = await httpClient.PostAsJsonAsync(RejestracjaPrefix, autoryzacja);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return new Result<bool> { Data = true};
+        }
+        
         return new Result<bool> { Error = response.ToString() };
     }
 
-    public async Task<Result<Token>> LoginPost(Autoryzacja autoryzacja)
+    public async Task<Result<Token>> LoginPost(LoginRequest autoryzacja)
     {
         var response = await httpClient.PostAsJsonAsync(LoginPrefix, autoryzacja);
         if (!response.IsSuccessStatusCode)

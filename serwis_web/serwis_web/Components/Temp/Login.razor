@@ -43,7 +43,7 @@
     private async Task ZalogujUzytkownika()
     {
         isLoading = true;
-        wynik = await ApiService.AdministracjaRepo.LoginPost(new Autoryzacja
+        wynik = await ApiService.AdministracjaRepo.LoginPost(new LoginRequest
         {
             Haslo = haslo,
             Email = email,

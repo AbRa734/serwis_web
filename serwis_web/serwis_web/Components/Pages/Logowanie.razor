@@ -1,11 +1,13 @@
 @page "/"
 @rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
 @using serwis_web.Components.Layout
 @using Colors = DesignSystem.Tokens.Colors
 @using ApiService
 @using ApiService.Helpers
 @using ApiService.Models
-@using Console = System.Console
+@using ButtonType = MudBlazor.ButtonType
+@using Size = MudBlazor.Size
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
@@ -18,29 +20,55 @@
         <h1 style="text-align: center">Zaloguj się do aplikacji</h1>
         <p style="text-align: center">Podaj swój adres e-mail i hasło lub wybierz metodę logowania za pomocą mediów
             społecznościowych</p>
-        <MudTextField @bind-Value="Email" Label="Email" Variant="Variant.Outlined"
-                      Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
-        <p style="text-align: right">Nie pamiętasz hasła?</p>
-        <MudTextField @bind-Value="Haslo" Label="Hasło" Variant="Variant.Outlined" InputType="InputType.Password"
-                      Style="margin: 10px 0;"></MudTextField>
-        <MudButton Variant="Variant.Filled" @onclick="() => { _ = ZalogujUzytkownika(); }"
-                   Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
-            Zaloguj się
-        </MudButton>
-        <div style="display: flex; align-items: center;">
-            <MudCheckBox Dense="true" @bind-Value="ZapamietajHaslo"
-                         Style="@($"color: {Colors.Primary}; padding: 0px;")"></MudCheckBox>
-            Zapamiętaj hasło
-        </div>
+
+        <EditForm Model="@_loginModel" OnValidSubmit="ZalogujUzytkownika">
+            <DataAnnotationsValidator />
+
+            <MudTextField @bind-Value="_loginModel.Email" Label="Email" Variant="Variant.Outlined"
+                          Style="border-radius: 8px; margin: 10px 0;"
+                          For="@(() => _loginModel.Email)"
+                          Validation="@_validateEmail"></MudTextField>
+
+            <p style="text-align: right">Nie pamiętasz hasła?</p>
+
+            <MudTextField @bind-Value="_loginModel.Haslo" Label="Hasło" Variant="Variant.Outlined"
+                          InputType="@(_pokazHaslo ? InputType.Text : InputType.Password)"
+                          Style="margin: 10px 0;"
+                          For="@(() => _loginModel.Haslo)"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@(_pokazHaslo ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                          OnAdornmentClick="@(() => _pokazHaslo = !_pokazHaslo)"></MudTextField>
+
+            <MudButton Variant="Variant.Filled" ButtonType="ButtonType.Submit"
+                       Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <span class="ms-2">Logowanie...</span>
+                }
+                else
+                {
+                    <span>Zaloguj się</span>
+                }
+            </MudButton>
+
+            <div style="display: flex; align-items: center;">
+                <MudCheckBox Dense="true" @bind-Value="_loginModel.ZapamietajHaslo"
+                             Style="@($"color: {Colors.Primary}; padding: 0px;")"></MudCheckBox>
+                Zapamiętaj hasło
+            </div>
+        </EditForm>
+
         <p style="text-align: right">Nie masz jeszcze konta? <a href="/rejestracja"
                                                                 style=@($"color: {Colors.Primary}; text-decoration: none;")>Zarejestruj
                 się</a></p>
+
         <div style="margin-top: 20px;">
-            <MudButton Variant="Variant.Filled"
+            <MudButton Variant="Variant.Filled" Disabled="@_isLoading"
                        Style="@($"height: 42px; border-radius: 8px; width: 100%; background-color: {Colors.Gray}; display: flex; align-items: center; justify-content: center;")">
                 <i class="fab fa-google" style="margin-right: 16px;"></i> Zaloguj się przez Google
             </MudButton>
-            <MudButton Variant="Variant.Filled"
+            <MudButton Variant="Variant.Filled" Disabled="@_isLoading"
                        Style="@($"height: 42px; margin-top: 20px; border-radius: 8px; width: 100%; background-color: {Colors.Gray}; display: flex; align-items: center; justify-content: center;")">
                 <i class="fab fa-facebook" style="margin-right: 16px;"></i> Zaloguj się przez Facebook
             </MudButton>
@@ -49,31 +77,66 @@
 </main>
 
 @code {
-    public bool ZapamietajHaslo { get; set; } = true;
-    public string Email { get; set; } = string.Empty;
-    public string Haslo { get; set; } = string.Empty;
-    Result<Token>? _wynik;
+    private readonly LoginModel _loginModel = new();
+    private Result<Token>? _wynik;
+    private bool _pokazHaslo;
+    private bool _isLoading;
+
+    private readonly Func<string, IEnumerable<string>> _validateEmail = email =>
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return new[] { "Email jest wymagany" };
+
+        if (!new EmailAddressAttribute().IsValid(email))
+            return new[] { "Wprowadź poprawny adres email" };
+
+        return Array.Empty<string>();
+    };
 
     private async Task ZalogujUzytkownika()
     {
-        _wynik = await ApiService.AdministracjaRepo.LoginPost(new Autoryzacja
-        {
-            Haslo = Haslo,
-            Email = Email,
-        });
+        _isLoading = true;
 
-        if (_wynik != null && _wynik.Error == null)
+        try
         {
-            Snackbar.Add("Logowanie udane", Severity.Success);
-            await Task.Delay(2000);
-            Navigation.NavigateTo("/index");
-        }
-        else
-        {
-            Snackbar.Add("Logowanie nie powiodło się", Severity.Error);
-        }
+            _wynik = await ApiService.AdministracjaRepo.LoginPost(new LoginRequest
+            {
+                Haslo = _loginModel.Haslo,
+                Email = _loginModel.Email,
+            });
 
-        StateHasChanged();
+            if (_wynik != null && _wynik.Error == null)
+            {
+                Snackbar.Add("Logowanie udane", Severity.Success);
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/index");
+            }
+            else
+            {
+                Snackbar.Add(_wynik?.Error ?? "Nieprawidłowy email lub hasło", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
     }
 
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Email jest wymagany")]
+        [EmailAddress(ErrorMessage = "Niepoprawny format adresu email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Hasło jest wymagane")]
+        [MinLength(6, ErrorMessage = "Hasło musi mieć co najmniej 6 znaków")]
+        public string Haslo { get; set; } = string.Empty;
+
+        public bool ZapamietajHaslo { get; set; } = true;
+    }
 }
