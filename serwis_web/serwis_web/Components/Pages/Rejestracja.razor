@@ -1,7 +1,16 @@
 @page "/rejestracja"
 @rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using ApiService
+@using ApiService.Helpers
+@using ApiService.Models
 @using serwis_web.Components.Layout
+@using ButtonType = MudBlazor.ButtonType
 @using Colors = DesignSystem.Tokens.Colors
+@using Size = MudBlazor.Size
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 @layout EmptyLayout
 
 <main
@@ -9,30 +18,72 @@
     <section style="@($"background-color: {Colors.White}; border-radius: 8px; padding: 40px 20px; margin: 0 20px; width: 80%; max-width: 700px;"))">
         <h1 style="text-align: center">Zarejestruj się do aplikacji</h1>
         <p style="text-align: center">Podaj swoje dane, aby utworzyć konto</p>
-        <div style="display: flex; justify-content: space-between;">
-            <div style="flex: 1; margin-right: 10px;">
-                <MudTextField @bind-Value="Imie" Label="Imię" Variant="Variant.Outlined" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
-                <MudTextField @bind-Value="Email" Label="Email" Variant="Variant.Outlined" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
-                <MudTextField @bind-Value="Haslo" Label="Hasło" Variant="Variant.Outlined" InputType="InputType.Password" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
+
+        <EditForm Model="@_rejestracjaModel" OnValidSubmit="ZarejestrujUzytkownika">
+            <DataAnnotationsValidator />
+            <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1; margin-right: 10px;">
+                    <MudTextField @bind-Value="_rejestracjaModel.Imie" Label="Imię" Variant="Variant.Outlined"
+                                  Style="border-radius: 8px; margin: 10px 0;"
+                                  For="@(() => _rejestracjaModel.Imie)"></MudTextField>
+
+                    <MudTextField @bind-Value="_rejestracjaModel.Email" Label="Email" Variant="Variant.Outlined"
+                                  Style="border-radius: 8px; margin: 10px 0;"
+                                  For="@(() => _rejestracjaModel.Email)"
+                                  Validation="@_validateEmail"></MudTextField>
+
+                    <MudTextField @bind-Value="_rejestracjaModel.Haslo" Label="Hasło" Variant="Variant.Outlined"
+                                  InputType="@(_pokazHaslo ? InputType.Text : InputType.Password)"
+                                  Style="border-radius: 8px; margin: 10px 0;"
+                                  For="@(() => _rejestracjaModel.Haslo)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_pokazHaslo ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="@(() => _pokazHaslo = !_pokazHaslo)"></MudTextField>
+                    
+                </div>
+                <div style="flex: 1; margin-left: 10px;">
+                    <MudTextField @bind-Value="_rejestracjaModel.Nazwisko" Label="Nazwisko" Variant="Variant.Outlined"
+                                  Style="border-radius: 8px; margin: 10px 0;"
+                                  For="@(() => _rejestracjaModel.Nazwisko)"></MudTextField>
+
+                    <MudTextField @bind-Value="_rejestracjaModel.NumerTelefonu" Label="Numer telefonu" Variant="Variant.Outlined"
+                                  Style="border-radius: 8px; margin: 10px 0;"
+                                  For="@(() => _rejestracjaModel.NumerTelefonu)"
+                                  Validation="@_validatePhone"></MudTextField>
+
+                    <MudTextField @bind-Value="_rejestracjaModel.PowtorzHaslo" Label="Powtórz hasło" Variant="Variant.Outlined"
+                                  InputType="@(_pokazPowtorzHaslo ? InputType.Text : InputType.Password)"
+                                  Style="border-radius: 8px; margin: 10px 0;"
+                                  For="@(() => _rejestracjaModel.PowtorzHaslo)"
+                                  Validation="@(new Func<string, IEnumerable<string>>(PotwierdzHaslo))"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_pokazPowtorzHaslo ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="@(() => _pokazPowtorzHaslo = !_pokazPowtorzHaslo)"></MudTextField>
+                </div>
             </div>
-            <div style="flex: 1; margin-left: 10px;">
-                <MudTextField @bind-Value="Nazwisko" Label="Nazwisko" Variant="Variant.Outlined" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
-                <MudTextField @bind-Value="NumerTelefonu" Label="Numer telefonu" Variant="Variant.Outlined" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
-                <MudTextField @bind-Value="PowtorzHaslo" Label="Powtórz hasło" Variant="Variant.Outlined" InputType="InputType.Password" Style="border-radius: 8px; margin: 10px 0;"></MudTextField>
-            </div>
-        </div>
-        <MudButton Variant="Variant.Filled"
-                   Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
-            Zarejestruj się
-        </MudButton>
+
+            <MudButton Variant="Variant.Filled" ButtonType="ButtonType.Submit"
+                       Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <span class="ms-2">Rejestracja w toku...</span>
+                }
+                else
+                {
+                    <span>Zarejestruj się</span>
+                }
+            </MudButton>
+        </EditForm>
+
         <p style="text-align: right">Masz już konto? <a href="/"
                                                         style=@($"color: {Colors.Primary}; text-decoration: none;")>Zaloguj się</a></p>
         <div style="margin-top: 20px;">
-            <MudButton Variant="Variant.Filled"
+            <MudButton Variant="Variant.Filled" Disabled="@_isLoading"
                        Style="@($"height: 42px; border-radius: 8px; width: 100%; background-color: {Colors.Gray}; display: flex; align-items: center; justify-content: center;")">
                 <i class="fab fa-google" style="margin-right: 16px;"></i> Zarejestruj się przez Google
             </MudButton>
-            <MudButton Variant="Variant.Filled"
+            <MudButton Variant="Variant.Filled" Disabled="@_isLoading"
                        Style="@($"height: 42px; margin-top: 20px; border-radius: 8px; width: 100%; background-color: {Colors.Gray}; display: flex; align-items: center; justify-content: center;")">
                 <i class="fab fa-facebook" style="margin-right: 16px;"></i> Zarejestruj się przez Facebook
             </MudButton>
@@ -41,10 +92,110 @@
 </main>
 
 @code {
-    public string Imie { get; set; } = string.Empty;
-    public string Nazwisko { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string NumerTelefonu { get; set; } = string.Empty;
-    public string Haslo { get; set; } = string.Empty;
-    public string PowtorzHaslo { get; set; } = string.Empty;
+    private readonly RejestracjaModel _rejestracjaModel = new();
+    private bool _pokazHaslo;
+    private bool _pokazPowtorzHaslo;
+    private bool _isLoading;
+
+    private readonly Func<string, IEnumerable<string>> _validateEmail = email =>
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return new[] { "Email jest wymagany" };
+
+        if (!new EmailAddressAttribute().IsValid(email))
+            return new[] { "Wprowadź poprawny adres email" };
+
+        return Array.Empty<string>();
+    };
+
+    private readonly Func<string, IEnumerable<string>> _validatePhone = phone =>
+    {
+        if (string.IsNullOrWhiteSpace(phone))
+            return new[] { "Numer telefonu jest wymagany" };
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{9}$") &&
+            !System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{3}[-\s]?\d{3}[-\s]?\d{3}$"))
+            return new[] { "Wprowadź poprawny numer telefonu (9 cyfr)" };
+
+        return Array.Empty<string>();
+    };
+
+    private IEnumerable<string> PotwierdzHaslo(string powtorzHaslo)
+    {
+        if (string.IsNullOrWhiteSpace(powtorzHaslo))
+            return new[] { "Potwierdzenie hasła jest wymagane" };
+
+        if (powtorzHaslo != _rejestracjaModel.Haslo)
+            return new[] { "Hasła nie są identyczne" };
+
+        return Array.Empty<string>();
+    }
+
+    private async Task ZarejestrujUzytkownika()
+    {
+        _isLoading = true;
+
+        try
+        {
+            var autoryzacja = new RegisterRequest
+            {
+                Haslo = _rejestracjaModel.Haslo,
+                Email = _rejestracjaModel.Email,
+                Imie = _rejestracjaModel.Imie,
+                Nazwisko = _rejestracjaModel.Nazwisko,
+                Numer = _rejestracjaModel.NumerTelefonu,
+            };
+
+            var wynik = await ApiService.AdministracjaRepo.RejestracjaPost(autoryzacja);
+
+            if (wynik.Data)
+            {   
+                Snackbar.Add("Rejestracja zakończona pomyślnie. Możesz się teraz zalogować.", Severity.Success);
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add(wynik?.Error ?? "Nie udało się zarejestrować. Spróbuj ponownie.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    public class RejestracjaModel
+    {
+        [Required(ErrorMessage = "Imię jest wymagane")]
+        [StringLength(50, ErrorMessage = "Imię nie może przekraczać 50 znaków")]
+        public string Imie { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Nazwisko jest wymagane")]
+        [StringLength(50, ErrorMessage = "Nazwisko nie może przekraczać 50 znaków")]
+        public string Nazwisko { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email jest wymagany")]
+        [EmailAddress(ErrorMessage = "Niepoprawny format adresu email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Numer telefonu jest wymagany")]
+        [RegularExpression(@"^\d{9}$|^\d{3}[-\s]?\d{3}[-\s]?\d{3}$", ErrorMessage = "Wprowadź poprawny numer telefonu (9 cyfr)")]
+        public string NumerTelefonu { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Hasło jest wymagane")]
+        [MinLength(6, ErrorMessage = "Hasło musi mieć co najmniej 6 znaków")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,}$",
+            ErrorMessage = "Hasło musi zawierać co najmniej jedną małą literę, jedną dużą literę, jedną cyfrę i jeden znak specjalny")]
+        public string Haslo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Potwierdzenie hasła jest wymagane")]
+        [Compare("Haslo", ErrorMessage = "Hasła nie są identyczne")]
+        public string PowtorzHaslo { get; set; } = string.Empty;
+    }
 }
