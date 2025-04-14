@@ -8,6 +8,7 @@ public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService 
 {
     private const string RejestracjaPrefix = "/rejestracja";
     private const string LoginPrefix = "/logowanie";
+    private const string RestartHaslaPrefix = "/restart-hasla";
 
     public async Task<Result<bool>> RejestracjaPost(RegisterRequest autoryzacja)
     {
@@ -39,6 +40,36 @@ public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService 
         return new Result<Token>
         {
             Data = result,
+        };
+    }
+    
+    public async Task<Result<bool>> RestartHaslaPost(string email)
+    {
+        var url = $"{RestartHaslaPrefix}?email={Uri.EscapeDataString(email)}";
+        var response = await httpClient.PostAsync(url, null);
+        if (!response.IsSuccessStatusCode)
+        {
+            return new Result<bool> { Error = response.ToString() };
+        }
+
+        return new Result<bool>
+        {
+            Data = true,
+        };
+    }
+    
+    public async Task<Result<bool>> RestartHaslaGet(string token)
+    {
+        var url = $"{RestartHaslaPrefix}?token={Uri.EscapeDataString(token)}";
+        var response = await httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return new Result<bool> { Error = response.ToString() };
+        }
+
+        return new Result<bool>
+        {
+            Data = true,
         };
     }
 }

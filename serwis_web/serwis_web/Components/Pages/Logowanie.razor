@@ -29,7 +29,7 @@
                           For="@(() => _loginModel.Email)"
                           Validation="@_validateEmail"></MudTextField>
 
-            <p style="text-align: right">Nie pamiętasz hasła?</p>
+            <p style="text-align: right"><a  href="/przypomnij-haslo">Nie pamiętasz hasła?</a></p>
 
             <MudTextField @bind-Value="_loginModel.Haslo" Label="Hasło" Variant="Variant.Outlined"
                           InputType="@(_pokazHaslo ? InputType.Text : InputType.Password)"

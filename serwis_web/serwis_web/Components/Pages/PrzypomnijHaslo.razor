@@ -1,0 +1,104 @@
+@page "/przypomnij-haslo"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Colors = DesignSystem.Tokens.Colors
+@using ApiService
+@using ApiService.Helpers
+@using serwis_web.Components.Layout
+@using ButtonType = MudBlazor.ButtonType
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
+@inject ApiService ApiService
+@inject ISnackbar Snackbar
+@layout EmptyLayout
+@inject NavigationManager Navigation
+
+<main
+    style="@($"background-color: {Colors.Primary}; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; background-image: url('/shape.png'); background-size: cover; background-position: center;"))">
+    <section
+        style="@($"background-color: {Colors.White}; border-radius: 8px; padding: 40px 20px; margin: 0 20px; width: 80%; max-width: 700px; position: relative;"))">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"  Color="Color.Dark" Size="Size.Medium"
+                       Style="position: absolute; top: 10px; left: 10px;"
+                       OnClick="NavigateToLogin" />
+        <h1 style="text-align: center">Przypomnij hasło</h1>
+        <p style="text-align: center">Podaj swój adres e-mail, aby otrzymać link do zresetowania hasła</p>
+
+        <EditForm Model="@_emailModel" OnValidSubmit="WyslijPrzypomnienie">
+            <DataAnnotationsValidator />
+
+            <MudTextField @bind-Value="_emailModel.Email" Label="Email" Variant="Variant.Outlined"
+                          Style="border-radius: 8px; margin: 10px 0;"
+                          For="@(() => _emailModel.Email)"
+                          Validation="@_validateEmail"></MudTextField>
+
+            <MudButton Variant="Variant.Filled" ButtonType="ButtonType.Submit"
+                       Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <span class="ms-2">Wysyłanie...</span>
+                }
+                else
+                {
+                    <span>Wyślij przypomnienie</span>
+                }
+            </MudButton>
+        </EditForm>
+    </section>
+</main>
+
+@code {
+    private readonly EmailModel _emailModel = new();
+    private bool _isLoading;
+
+    private readonly Func<string, IEnumerable<string>> _validateEmail = email =>
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return new[] { "Email jest wymagany" };
+
+        if (!new EmailAddressAttribute().IsValid(email))
+            return new[] { "Wprowadź poprawny adres email" };
+
+        return Array.Empty<string>();
+    };
+
+    private async Task WyslijPrzypomnienie()
+    {
+        _isLoading = true;
+
+        try
+        {
+            var result = await ApiService.AdministracjaRepo.RestartHaslaPost(_emailModel.Email);
+
+            if (result.Error == null && result.Data)
+            {
+                Snackbar.Add("Link do zresetowania hasła został wysłany na podany adres email.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(result?.Error ?? "Nie udało się wysłać przypomnienia. Spróbuj ponownie.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    public class EmailModel
+    {
+        [Required(ErrorMessage = "Email jest wymagany")]
+        [EmailAddress(ErrorMessage = "Niepoprawny format adresu email")]
+        public string Email { get; set; } = string.Empty;
+    }
+    
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
