@@ -1,0 +1,143 @@
+﻿@page "/orders/{OrderId}"
+@rendermode InteractiveServer
+@using serwis_web.Components.Temp
+
+<PageTitle>Szczegóły zlecenia</PageTitle>
+
+<div class="order-container">
+	<div class="title-changes">
+		<h2>Szczegóły zlecenia</h2>
+		<button class="btn-changes">Historia zmian</button>
+	</div>
+
+	<div class="order-back">
+		<div class="order-tab">
+			<div class="order-col">
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Numer Zlecenia</h4>
+						<input type="number" placeholder="@OrderId" />
+					</div>
+					<div class="single-col">
+						<h4>Rodzaj zlecenia</h4>
+						<input type="text" placeholder="Naprawa" />
+					</div>
+				</div>
+
+				<textarea placeholder="Laptop bardzo się przegrzewa i samoczynnie wyłącza po kilkunastu minutach pracy. Wentylator działa głośno, a system działa wolno. Proszę o diagnozę i naprawę." class="textarea"></textarea>
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Priorytet</h4>
+						<input type="text" placeholder="Wysoki" />
+					</div>
+					<div class="single-col">
+						<h4>Metoda Płatności</h4>
+						<input type="number" placeholder="Przelew krajowy" />
+					</div>
+				</div>
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Ulica</h4>
+						<input type="text" placeholder="Radwanska" />
+					</div>
+					<div class="single-col">
+						<h4>Numer Domu</h4>
+						<input type="number" placeholder="42" />
+					</div>
+				</div>
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Planowana Data Realizacji</h4>
+						<input type="date" placeholder="12.04.2025" />
+					</div>
+					<div class="single-col">
+						<h4>Planowana Data Zakończenia</h4>
+						<input type="date" placeholder="26.04.2025" />
+					</div>
+				</div>
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Data Rozpoczęcia Realizacji</h4>
+						<input type="date" placeholder="12.04.2025" style="font-weight: bold" />
+					</div>
+					<div class="single-col">
+						<h4>Data Zakończenia Realizacji</h4>
+						<input type="date" placeholder="26.04.2025" style="font-weight: bold" />
+					</div>
+				</div>
+
+				<h4>Kwota do zapłaty</h4>
+				<input type="text" placeholder="300 zł" style="font-weight: bold; font-size: 18px"/>
+
+
+			</div>
+			<div class="order-col">
+
+				<h4>Data utworzenia zleceniay</h4>
+				<input type="date" placeholder="29.03.2025" />
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Serwisant</h4>
+						<input type="text" placeholder="Jan Kowalski" />
+					</div>
+					<div class="single-col">
+						<h4>Status</h4>
+						<input type="text" placeholder="Nowe" />
+					</div>
+				</div>
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Adres Email</h4>
+						<input type="email" placeholder="anowak@gmail.com" />
+					</div>
+					<div class="single-col">
+						<h4>Numer Telefonu</h4>
+						<input type="number" placeholder="536875432" />
+					</div>
+				</div>
+
+				<h4>Państwo</h4>
+				<input type="text" placeholder="Polska" />
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Miasto</h4>
+						<input type="text" placeholder="Łódź" />
+					</div>
+					<div class="single-col">
+						<h4>Kod pocztowy</h4>
+						<input type="number" placeholder="90-012" />
+					</div>
+				</div>
+
+				<h4>Oceń Wykonaną Usługę</h4>
+				<div class="order-rate">
+					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
+					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
+					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
+					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
+					<i class="fa-regular fa-star" style="color: #545353"></i>
+				</div>
+
+				<h4>Komentarz</h4>
+				<input type="text" placeholder="Dodaj komentarz do wykonanej usługi" />
+
+				<button>Dodaj komentarz</button>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+
+@code {
+	[Parameter]
+	public String OrderId { get; set; }
+
+}
