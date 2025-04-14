@@ -1,4 +1,6 @@
 ﻿@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@using serwis_web.Components.Temp
 
 <div class="navbar-container">
     <div class="mobile-navbar" @onclick="ToggleMobileMenu">
@@ -13,66 +15,66 @@
 
             @if (user.Rola == "Client")
             {
-                <div class="@(IsActive("/index"))">
+                <div class="@IsActive("/index")">
                     <i class="fa-solid fa-house" style="color: @(IsCurrentPage("/index") ? "#FFFFFF" : "#202224")"></i>
                     <a class="@(IsCurrentPage("/index") ? "nav-link-active" : "nav-link")" href="/index">Strona Główna</a>
                 </div>
             }
             else if (user.Rola == "Serviceman" || user.Rola == "Administrator")
             {
-                <div class="@(IsActive("/index"))">
+                <div class="@IsActive("/index")">
                     <i class="fa-solid fa-gauge" style="color: @(IsCurrentPage("/index") ? "#FFFFFF" : "#202224")"></i>
                     <a class="@(IsCurrentPage("/index") ? "nav-link-active" : "nav-link")" href="/index">Panel Kontrolny</a>
                 </div>
             }
 
-            <div class="@(IsActive("/orders"))">
+            <div class="@IsActive("/orders")">
                 <i class="fa-solid fa-list-check" style="color: @(IsCurrentPage("/orders") ? "#FFFFFF" : "#202224")"></i>
-                <a class="@(IsCurrentPage("/orders") ? "nav-link-active" : "nav-link")" href="orders">Lista Zleceń</a>
+                <a class="@(IsCurrentPage("/orders") ? "nav-link-active" : "nav-link")" href="/orders">Lista Zleceń</a>
             </div>
 
-            <div class="@(IsActive("/services"))">
+            <div class="@IsActive("/services")">
                 <i class="fa-solid fa-database" style="color: @(IsCurrentPage("/services") ? "#FFFFFF" : "#202224")"></i>
-                <a class="@(IsCurrentPage("/services") ? "nav-link-active" : "nav-link")" href="services">Uslugi</a>
+                <a class="@(IsCurrentPage("/services") ? "nav-link-active" : "nav-link")" href="/services">Uslugi</a>
             </div>
 
             @if (user.Rola == "Administrator")
             {
-                <div class="@(IsActive("/users"))">
+                <div class="@IsActive("/users")">
                     <i class="fa-solid fa-user-group" style="color: @(IsCurrentPage("/users") ? "#FFFFFF" : "#202224")"></i>
-                    <a class="@(IsCurrentPage("/users") ? "nav-link-active" : "nav-link")" href="users">Użytkownicy</a>
+                    <a class="@(IsCurrentPage("/users") ? "nav-link-active" : "nav-link")" href="/users">Użytkownicy</a>
                 </div>
             }
 
             @if (user.Rola == "Administrator" || user.Rola == "Serviceman")
             {
-                <div class="@(IsActive("/avability"))">
+                <div class="@IsActive("/avability")">
                     <i class="fa-solid fa-calendar-days" style="color: @(IsCurrentPage("/avability") ? "#FFFFFF" : "#202224")"></i>
-                    <a class="@(IsCurrentPage("/avability") ? "nav-link-active" : "nav-link")" href="avability">Dostępność</a>
+                    <a class="@(IsCurrentPage("/avability") ? "nav-link-active" : "nav-link")" href="/avability">Dostępność</a>
                 </div>
             }
 
             <span class="nav-line" />
-            <div class="@(IsActive("/report"))">
+            <div class="@IsActive("/report")">
                 <i class="fa-solid fa-file" style="color: @(IsCurrentPage("/report") ? "#FFFFFF" : "#202224")"></i>
-                <a class="@(IsCurrentPage("/report") ? "nav-link-active" : "nav-link")" href="report">Raport</a>
+                <a class="@(IsCurrentPage("/report") ? "nav-link-active" : "nav-link")" href="/report">Raport</a>
             </div>
 
             @if (user.Rola == "Administrator" || user.Rola == "Serviceman")
             {
-                <div class="@(IsActive("/statistics"))">
+                <div class="@IsActive("/statistics")">
                     <i class="fa-solid fa-chart-simple" style="color: @(IsCurrentPage("/statistics") ? "#FFFFFF" : "#202224")"></i>
-                    <a class="@(IsCurrentPage("/statistics") ? "nav-link-active" : "nav-link")" href="statistics">Statystyki</a>
+                    <a class="@(IsCurrentPage("/statistics") ? "nav-link-active" : "nav-link")" href="/statistics">Statystyki</a>
                 </div>
             }
-            <div class="@(IsActive("/contact"))">
+            <div class="@IsActive("/contact")">
                 <i class="fa-solid fa-user-group" style="color: @(IsCurrentPage("/contact") ? "#FFFFFF" : "#202224")"></i>
-                <a class="@(IsCurrentPage("/contact") ? "nav-link-active" : "nav-link")" href="contact">Kontakt</a>
+                <a class="@(IsCurrentPage("/contact") ? "nav-link-active" : "nav-link")" href="/contact">Kontakt</a>
             </div>
 
-            <div class="@(IsActive("/settings"))">
+            <div class="@IsActive("/settings")">
                 <i class="fa-solid fa-gear" style="color: @(IsCurrentPage("/settings") ? "#FFFFFF" : "#202224")"></i>
-                <a class="@(IsCurrentPage("/settings") ? "nav-link-active" : "nav-link")" href="settings">Ustawienia</a>
+                <a class="@(IsCurrentPage("/settings") ? "nav-link-active" : "nav-link")" href="/settings">Ustawienia</a>
             </div>
 
             <div class="nav-item">
@@ -81,12 +83,10 @@
             </div>
         </nav>
     }
-
-
 </div>
 
 @code {
-    private Boolean isMobileMenuOpen = true;
+    private bool isMobileMenuOpen = true;
 
     private void ToggleMobileMenu()
     {
@@ -102,13 +102,32 @@
         {
             currentUrl = "/" + currentUrl;
         }
+
+        Navigation.LocationChanged += LocationChanged;
     }
 
-    private bool IsCurrentPage(string path) => currentUrl == path;
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= LocationChanged;
+    }
+
+    private void LocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        if (!currentUrl.StartsWith("/"))
+        {
+            currentUrl = "/" + currentUrl;
+        }
+        StateHasChanged();
+    }
+
+    private bool IsCurrentPage(string path)
+    {
+        return currentUrl.Equals(path, StringComparison.OrdinalIgnoreCase) ||
+               currentUrl.StartsWith(path + "/", StringComparison.OrdinalIgnoreCase);
+    }
 
     private string IsActive(string path) => IsCurrentPage(path) ? "nav-item-active" : "nav-item";
-
-
 
     private class User
     {
@@ -128,19 +147,19 @@
     }
 
     private User user = new User
-        {
-            Id = 1,
-            Imie = "Anna",
-            Nazwisko = "Nowak",
-            Telefon = "+48 123 456 789",
-            Email = "anowak@gmail.com",
-            Panstwo = "Polska",
-            Miasto = "Łódź",
-            Ulica = "Radwańska",
-            NumerDomu = "12",
-            KodPocztowy = "90-012",
-            Rola = "Client",
-            DataUtworzenia = DateTime.Now,
-            DataAktualizacji = DateTime.Now
-        };
+    {
+        Id = 1,
+        Imie = "Anna",
+        Nazwisko = "Nowak",
+        Telefon = "+48 123 456 789",
+        Email = "anowak@gmail.com",
+        Panstwo = "Polska",
+        Miasto = "Łódź",
+        Ulica = "Radwańska",
+        NumerDomu = "12",
+        KodPocztowy = "90-012",
+        Rola = "Client",
+        DataUtworzenia = DateTime.Now,
+        DataAktualizacji = DateTime.Now
+    };
 }

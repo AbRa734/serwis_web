@@ -1,0 +1,104 @@
+﻿@page "/services/{serviceName}"
+@rendermode InteractiveServer
+@using serwis_web.Components.Temp
+
+<PageTitle>@GetServiceTitle(ServiceName)</PageTitle>
+
+<div class="services-container">
+	<h2>Dodaj @GetServiceSubTitle(ServiceName)</h2>
+
+	<div class="service-back">
+		<div class="service-tab">
+			<div class="service-col">
+				<textarea placeholder="Opisz swój problem" class="textarea"></textarea>
+				<h4>Priorytet</h4>
+				<select>
+					<option>Wysoki</option>
+					<option>Niski</option>
+				</select>
+				<div class="service-row">
+					<div class="single-col">
+						<h4>Ulica</h4>
+						<input type="text" placeholder="Ulica" />
+					</div>
+					<div class="single-col">
+						<h4>Numer Domu</h4>
+						<input type="number" placeholder="Numer domu" />
+					</div>
+				</div>
+				<h4>Planowana Data Realizacji</h4>
+				<input type="date" placeholder="12-04-2025" />
+			</div>
+			<div class="service-col">
+				<h4>Numer Telefonu</h4>
+				<input type="number" placeholder="Numer Telefonu" />
+
+				<h4>Adres Email</h4>
+				<input type="email" placeholder="Adres Email" />
+
+				<h4>Dostępni serwisanci</h4>
+				<select>
+					<option>Jan Kowalski</option>
+					<option>Adam Nowak</option>
+				</select>
+
+				<h4>Państwo</h4>
+				<input type="text" placeholder="Państwo" />
+
+				<div class="service-row">
+					<div class="single-col">
+						<h4>Miasto</h4>
+						<input type="text" placeholder="Miasto" />
+					</div>
+					<div class="single-col">
+						<h4>Kod pocztowy</h4>
+						<input type="number" placeholder="Kod pocztowy" />
+					</div>
+				</div>
+				<h4>Planowana Data Zakończenia</h4>
+				<input type="date" placeholder="26-04-2025" />
+			</div>
+		</div>
+
+		<button>Utwórz zlecenie</button>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public string ServiceName { get; set; }
+
+	private string GetServiceTitle(string serviceName)
+	{
+		return serviceName switch
+		{
+			"fix" => "Naprawa",
+			"service" => "Serwis",
+			"installation" => "Instalacja",
+			"configuration" => "Konfiguracja",
+			"inspection" => "Przegląd",
+			"replacement" => "Wymiana",
+			"maintenance" => "Konserwacja",
+			"modernization" => "Modernizacja",
+			"diagnostics" => "Diagnostyka",
+			_ => "Usługa"
+		};
+	}
+
+	private string GetServiceSubTitle(string serviceName)
+	{
+		return serviceName switch
+		{
+			"fix" => "nową naprawę",
+			"service" => "nowy serwis",
+			"installation" => "nową instalację",
+			"configuration" => "nową konfigurację",
+			"inspection" => "nowy przegląd",
+			"replacement" => "nową wymianę",
+			"maintenance" => "nową konserwację",
+			"modernization" => "nową modernizację",
+			"diagnostics" => "nową diagnostykę",
+			_ => "Usługa"
+		};
+	}
+}

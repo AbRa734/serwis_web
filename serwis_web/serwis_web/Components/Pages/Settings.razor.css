@@ -1,0 +1,155 @@
+﻿.settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 23px;
+    padding: 0;
+    margin: 0;
+    padding-left: 5px;
+    padding-right: 20px;
+}
+
+.settings-container h2 {
+    font-size: 30px;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+.settings-back {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+    padding: 30px;
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+    margin: 0;
+}
+
+.settings-tab {
+    display: flex;
+    width: 100%;
+    gap: 100px;
+    padding: 0;
+    margin: 0;
+}
+
+.settings-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.settings-col h2 {
+    font-size: 30px;
+    text-align: center;
+}
+
+.settings-col h4 {
+    font-size: 16px;
+    font-weight: 500;
+    padding: 0;
+    margin: 0;
+    color: #606060;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+}
+
+.single-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+input {
+    background-color: #F5F6FA;
+    border: solid 1px #D5D5D5;
+    width: 100%;
+    padding: 15px;
+    border-radius: 5px;
+    color: #A6A6A6;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+input {
+    height: 50px;
+}
+
+.setting-btn {
+    background-color: #4880FF;
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+    color: #FFFFFF;
+    font-size: 16px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.setting-btn:hover {
+    background-color: #336ff5;
+}
+
+@media (max-width: 1366px) {
+    .settings-tab {
+        gap: 80px;
+    }
+}
+
+@media (max-width: 1280px) {
+    .settings-container {
+        gap: 30px;
+        padding-right: 15px;
+    }
+
+    .settings-row {
+        gap: 40px;
+    }
+
+    .settings-tab {
+        flex-direction: column;
+        gap: 50px;
+    }
+
+    input {
+        margin-bottom: 15px;
+    }
+
+    .single-col {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .settings-container {
+        padding-right: 5px;
+        padding-top: 10px;
+    }
+    .settings-col h2 {
+        margin-bottom: 15px;
+        text-align: start;
+    }
+}
+
+@media (max-width: 640px) {
+
+    .settings-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .settings-col h2 {
+        font-size: 28px;
+    }
+}
+
+

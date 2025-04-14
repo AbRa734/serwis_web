@@ -2,7 +2,276 @@
 @rendermode InteractiveServer
 @using serwis_web.Components.Temp
 
-<PageTitle>Lista Zleceń</PageTitle>
+<PageTitle>Lista zleceń</PageTitle>
 
-<h1>Lista Zleceń</h1>
 
+<div class="orders-container">
+    <div class="orders-header">
+        <h2>Lista zleceń</h2>
+        <a class="btn-changes" href="/services">Nowe zlecenie</a>
+    </div>
+
+    <div class="filter-bar">
+        <div class="filter-icon">
+            <i class="fa fa-filter"></i>
+        </div>
+        <div class="filter-dropdown">
+            <span>Data Utworzenia</span>
+            <i class="fa fa-chevron-down"></i>
+        </div>
+        <div class="filter-dropdown">
+            <span>Data Wykonania</span>
+            <i class="fa fa-chevron-down"></i>
+        </div>
+        <div class="filter-dropdown">
+            <span>Rodzaj zlecenia</span>
+            <i class="fa fa-chevron-down"></i>
+        </div>
+        <div class="filter-dropdown">
+            <span>Status zlecenia</span>
+            <i class="fa fa-chevron-down"></i>
+        </div>
+        <div class="filter-dropdown">
+            <span>Priorytet</span>
+            <i class="fa fa-chevron-down"></i>
+        </div>
+        <div class="reset-filters">
+            <i class="fa fa-rotate-left"></i>
+            <span>Zresetuj filtry</span>
+        </div>
+    </div>
+
+    <div class="orders">
+        <div class="order-category">
+            <div class="category-sort" @onclick="() => SortOrders(SortField.NumerZlecenia)">
+                <h4>Numer zlecenia</h4>
+                <i class="fa-solid fa-filter"></i>
+            </div>
+            <div class="category-sort" @onclick="() => SortOrders(SortField.Rodzaj)">
+                <h4>Rodzaj</h4>
+                <i class="fa-solid fa-filter"></i>
+            </div>
+            <div class="category-sort" @onclick="() => SortOrders(SortField.DataUtworzenia)">
+                <h4>Data utworzenia</h4>
+                <i class="fa-solid fa-filter"></i>
+            </div>
+            <div class="category-sort" @onclick="() => SortOrders(SortField.DataWykonania)">
+                <h4>Data wykonania</h4>
+                <i class="fa-solid fa-filter"></i>
+            </div>
+            <div class="category-sort" @onclick="() => SortOrders(SortField.Koszt)">
+                <h4>Koszt</h4>
+                <i class="fa-solid fa-filter"></i>
+            </div>
+            <div class="category-sort" @onclick="() => SortOrders(SortField.Status)">
+                <h4>Status</h4>
+                <i class="fa-solid fa-filter"></i>
+            </div>
+        </div>
+
+
+        @{
+            var displayOrders = sortedOrders.ToList();
+            for (int i = 0; i < displayOrders.Count; i++)
+            {
+                var order = displayOrders[i];
+                <a href="/orders/@order.NumerZlecenia" class="single-order">
+                    <div class="order-cell">@order.NumerZlecenia.ToString("D6")</div>
+                    <div class="order-cell">@order.Rodzaj</div>
+                    <div class="order-cell">@order.DataUtworzenia.ToString("dd.MM.yyyy")</div>
+                    <div class="order-cell">@order.DataWykonania.ToString("dd.MM.yyyy")</div>
+                    <div class="order-cell">@(order.Koszt > 0 ? $"{order.Koszt} zł" : "Nie określono")</div>
+                    <div class="order-cell">
+                        <span class="@GetStatusClass(order.Status)">@order.Status</span>
+                    </div>
+                </a>
+                @if (i < displayOrders.Count - 1)
+                {
+                    <div class="single-order-line"></div>
+                }
+            }
+        }
+
+    </div>
+</div>
+
+@code {
+    private class Order
+    {
+        public int NumerZlecenia { get; set; }
+        public string Rodzaj { get; set; }
+        public DateTime DataUtworzenia { get; set; }
+        public DateTime DataWykonania { get; set; }
+        public double Koszt { get; set; }
+        public string Status { get; set; }
+        public string Priorytet { get; set; }
+    }
+
+    private enum SortField
+    {
+        None,
+        NumerZlecenia,
+        Rodzaj,
+        DataUtworzenia,
+        DataWykonania,
+        Koszt,
+        Status,
+        Priorytet
+    }
+
+    private enum SortDirection
+    {
+        Ascending,
+        Descending
+    }
+
+    private List<Order> orders = new List<Order>
+    {
+        new Order
+        {
+            NumerZlecenia = 1,
+            Rodzaj = "Instalacja",
+            DataUtworzenia = new DateTime(2025, 3, 14),
+            DataWykonania = new DateTime(2025, 3, 28),
+            Koszt = 300,
+            Status = "Zakończone",
+            Priorytet = "Wysoki"
+        },
+        new Order
+        {
+            NumerZlecenia = 2,
+            Rodzaj = "Naprawa",
+            DataUtworzenia = new DateTime(2025, 3, 20),
+            DataWykonania = new DateTime(2025, 4, 5),
+            Koszt = 450,
+            Status = "Realizacja",
+            Priorytet = "Wysoki"
+        },
+        new Order
+        {
+            NumerZlecenia = 3,
+            Rodzaj = "Przegląd",
+            DataUtworzenia = new DateTime(2025, 4, 1),
+            DataWykonania = new DateTime(2025, 4, 15),
+            Koszt = 0,
+            Status = "Nowe",
+            Priorytet = "Normalny"
+        },
+        new Order
+        {
+            NumerZlecenia = 4,
+            Rodzaj = "Konfiguracja",
+            DataUtworzenia = new DateTime(2025, 4, 10),
+            DataWykonania = new DateTime(2025, 4, 20),
+            Koszt = 250,
+            Status = "Oczekujące",
+            Priorytet = "Niski"
+        },
+        new Order
+        {
+            NumerZlecenia = 5,
+            Rodzaj = "Wymiana",
+            DataUtworzenia = new DateTime(2025, 4, 10),
+            DataWykonania = new DateTime(2025, 4, 30),
+            Koszt = 800,
+            Status = "Realizacja",
+            Priorytet = "Wysoki"
+        },
+        new Order
+        {
+            NumerZlecenia = 6,
+            Rodzaj = "Konserwacja",
+            DataUtworzenia = new DateTime(2025, 3, 28),
+            DataWykonania = new DateTime(2025, 4, 12),
+            Koszt = 150,
+            Status = "Zakończone",
+            Priorytet = "Normalny"
+        },
+        new Order
+        {
+            NumerZlecenia = 7,
+            Rodzaj = "Diagnostyka",
+            DataUtworzenia = new DateTime(2025, 3, 15),
+            DataWykonania = new DateTime(2025, 3, 20),
+            Koszt = 0,
+            Status = "Anulowane",
+            Priorytet = "Niski"
+        },
+        new Order
+        {
+            NumerZlecenia = 8,
+            Rodzaj = "Modernizacja",
+            DataUtworzenia = new DateTime(2025, 4, 5),
+            DataWykonania = new DateTime(2025, 5, 1),
+            Koszt = 1200,
+            Status = "Oczekujące",
+            Priorytet = "Wysoki"
+        }
+    };
+
+    private List<Order> sortedOrders;
+    private SortField currentSortField = SortField.None;
+    private SortDirection currentSortDirection = SortDirection.Ascending;
+
+    protected override void OnInitialized()
+    {
+        sortedOrders = new List<Order>(orders);
+    }
+
+    private void SortOrders(SortField field)
+    {
+        if (currentSortField == field)
+        {
+            currentSortDirection = currentSortDirection == SortDirection.Ascending
+                ? SortDirection.Descending
+                : SortDirection.Ascending;
+        }
+        else
+        {
+            currentSortField = field;
+            currentSortDirection = SortDirection.Ascending;
+        }
+
+        sortedOrders = currentSortField switch
+        {
+            SortField.NumerZlecenia => currentSortDirection == SortDirection.Ascending
+                ? orders.OrderBy(o => o.NumerZlecenia).ToList()
+                : orders.OrderByDescending(o => o.NumerZlecenia).ToList(),
+
+            SortField.Rodzaj => currentSortDirection == SortDirection.Ascending
+                ? orders.OrderBy(o => o.Rodzaj).ToList()
+                : orders.OrderByDescending(o => o.Rodzaj).ToList(),
+
+            SortField.DataUtworzenia => currentSortDirection == SortDirection.Ascending
+                ? orders.OrderBy(o => o.DataUtworzenia).ToList()
+                : orders.OrderByDescending(o => o.DataUtworzenia).ToList(),
+
+            SortField.DataWykonania => currentSortDirection == SortDirection.Ascending
+                ? orders.OrderBy(o => o.DataWykonania).ToList()
+                : orders.OrderByDescending(o => o.DataWykonania).ToList(),
+
+            SortField.Koszt => currentSortDirection == SortDirection.Ascending
+                ? orders.OrderBy(o => o.Koszt).ToList()
+                : orders.OrderByDescending(o => o.Koszt).ToList(),
+
+            SortField.Status => currentSortDirection == SortDirection.Ascending
+                ? orders.OrderBy(o => o.Status).ToList()
+                : orders.OrderByDescending(o => o.Status).ToList(),
+
+            _ => orders.ToList()
+        };
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Zakończone"  => "status-finished",
+            "Realizacja" => "status-realization",
+            "Anulowane" => "status-canceled",
+            "Oczekujące" => "status-waiting",
+            "Nowe" => "status-new",
+            _ => ""
+        };
+    }
+}
