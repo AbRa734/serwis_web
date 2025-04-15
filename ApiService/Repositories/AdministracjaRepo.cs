@@ -9,6 +9,7 @@ public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService 
     private const string RejestracjaPrefix = "/rejestracja";
     private const string LoginPrefix = "/logowanie";
     private const string RestartHaslaPrefix = "/restart-hasla";
+    private const string ZmianaHaslaPrefix = "/zmien-haslo";
 
     public async Task<Result<bool>> RejestracjaPost(RegisterRequest autoryzacja)
     {
@@ -58,10 +59,42 @@ public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService 
         };
     }
     
-    public async Task<Result<bool>> RestartHaslaGet(string token)
+    public async Task<Result<ResetHasla>> RestartHaslaGet(string token)
     {
         var url = $"{RestartHaslaPrefix}?token={Uri.EscapeDataString(token)}";
         var response = await httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return new Result<ResetHasla> { Error = response.ToString() };
+        }
+
+        var content = await response.Content.ReadFromJsonAsync<ResetHasla>();
+
+        return new Result<ResetHasla>
+        {
+            Data = content,
+        };
+    }
+    
+    public async Task<Result<bool>> RestartHaslaPut(string id, ResetHaslaDto resetHaslaDto)
+    {
+        var url = $"{RestartHaslaPrefix}/{Uri.EscapeDataString(id)}";
+        var response = await httpClient.PutAsJsonAsync(url, resetHaslaDto);
+        if (!response.IsSuccessStatusCode)
+        {
+            return new Result<bool> { Error = response.ToString() };
+        }
+
+        return new Result<bool>
+        {
+            Data = true,
+        };
+    }
+    
+    public async Task<Result<bool>> ZrestartujHaslo(string token, ZmianaHaslaRequest zmianaHaslaRequest)
+    {
+        var url = $"{ZmianaHaslaPrefix}?token={Uri.EscapeDataString(token)}";
+        var response = await httpClient.PutAsJsonAsync(url, zmianaHaslaRequest);
         if (!response.IsSuccessStatusCode)
         {
             return new Result<bool> { Error = response.ToString() };
