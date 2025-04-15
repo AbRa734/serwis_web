@@ -94,7 +94,7 @@ public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService 
     public async Task<Result<bool>> ZrestartujHaslo(string token, ZmianaHaslaRequest zmianaHaslaRequest)
     {
         var url = $"{ZmianaHaslaPrefix}?token={Uri.EscapeDataString(token)}";
-        var response = await httpClient.PutAsJsonAsync(url, zmianaHaslaRequest);
+        var response = await httpClient.PostAsJsonAsync(url, zmianaHaslaRequest);
         if (!response.IsSuccessStatusCode)
         {
             return new Result<bool> { Error = response.ToString() };

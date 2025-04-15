@@ -96,7 +96,7 @@
             {
                 if (result?.Data?.ResetHaslaId != null)
                 {
-                    await ApiService.AdministracjaRepo.RestartHaslaPut(result.Data.ResetHaslaId, new ResetHaslaDto
+                    await ApiService.AdministracjaRepo.RestartHaslaPut(result.Data.ResetHaslaId.ToString(), new ResetHaslaDto
                     {
                         Token = Token,
                         CzyLinkKlikniety = true,

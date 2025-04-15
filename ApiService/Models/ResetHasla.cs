@@ -2,7 +2,7 @@ namespace ApiService.Models;
 
 public class ResetHasla
 {
-    public string ResetHaslaId { get; set; }
+    public int ResetHaslaId { get; set; }
     public int UzytkownikId { get; set; }
     public String Token { get; set; } = null!;
     public bool CzyLinkKlikniety { get; set; } = false;
