@@ -1,276 +1,144 @@
 ﻿@page "/orders"
 @rendermode InteractiveServer
+@using ApiService
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using Placement = MudBlazor.Placement
+@using Size = MudBlazor.Size
+@inject ApiService ApiService
+@inject ISnackbar Snackbar
 
 <PageTitle>Lista zleceń</PageTitle>
 
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudCard Elevation="3" Class="mb-4">
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Lista zleceń</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Href="/services">Nowe zlecenie</MudButton>
+        </MudCardHeader>
+    </MudCard>
 
-<div class="orders-container">
-    <div class="orders-header">
-        <h2>Lista zleceń</h2>
-        <a class="btn-changes" href="/services">Nowe zlecenie</a>
-    </div>
-
-    <div class="filter-bar">
-        <div class="filter-icon">
-            <i class="fa fa-filter"></i>
-        </div>
-        <div class="filter-dropdown">
-            <span>Data Utworzenia</span>
-            <i class="fa fa-chevron-down"></i>
-        </div>
-        <div class="filter-dropdown">
-            <span>Data Wykonania</span>
-            <i class="fa fa-chevron-down"></i>
-        </div>
-        <div class="filter-dropdown">
-            <span>Rodzaj zlecenia</span>
-            <i class="fa fa-chevron-down"></i>
-        </div>
-        <div class="filter-dropdown">
-            <span>Status zlecenia</span>
-            <i class="fa fa-chevron-down"></i>
-        </div>
-        <div class="filter-dropdown">
-            <span>Priorytet</span>
-            <i class="fa fa-chevron-down"></i>
-        </div>
-        <div class="reset-filters">
-            <i class="fa fa-rotate-left"></i>
-            <span>Zresetuj filtry</span>
-        </div>
-    </div>
-
-    <div class="orders">
-        <div class="order-category">
-            <div class="category-sort" @onclick="() => SortOrders(SortField.NumerZlecenia)">
-                <h4>Numer zlecenia</h4>
-                <i class="fa-solid fa-filter"></i>
-            </div>
-            <div class="category-sort" @onclick="() => SortOrders(SortField.Rodzaj)">
-                <h4>Rodzaj</h4>
-                <i class="fa-solid fa-filter"></i>
-            </div>
-            <div class="category-sort" @onclick="() => SortOrders(SortField.DataUtworzenia)">
-                <h4>Data utworzenia</h4>
-                <i class="fa-solid fa-filter"></i>
-            </div>
-            <div class="category-sort" @onclick="() => SortOrders(SortField.DataWykonania)">
-                <h4>Data wykonania</h4>
-                <i class="fa-solid fa-filter"></i>
-            </div>
-            <div class="category-sort" @onclick="() => SortOrders(SortField.Koszt)">
-                <h4>Koszt</h4>
-                <i class="fa-solid fa-filter"></i>
-            </div>
-            <div class="category-sort" @onclick="() => SortOrders(SortField.Status)">
-                <h4>Status</h4>
-                <i class="fa-solid fa-filter"></i>
-            </div>
-        </div>
-
-
-        @{
-            var displayOrders = sortedOrders.ToList();
-            for (int i = 0; i < displayOrders.Count; i++)
-            {
-                var order = displayOrders[i];
-                <a href="/orders/@order.NumerZlecenia" class="single-order">
-                    <div class="order-cell">@order.NumerZlecenia.ToString("D6")</div>
-                    <div class="order-cell">@order.Rodzaj</div>
-                    <div class="order-cell">@order.DataUtworzenia.ToString("dd.MM.yyyy")</div>
-                    <div class="order-cell">@order.DataWykonania.ToString("dd.MM.yyyy")</div>
-                    <div class="order-cell">@(order.Koszt > 0 ? $"{order.Koszt} zł" : "Nie określono")</div>
-                    <div class="order-cell">
-                        <span class="@GetStatusClass(order.Status)">@order.Status</span>
+    <MudDataGrid T="Serwis" Items="@_filteredSerwisy" Hover="true" Loading="@_loading"
+                 LoadingProgressColor="Color.Info" Filterable="true"
+                 FilterMode="DataGridFilterMode.ColumnFilterMenu"
+                 FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
+                 Bordered="false" Dense="false">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Zlecenia</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Szukaj globalnie" Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 mr-2"
+                          Immediate="true" DebounceInterval="500" OnDebounceIntervalElapsed="ApplySearch"></MudTextField>
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn T="Serwis" TProperty="int" Property="x => x.SerwisId" Title="Numer zlecenia">
+                <CellTemplate>
+                    <MudLink Href="@($"/orders/{context.Item.SerwisId}")">@context.Item.SerwisId.ToString("D6")</MudLink>
+                </CellTemplate>
+                <FooterTemplate>
+                    <MudText Typo="Typo.body2"><b>Suma zleceń: @(_filteredSerwisy?.Count ?? 0)</b></MudText>
+                </FooterTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="Serwis" TProperty="string" Property="x => x.Nazwa" Title="Nazwa" />
+            <PropertyColumn T="Serwis" TProperty="string" Property="x => x.Opis ?? string.Empty" Title="Opis">
+                <CellTemplate>
+                    @{
+                        var opis = string.IsNullOrEmpty(context.Item.Opis) ? "-" : context.Item.Opis;
+                        var shortOpis = opis.Length > 50 ? opis.Substring(0, 47) + "..." : opis;
+                    }
+                    <div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <MudTooltip Text="@opis" Placement="Placement.Top" Arrow="true" Disabled="@(opis.Length <= 50 || opis == "-")">
+                            <MudText Typo="Typo.body2">@shortOpis</MudText>
+                        </MudTooltip>
                     </div>
-                </a>
-                @if (i < displayOrders.Count - 1)
-                {
-                    <div class="single-order-line"></div>
-                }
-            }
-        }
-
-    </div>
-</div>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="Serwis" TProperty="DicTypSerwisu" Property="x => x.TypSerwisu" Title="Rodzaj">
+                <CellTemplate>
+                    @(context.Item.TypSerwisu?.Nazwa ?? "-")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="Serwis" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" Format="dd.MM.yyyy" />
+            <PropertyColumn T="Serwis" TProperty="DateTime?" Property="x => x.DataAktualizacji" Title="Data aktualizacji">
+                <CellTemplate>
+                    @(context.Item.DataAktualizacji?.ToString("dd.MM.yyyy") ?? "-")
+                </CellTemplate>
+            </PropertyColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="Serwis" RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
+        </PagerContent>
+        <NoRecordsContent>
+            <MudText>Nie znaleziono zleceń</MudText>
+        </NoRecordsContent>
+    </MudDataGrid>
+</MudContainer>
 
 @code {
-    private class Order
+    private string _searchString = "";
+    private bool _loading = true;
+    private List<Serwis> _serwisy = new();
+    private List<Serwis> _filteredSerwisy = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        public int NumerZlecenia { get; set; }
-        public string Rodzaj { get; set; }
-        public DateTime DataUtworzenia { get; set; }
-        public DateTime DataWykonania { get; set; }
-        public double Koszt { get; set; }
-        public string Status { get; set; }
-        public string Priorytet { get; set; }
+        await LoadServicesAsync();
     }
 
-    private enum SortField
+    private async Task LoadServicesAsync()
     {
-        None,
-        NumerZlecenia,
-        Rodzaj,
-        DataUtworzenia,
-        DataWykonania,
-        Koszt,
-        Status,
-        Priorytet
-    }
-
-    private enum SortDirection
-    {
-        Ascending,
-        Descending
-    }
-
-    private List<Order> orders = new List<Order>
-    {
-        new Order
+        _loading = true;
+        try
         {
-            NumerZlecenia = 1,
-            Rodzaj = "Instalacja",
-            DataUtworzenia = new DateTime(2025, 3, 14),
-            DataWykonania = new DateTime(2025, 3, 28),
-            Koszt = 300,
-            Status = "Zakończone",
-            Priorytet = "Wysoki"
-        },
-        new Order
-        {
-            NumerZlecenia = 2,
-            Rodzaj = "Naprawa",
-            DataUtworzenia = new DateTime(2025, 3, 20),
-            DataWykonania = new DateTime(2025, 4, 5),
-            Koszt = 450,
-            Status = "Realizacja",
-            Priorytet = "Wysoki"
-        },
-        new Order
-        {
-            NumerZlecenia = 3,
-            Rodzaj = "Przegląd",
-            DataUtworzenia = new DateTime(2025, 4, 1),
-            DataWykonania = new DateTime(2025, 4, 15),
-            Koszt = 0,
-            Status = "Nowe",
-            Priorytet = "Normalny"
-        },
-        new Order
-        {
-            NumerZlecenia = 4,
-            Rodzaj = "Konfiguracja",
-            DataUtworzenia = new DateTime(2025, 4, 10),
-            DataWykonania = new DateTime(2025, 4, 20),
-            Koszt = 250,
-            Status = "Oczekujące",
-            Priorytet = "Niski"
-        },
-        new Order
-        {
-            NumerZlecenia = 5,
-            Rodzaj = "Wymiana",
-            DataUtworzenia = new DateTime(2025, 4, 10),
-            DataWykonania = new DateTime(2025, 4, 30),
-            Koszt = 800,
-            Status = "Realizacja",
-            Priorytet = "Wysoki"
-        },
-        new Order
-        {
-            NumerZlecenia = 6,
-            Rodzaj = "Konserwacja",
-            DataUtworzenia = new DateTime(2025, 3, 28),
-            DataWykonania = new DateTime(2025, 4, 12),
-            Koszt = 150,
-            Status = "Zakończone",
-            Priorytet = "Normalny"
-        },
-        new Order
-        {
-            NumerZlecenia = 7,
-            Rodzaj = "Diagnostyka",
-            DataUtworzenia = new DateTime(2025, 3, 15),
-            DataWykonania = new DateTime(2025, 3, 20),
-            Koszt = 0,
-            Status = "Anulowane",
-            Priorytet = "Niski"
-        },
-        new Order
-        {
-            NumerZlecenia = 8,
-            Rodzaj = "Modernizacja",
-            DataUtworzenia = new DateTime(2025, 4, 5),
-            DataWykonania = new DateTime(2025, 5, 1),
-            Koszt = 1200,
-            Status = "Oczekujące",
-            Priorytet = "Wysoki"
+            var result = await ApiService.SerwisyRepo.SerwisyGet();
+            if (result.Data != null)
+            {
+                _serwisy = result.Data;
+                _filteredSerwisy = _serwisy;
+                
+                if (_serwisy.Count == 0)
+                {
+                    Snackbar.Add("Nie znaleziono żadnych zleceń", Severity.Info);
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania zleceń: {result.Error}", Severity.Error);
+            }
         }
-    };
-
-    private List<Order> sortedOrders;
-    private SortField currentSortField = SortField.None;
-    private SortDirection currentSortDirection = SortDirection.Ascending;
-
-    protected override void OnInitialized()
-    {
-        sortedOrders = new List<Order>(orders);
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
     }
 
-    private void SortOrders(SortField field)
+    private void ApplySearch()
     {
-        if (currentSortField == field)
+        if (string.IsNullOrWhiteSpace(_searchString))
         {
-            currentSortDirection = currentSortDirection == SortDirection.Ascending
-                ? SortDirection.Descending
-                : SortDirection.Ascending;
+            _filteredSerwisy = _serwisy;
         }
         else
         {
-            currentSortField = field;
-            currentSortDirection = SortDirection.Ascending;
+            string searchLower = _searchString.ToLower();
+            _filteredSerwisy = _serwisy.Where(s => 
+                s.SerwisId.ToString().Contains(searchLower) ||
+                s.Nazwa.ToLower().Contains(searchLower) ||
+                (s.Opis != null && s.Opis.ToLower().Contains(searchLower)) ||
+                (s.TypSerwisu?.Nazwa != null && s.TypSerwisu.Nazwa.ToLower().Contains(searchLower)) ||
+                s.DataDodania.ToString("dd.MM.yyyy").Contains(searchLower) ||
+                (s.DataAktualizacji.HasValue && s.DataAktualizacji.Value.ToString("dd.MM.yyyy").Contains(searchLower))
+            ).ToList();
         }
-
-        sortedOrders = currentSortField switch
-        {
-            SortField.NumerZlecenia => currentSortDirection == SortDirection.Ascending
-                ? orders.OrderBy(o => o.NumerZlecenia).ToList()
-                : orders.OrderByDescending(o => o.NumerZlecenia).ToList(),
-
-            SortField.Rodzaj => currentSortDirection == SortDirection.Ascending
-                ? orders.OrderBy(o => o.Rodzaj).ToList()
-                : orders.OrderByDescending(o => o.Rodzaj).ToList(),
-
-            SortField.DataUtworzenia => currentSortDirection == SortDirection.Ascending
-                ? orders.OrderBy(o => o.DataUtworzenia).ToList()
-                : orders.OrderByDescending(o => o.DataUtworzenia).ToList(),
-
-            SortField.DataWykonania => currentSortDirection == SortDirection.Ascending
-                ? orders.OrderBy(o => o.DataWykonania).ToList()
-                : orders.OrderByDescending(o => o.DataWykonania).ToList(),
-
-            SortField.Koszt => currentSortDirection == SortDirection.Ascending
-                ? orders.OrderBy(o => o.Koszt).ToList()
-                : orders.OrderByDescending(o => o.Koszt).ToList(),
-
-            SortField.Status => currentSortDirection == SortDirection.Ascending
-                ? orders.OrderBy(o => o.Status).ToList()
-                : orders.OrderByDescending(o => o.Status).ToList(),
-
-            _ => orders.ToList()
-        };
-    }
-
-    private string GetStatusClass(string status)
-    {
-        return status switch
-        {
-            "Zakończone"  => "status-finished",
-            "Realizacja" => "status-realization",
-            "Anulowane" => "status-canceled",
-            "Oczekujące" => "status-waiting",
-            "Nowe" => "status-new",
-            _ => ""
-        };
+        
+        StateHasChanged();
     }
 }

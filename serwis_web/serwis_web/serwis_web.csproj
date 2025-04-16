@@ -7,12 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Heron.MudCalendar" Version="3.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.14" />
         <PackageReference Include="MudBlazor" Version="8.5.1" />
         <ProjectReference Include="..\..\ApiService\ApiService.csproj" />
         <ProjectReference Include="..\..\AuthService\AuthService.csproj" />
         <ProjectReference Include="..\..\DesignSystem\DesignSystem.csproj" />
-        <ProjectReference Include="..\serwis_web.Client\serwis_web.Client.csproj"/>
+        <ProjectReference Include="..\serwis_web.Client\serwis_web.Client.csproj" />
         <PackageReference Include="BootstrapBlazor" Version="9.5.3" />
         <PackageReference Include="BootstrapBlazor.FontAwesome" Version="9.0.2" />
     </ItemGroup>

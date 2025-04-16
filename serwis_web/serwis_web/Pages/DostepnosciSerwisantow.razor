@@ -1,0 +1,110 @@
+@page "/avability"
+@using ApiService
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@inject IDialogService DialogService
+@inject ApiService ApiService
+@rendermode InteractiveServer
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudCard Elevation="3" Class="mb-4">
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Lista dostępności serwisantów</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       >Nowa dostępność</MudButton>
+        </MudCardHeader>
+    </MudCard>
+
+    <MudCalendar Items="_events"
+                 CellClicked="CellClicked"
+                 ItemClicked="ItemClicked"
+                 DayTimeInterval="CalendarTimeInterval.Minutes15" />
+</MudContainer>
+
+@code {
+    private List<CalendarItem> _events = new();
+    private Dictionary<CalendarItem, DostepnoscSerwisanta> _eventToDostepnosc = new();
+    private List<DostepnoscSerwisanta> _wszystkieDostepnosci = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await ApiService.DostepnosciSerwisantaRepo.DostepnosciSerwisantaGet();
+        if (result.Data is not null)
+        {
+            _wszystkieDostepnosci = result.Data;
+
+            foreach (var d in result.Data)
+            {
+                var imieNazwisko = $"{d.Serwisant?.Uzytkownik?.Imie} {d.Serwisant?.Uzytkownik?.Nazwisko}".Trim();
+                var item = new CalendarItem
+                {
+                    Start = d.DataOd,
+                    End = d.DataDo,
+                    Text = $"{imieNazwisko} ({(d.CzyDostepny ? "Dostępny" : "Niedostępny")})"
+                };
+                _events.Add(item);
+                _eventToDostepnosc[item] = d;
+            }
+        }
+    }
+
+    private async Task CellClicked(DateTime dateTime)
+    {
+        var dzien = dateTime.Date;
+        var lista = _wszystkieDostepnosci
+            .Where(d =>
+                d.DataOd.Date <= dzien &&
+                d.DataDo.Date >= dzien)
+            .GroupBy(d => d.SerwisantId)
+            .Select(g => g.OrderByDescending(x => x.DataDo).First()) // najnowsza dostępność tego dnia
+            .ToList();
+
+        if (!lista.Any())
+        {
+            await DialogService.ShowMessageBox("Brak danych", $"Brak informacji o serwisantach na dzień {dzien:d}");
+            return;
+        }
+
+        var linie = lista
+            .Select(d =>
+            {
+                var imieNazwisko = $"{d.Serwisant?.Uzytkownik?.Imie} {d.Serwisant?.Uzytkownik?.Nazwisko}".Trim();
+                var status = d.CzyDostepny ? "✅ Dostępny" : "❌ Niedostępny";
+                return $"{imieNazwisko} – {status}";
+            });
+
+        var wiadomosc = string.Join("\n", linie);
+        await DialogService.ShowMessageBox($"Serwisanci w dniu {dzien:dddd, dd MMM yyyy}", wiadomosc);
+    }
+
+    private async Task ItemClicked(CalendarItem item)
+    {
+        if (!_eventToDostepnosc.TryGetValue(item, out var dostepnosc))
+            return;
+
+        var imieNazwisko = $"{dostepnosc.Serwisant?.Uzytkownik?.Imie} {dostepnosc.Serwisant?.Uzytkownik?.Nazwisko}".Trim();
+
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Usuń dostępność",
+            $"Czy chcesz usunąć dostępność:\n\n{imieNazwisko}\n{dostepnosc.DataOd:g} – {dostepnosc.DataDo:g}?",
+            yesText: "Tak", noText: "Nie");
+
+        if (confirm == true)
+        {
+            var result = await ApiService.DostepnosciSerwisantaRepo.DostepnoscSerwisantaDelete(dostepnosc.DostepnoscSerwisantaId);
+            if (result.Data)
+            {
+                _events.Remove(item);
+                _eventToDostepnosc.Remove(item);
+                StateHasChanged();
+                await DialogService.ShowMessageBox("Sukces", "Dostępność została usunięta.");
+            }
+            else
+            {
+                await DialogService.ShowMessageBox("Błąd", $"Nie udało się usunąć dostępności: {result.Error}");
+            }
+        }
+    }
+}

@@ -1,5 +1,11 @@
 ﻿@page "/index"
 @rendermode InteractiveServer
+@using ApiService
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
+@inject ApiService ApiService
+@inject ISnackbar Snackbar
 
 <PageTitle>Strona Główna</PageTitle>
 
@@ -36,7 +42,6 @@
                 </div>
             </div>
         </a>
-
     </div>
 
     <div class="add-comment">
@@ -64,161 +69,73 @@
             <h3>Ostatnie zlecenia</h3>
             <a class="see-more" href="orders">Zobacz więcej</a>
         </div>
-        <div class="order-category">
-            <div class="category-sort">
-                <h4>Numer zlecenia</h4>
-            </div>
-            <div class="category-sort">
-                <h4>Rodzaj</h4>
-            </div>
-            <div class="category-sort">
-                <h4>Data utworzenia</h4>
-            </div>
-            <div class="category-sort">
-                <h4>Data wykonania</h4>
-            </div>
-            <div class="category-sort">
-                <h4>Koszt</h4>
-            </div>
-            <div class="category-sort">
-                <h4>Status</h4>
-            </div>
-        </div>
-
-        @{
-            var displayOrders = orders.Take(3).ToList();
-            for (int i = 0; i < displayOrders.Count; i++)
-            {
-                var order = displayOrders[i];
-                <a href="/orders/@order.NumerZlecenia" class="single-order">
-                    <div class="order-cell">@order.NumerZlecenia.ToString("D6")</div>
-                    <div class="order-cell">@order.Rodzaj</div>
-                    <div class="order-cell">@order.DataUtworzenia.ToString("dd.MM.yyyy")</div>
-                    <div class="order-cell">@order.DataWykonania.ToString("dd.MM.yyyy")</div>
-                    <div class="order-cell">@(order.Koszt > 0 ? $"{order.Koszt} zł" : "Nie określono")</div>
-                    <div class="order-cell">
-                        <span class="@GetStatusClass(order.Status)">@order.Status</span>
-                    </div>
-                </a>
-                @if (i < displayOrders.Count - 1)
-                {
-                    <div class="single-order-line"></div>
-                }
-            }
-        }
-
+        
+        <MudDataGrid T="Serwis" Items="@_latestSerwisy" Hover="true" Loading="@_loading"
+                    LoadingProgressColor="Color.Info" Bordered="false" Dense="true" 
+                    FixedHeader="true" RowsPerPage="5" Pagination="false" Height="auto">
+            <Columns>
+                <PropertyColumn T="Serwis" TProperty="int" Property="x => x.SerwisId" Title="Numer zlecenia">
+                    <CellTemplate>
+                        <MudLink Href="@($"/orders/{context.Item.SerwisId}")">@context.Item.SerwisId.ToString("D6")</MudLink>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="Serwis" TProperty="DicTypSerwisu" Property="x => x.TypSerwisu" Title="Rodzaj">
+                    <CellTemplate>
+                        @(context.Item.TypSerwisu?.Nazwa ?? "-")
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="Serwis" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" Format="dd.MM.yyyy" />
+                <PropertyColumn T="Serwis" TProperty="DateTime?" Property="x => x.DataAktualizacji" Title="Data aktualizacji">
+                    <CellTemplate>
+                        @(context.Item.DataAktualizacji?.ToString("dd.MM.yyyy") ?? "-")
+                    </CellTemplate>
+                </PropertyColumn>
+            </Columns>
+            <NoRecordsContent>
+                <MudText>Brak zleceń do wyświetlenia</MudText>
+            </NoRecordsContent>
+        </MudDataGrid>
     </div>
-
 </div>
 
-
 @code {
-    private class Order
+    private bool _loading = true;
+    private List<Serwis> _serwisy = new();
+    private List<Serwis> _latestSerwisy = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        public int NumerZlecenia { get; set; }
-        public string Rodzaj { get; set; }
-        public DateTime DataUtworzenia { get; set; }
-        public DateTime DataWykonania { get; set; }
-        public double Koszt { get; set; }
-        public string Status { get; set; }
-        public string Priorytet { get; set; }
+        await LoadServicesAsync();
     }
 
-    private List<Order> orders = new List<Order>
+    private async Task LoadServicesAsync()
     {
-        new Order
+        _loading = true;
+        try
         {
-            NumerZlecenia = 1,
-            Rodzaj = "Instalacja",
-            DataUtworzenia = new DateTime(2025, 3, 14),
-            DataWykonania = new DateTime(2025, 3, 28),
-            Koszt = 300,
-            Status = "Zakończone",
-            Priorytet = "Wysoki"
-        },
-        new Order
-        {
-            NumerZlecenia = 2,
-            Rodzaj = "Naprawa",
-            DataUtworzenia = new DateTime(2025, 3, 20),
-            DataWykonania = new DateTime(2025, 4, 5),
-            Koszt = 450,
-            Status = "Realizacja",
-            Priorytet = "Wysoki"
-        },
-        new Order
-        {
-            NumerZlecenia = 3,
-            Rodzaj = "Przegląd",
-            DataUtworzenia = new DateTime(2025, 4, 1),
-            DataWykonania = new DateTime(2025, 4, 15),
-            Koszt = 0,
-            Status = "Nowe",
-            Priorytet = "Normalny"
-        },
-        new Order
-        {
-            NumerZlecenia = 4,
-            Rodzaj = "Konfiguracja",
-            DataUtworzenia = new DateTime(2025, 4, 10),
-            DataWykonania = new DateTime(2025, 4, 20),
-            Koszt = 250,
-            Status = "Oczekujące",
-            Priorytet = "Niski"
-        },
-        new Order
-        {
-            NumerZlecenia = 5,
-            Rodzaj = "Wymiana",
-            DataUtworzenia = new DateTime(2025, 4, 10),
-            DataWykonania = new DateTime(2025, 4, 30),
-            Koszt = 800,
-            Status = "Realizacja",
-            Priorytet = "Wysoki"
-        },
-        new Order
-        {
-            NumerZlecenia = 6,
-            Rodzaj = "Konserwacja",
-            DataUtworzenia = new DateTime(2025, 3, 28),
-            DataWykonania = new DateTime(2025, 4, 12),
-            Koszt = 150,
-            Status = "Zakończone",
-            Priorytet = "Normalny"
-        },
-        new Order
-        {
-            NumerZlecenia = 7,
-            Rodzaj = "Diagnostyka",
-            DataUtworzenia = new DateTime(2025, 3, 15),
-            DataWykonania = new DateTime(2025, 3, 20),
-            Koszt = 0,
-            Status = "Anulowane",
-            Priorytet = "Niski"
-        },
-        new Order
-        {
-            NumerZlecenia = 8,
-            Rodzaj = "Modernizacja",
-            DataUtworzenia = new DateTime(2025, 4, 5),
-            DataWykonania = new DateTime(2025, 5, 1),
-            Koszt = 1200,
-            Status = "Oczekujące",
-            Priorytet = "Wysoki"
+            var result = await ApiService.SerwisyRepo.SerwisyGet();
+            if (result.Data != null)
+            {
+                _serwisy = result.Data;
+                
+                // Get 5 latest services sorted by creation date (newest first)
+                _latestSerwisy = _serwisy
+                    .OrderByDescending(s => s.DataDodania)
+                    .Take(5)
+                    .ToList();
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania zleceń: {result.Error}", Severity.Error);
+            }
         }
-    };
-
-
-    private string GetStatusClass(string status)
-    {
-        return status switch
+        catch (Exception ex)
         {
-            "Zakończone" => "status-finished",
-            "Realizacja" => "status-realization",
-            "Anulowane" => "status-canceled",
-            "Oczekujące" => "status-waiting",
-            "Nowe" => "status-new",
-            _ => ""
-        };
+            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 }
