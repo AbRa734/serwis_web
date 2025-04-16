@@ -15,7 +15,6 @@ builder.Services.AddHttpClient("ApiWithAuth", (sp, client) =>
 builder.Services.AddScoped<TokenService.TokenService>(); 
 builder.Services.AddScoped<ApiService.ApiService>();
 
-//zakomentować w sytuacji gdy nie ma potrzeby sprawdzania tokenu
 builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
 
 builder.Services.AddBootstrapBlazor();
@@ -29,7 +28,6 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    //app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 
@@ -42,5 +40,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(serwis_web.Client._Imports).Assembly);
+
+app.UseStatusCodePagesWithRedirects("/Error");
 
 app.Run();

@@ -1,0 +1,31 @@
+@page "/error"
+@rendermode InteractiveServer
+@using Colors = DesignSystem.Tokens.Colors
+@using serwis_web.Layout
+@layout EmptyLayout
+
+<main style="@($"background-color: {Colors.Primary}; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; background-image: url('/shape.png'); background-size: cover; background-position: center;")">
+    <section style="@($"background-color: {Colors.White}; border-radius: 8px; padding: 40px 20px; margin: 0 20px; width: 80%; max-width: 700px;")">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <div style="font-size: 8rem; font-weight: bold; color: #4880FF; line-height: 1; margin-bottom: 1rem;">404</div>
+            <h1 style="text-align: center">Nie znaleziono strony</h1>
+            <p style="text-align: center">Przepraszamy, strona której szukasz nie istnieje lub została przeniesiona.</p>
+
+            <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px; width: 100%;">
+                <MudButton Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.Home"
+                           Href="/index"
+                           Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px;")">
+                    Strona główna
+                </MudButton>
+
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.Login"
+                           Href="/login"
+                           Style="@($"height: 42px; width: 100%; color: {Colors.Primary}; border-color: {Colors.Primary}; border-radius: 8px;")">
+                    Logowanie
+                </MudButton>
+            </div>
+        </div>
+    </section>
+</main>

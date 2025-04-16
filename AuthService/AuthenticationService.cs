@@ -23,6 +23,12 @@ public class AuthenticationService : CircuitHandler
 
     private void CheckCurrentPage(string currentUrl)
     {
+        if (currentUrl == _navigationManager.BaseUri + "Error" || 
+            currentUrl.EndsWith("/Error"))
+        {
+            return;
+        }
+    
         if (currentUrl != _navigationManager.BaseUri && 
             currentUrl != _navigationManager.BaseUri + "/" && 
             !_tokenService.HasToken)
