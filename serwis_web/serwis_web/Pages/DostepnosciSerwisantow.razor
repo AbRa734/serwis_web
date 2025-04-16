@@ -37,7 +37,7 @@
 
             foreach (var d in result.Data)
             {
-                var imieNazwisko = $"{d.Serwisant?.Uzytkownik?.Imie} {d.Serwisant?.Uzytkownik?.Nazwisko}".Trim();
+                var imieNazwisko = $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
                 var item = new CalendarItem
                 {
                     Start = d.DataOd,
@@ -58,7 +58,7 @@
                 d.DataOd.Date <= dzien &&
                 d.DataDo.Date >= dzien)
             .GroupBy(d => d.SerwisantId)
-            .Select(g => g.OrderByDescending(x => x.DataDo).First()) // najnowsza dostępność tego dnia
+            .Select(g => g.OrderByDescending(x => x.DataDo).First())
             .ToList();
 
         if (!lista.Any())
@@ -70,7 +70,7 @@
         var linie = lista
             .Select(d =>
             {
-                var imieNazwisko = $"{d.Serwisant?.Uzytkownik?.Imie} {d.Serwisant?.Uzytkownik?.Nazwisko}".Trim();
+                var imieNazwisko = $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
                 var status = d.CzyDostepny ? "✅ Dostępny" : "❌ Niedostępny";
                 return $"{imieNazwisko} – {status}";
             });
@@ -84,7 +84,7 @@
         if (!_eventToDostepnosc.TryGetValue(item, out var dostepnosc))
             return;
 
-        var imieNazwisko = $"{dostepnosc.Serwisant?.Uzytkownik?.Imie} {dostepnosc.Serwisant?.Uzytkownik?.Nazwisko}".Trim();
+        var imieNazwisko = $"{dostepnosc.Serwisant.Uzytkownik.Imie} {dostepnosc.Serwisant.Uzytkownik.Nazwisko}".Trim();
 
         bool? confirm = await DialogService.ShowMessageBox(
             "Usuń dostępność",

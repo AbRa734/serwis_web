@@ -65,7 +65,7 @@
 
 @code {
 	[Parameter]
-	public string ServiceName { get; set; }
+	public string ServiceName { get; set; } = null!;
 
 	private string GetServiceTitle(string serviceName)
 	{

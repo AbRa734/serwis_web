@@ -52,7 +52,7 @@
                 }
             </MudButton>
 
-            <MudButton Variant="Variant.Filled" @onclick="() => { ZalogujSzybko(); }"
+            <MudButton Variant="Variant.Filled" @onclick="() => { _ = ZalogujSzybko(); }"
                        Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
                 @if (_isLoading)
                 {

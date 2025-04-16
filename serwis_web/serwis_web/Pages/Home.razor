@@ -3,7 +3,6 @@
 @using ApiService
 @using ApiService.Models
 @using Color = MudBlazor.Color
-@using Size = MudBlazor.Size
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 
@@ -67,7 +66,7 @@
     <div class="orders">
         <div class="orders-header">
             <h3>Ostatnie zlecenia</h3>
-            <a class="see-more" href="orders">Zobacz więcej</a>
+            <a class="see-more" href="/orders">Zobacz więcej</a>
         </div>
         
         <MudDataGrid T="Serwis" Items="@_latestSerwisy" Hover="true" Loading="@_loading"
@@ -81,7 +80,7 @@
                 </PropertyColumn>
                 <PropertyColumn T="Serwis" TProperty="DicTypSerwisu" Property="x => x.TypSerwisu" Title="Rodzaj">
                     <CellTemplate>
-                        @(context.Item.TypSerwisu?.Nazwa ?? "-")
+                        @(context.Item.TypSerwisu.Nazwa)
                     </CellTemplate>
                 </PropertyColumn>
                 <PropertyColumn T="Serwis" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" Format="dd.MM.yyyy" />
@@ -118,7 +117,6 @@
             {
                 _serwisy = result.Data;
                 
-                // Get 5 latest services sorted by creation date (newest first)
                 _latestSerwisy = _serwisy
                     .OrderByDescending(s => s.DataDodania)
                     .Take(5)

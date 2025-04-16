@@ -70,7 +70,7 @@
     private bool _pokazConfirmHaslo;
     private bool _isLoading;
     private bool _isDisabled;
-    private ResetHasla initialResetHasla;
+    private ResetHasla? _initialResetHasla;
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,12 +87,12 @@
 
             if (result.Error != null || result.Data == null || (result.Data != null && result.Data.CzyZrestartowanoHaslo))
             {
-                Snackbar.Add(result.Error, Severity.Error);
+                if (result.Error != null) Snackbar.Add(result.Error, Severity.Error);
                 _isDisabled = true;
             }
             else
             {
-                if (result?.Data?.ResetHaslaId != null)
+                if (result.Data?.ResetHaslaId != null)
                 {
                     await ApiService.AdministracjaRepo.RestartHaslaPut(result.Data.ResetHaslaId.ToString(), new ResetHaslaDto
                     {
@@ -101,7 +101,7 @@
                         CzyZrestartowanoHaslo = result.Data.CzyZrestartowanoHaslo,
                     });
 
-                    initialResetHasla = new ResetHasla
+                    _initialResetHasla = new ResetHasla
                     {
                         Token = Token,
                         CzyLinkKlikniety = result.Data.CzyLinkKlikniety,
@@ -128,21 +128,24 @@
 
         try
         {
-            var result = await ApiService.AdministracjaRepo.ZrestartujHaslo(initialResetHasla.Token, new ZmianaHaslaRequest
+            if (_initialResetHasla?.Token != null)
             {
-                Haslo = _resetPasswordModel.NewPassword,
-                UzytkownikId = initialResetHasla.UzytkownikId,
-            });
+                var result = await ApiService.AdministracjaRepo.ZrestartujHaslo(_initialResetHasla?.Token!, new ZmianaHaslaRequest
+                {
+                    Haslo = _resetPasswordModel.NewPassword,
+                    UzytkownikId = _initialResetHasla!.UzytkownikId,
+                });
 
-            if (result.Error == null)
-            {
-                Snackbar.Add("Hasło zostało pomyślnie zresetowane.", Severity.Success);
-                await Task.Delay(1000);
-                Navigation.NavigateTo("/");
-            }
-            else
-            {
-                Snackbar.Add(result?.Error ?? "Nie udało się zresetować hasła. Spróbuj ponownie.", Severity.Error);
+                if (result.Error == null)
+                {
+                    Snackbar.Add("Hasło zostało pomyślnie zresetowane.", Severity.Success);
+                    await Task.Delay(1000);
+                    Navigation.NavigateTo("/");
+                }
+                else
+                {
+                    Snackbar.Add(result.Error ?? "Nie udało się zresetować hasła. Spróbuj ponownie.", Severity.Error);
+                }
             }
         }
         catch (Exception ex)

@@ -155,7 +155,7 @@
             }
             else
             {
-                Snackbar.Add(wynik?.Error ?? "Nie udało się zarejestrować. Spróbuj ponownie.", Severity.Error);
+                Snackbar.Add(wynik.Error ?? "Nie udało się zarejestrować. Spróbuj ponownie.", Severity.Error);
             }
         }
         catch (Exception ex)

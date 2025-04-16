@@ -39,7 +39,7 @@
                     <MudLink Href="@($"/orders/{context.Item.SerwisId}")">@context.Item.SerwisId.ToString("D6")</MudLink>
                 </CellTemplate>
                 <FooterTemplate>
-                    <MudText Typo="Typo.body2"><b>Suma zleceń: @(_filteredSerwisy?.Count ?? 0)</b></MudText>
+                    <MudText Typo="Typo.body2"><b>Suma zleceń: @(_filteredSerwisy.Count)</b></MudText>
                 </FooterTemplate>
             </PropertyColumn>
             <PropertyColumn T="Serwis" TProperty="string" Property="x => x.Nazwa" Title="Nazwa" />
@@ -58,7 +58,7 @@
             </PropertyColumn>
             <PropertyColumn T="Serwis" TProperty="DicTypSerwisu" Property="x => x.TypSerwisu" Title="Rodzaj">
                 <CellTemplate>
-                    @(context.Item.TypSerwisu?.Nazwa ?? "-")
+                    @(context.Item.TypSerwisu.Nazwa)
                 </CellTemplate>
             </PropertyColumn>
             <PropertyColumn T="Serwis" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" Format="dd.MM.yyyy" />
@@ -133,7 +133,7 @@
                 s.SerwisId.ToString().Contains(searchLower) ||
                 s.Nazwa.ToLower().Contains(searchLower) ||
                 (s.Opis != null && s.Opis.ToLower().Contains(searchLower)) ||
-                (s.TypSerwisu?.Nazwa != null && s.TypSerwisu.Nazwa.ToLower().Contains(searchLower)) ||
+                (s.TypSerwisu.Nazwa.ToLower().Contains(searchLower)) ||
                 s.DataDodania.ToString("dd.MM.yyyy").Contains(searchLower) ||
                 (s.DataAktualizacji.HasValue && s.DataAktualizacji.Value.ToString("dd.MM.yyyy").Contains(searchLower))
             ).ToList();
