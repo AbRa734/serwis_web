@@ -1,0 +1,218 @@
+@page "/bank/role-uzytkownika"
+@rendermode InteractiveServer
+@using ApiService
+@using ApiService.Models
+@using serwis_web.Components
+@using Colors = DesignSystem.Tokens.Colors
+@using Size = MudBlazor.Size
+@inject ISnackbar Snackbar
+@inject ApiService ApiService
+@inject IDialogService DialogService
+
+<PageTitle>Role użytkownika</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudCard Elevation="3" Class="mb-4">
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Role użytkownika</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => OpenDialog(new DicRolaUzytkownikaDto()))">Dodaj rolę</MudButton>
+        </MudCardHeader>
+    </MudCard>
+
+    <MudTable Items="@_roleUzytkownika" Hover="true" Loading="@_loading"
+              LoadingProgressColor="@MudBlazor.Color.Info" Style="@($"--mud-palette-primary: {Colors.Primary}")"
+              Filter="new Func<DicRolaUzytkownika,bool>(FilterFunc)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Lista ról użytkownika</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Szukaj" Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"
+                          Immediate="true" OnDebounceIntervalElapsed="StateHasChanged"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicRolaUzytkownika, object>(x => x.RolaUzytkownikaId)">ID</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicRolaUzytkownika, object>(x => x.Nazwa)">Nazwa</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicRolaUzytkownika, object?>(x => x.Opis)">Opis</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicRolaUzytkownika, object>(x => x.DataDodania)">Data utworzenia</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicRolaUzytkownika, object?>(x => x.DataAktualizacji)">Aktualizacja</MudTableSortLabel></MudTh>
+            <MudTh>Akcje</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.RolaUzytkownikaId</MudTd>
+            <MudTd DataLabel="Nazwa">@context.Nazwa</MudTd>
+            <MudTd DataLabel="Opis">@context.Opis</MudTd>
+            <MudTd DataLabel="Data utworzenia">@context.DataDodania.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Aktualizacja">@(context.DataAktualizacji?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
+            <MudTd>
+                <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Style="@($"color: {Colors.Primary}")"
+                                   OnClick="@(() => OpenDialog(MapToDto(context)))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Style="@($"color: {Colors.DarkGray}")"
+                                   OnClick="@(() => DeleteConfirm(context.RolaUzytkownikaId))" />
+                </MudButtonGroup>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
+        </PagerContent>
+        <NoRecordsContent>
+            <MudText>Nie znaleziono ról użytkownika</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudContainer>
+
+@code {
+    private List<DicRolaUzytkownika> _roleUzytkownika = new();
+    private string _searchString = "";
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        StateHasChanged();
+        var result = await ApiService.RoleUzytkownikaRepo.RoleUzytkownikaGet();
+        if (result.Data != null)
+        {
+            _roleUzytkownika = result.Data;
+        }
+        else
+        {
+            Snackbar.Add("Błąd podczas pobierania danych: " + result.Error, Severity.Error);
+        }
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private bool FilterFunc(DicRolaUzytkownika element)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (element.Nazwa.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (element.Opis != null && element.Opis.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    private async Task OpenDialog(DicRolaUzytkownikaDto rolaUzytkownika)
+    {
+        StateHasChanged();
+        var currentId = GetIdFromRola(rolaUzytkownika);
+
+        var parameters = new DialogParameters
+        {
+            ["Rola"] = rolaUzytkownika,
+            ["IsNew"] = currentId == 0
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var title = currentId > 0 ? "Edytuj rolę użytkownika" : "Dodaj nową rolę użytkownika";
+
+        var dialog = await DialogService.ShowAsync<RolaUzytkownikaDialog>(title, parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            if (result.Data is DicRolaUzytkownikaDto updatedRola)
+            {
+                if (currentId > 0)
+                {
+                    var updateResult = await ApiService.RoleUzytkownikaRepo.RolaUzytkownikaPut(currentId, updatedRola);
+                    if (updateResult.Data != null)
+                    {
+                        Snackbar.Add("Rola użytkownika została zaktualizowana", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Błąd: " + updateResult.Error, Severity.Error);
+                    }
+                }
+                else
+                {
+                    var createResult = await ApiService.RoleUzytkownikaRepo.RolaUzytkownikaPost(updatedRola);
+                    if (createResult.Data != null)
+                    {
+                        Snackbar.Add("Rola użytkownika została dodana", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Błąd: " + createResult.Error, Severity.Error);
+                    }
+                }
+                await LoadData();
+            }
+        }
+    }
+
+    private int GetIdFromRola(DicRolaUzytkownikaDto rolaUzytkownika)
+    {
+        var existingRecord = _roleUzytkownika.FirstOrDefault(r =>
+            r.Nazwa == rolaUzytkownika.Nazwa &&
+            r.Opis == rolaUzytkownika.Opis);
+
+        return existingRecord?.RolaUzytkownikaId ?? 0;
+    }
+
+    private async Task DeleteConfirm(int id)
+    {
+        StateHasChanged();
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = "Czy na pewno chcesz usunąć tę rolę użytkownika?"
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Potwierdź usunięcie", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await DeleteRola(id);
+        }
+    }
+
+    private async Task DeleteRola(int id)
+    {
+        var result = await ApiService.RoleUzytkownikaRepo.RolaUzytkownikaDelete(id);
+        if (result.Data)
+        {
+            Snackbar.Add("Rola użytkownika została usunięta", Severity.Success);
+            await LoadData();
+        }
+        else
+        {
+            Snackbar.Add("Błąd podczas usuwania: " + result.Error, Severity.Error);
+        }
+    }
+
+    private DicRolaUzytkownikaDto MapToDto(DicRolaUzytkownika model)
+    {
+        return new DicRolaUzytkownikaDto
+        {
+            Nazwa = model.Nazwa,
+            Opis = model.Opis
+        };
+    }
+}

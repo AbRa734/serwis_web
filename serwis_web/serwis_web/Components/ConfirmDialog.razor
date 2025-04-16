@@ -1,0 +1,26 @@
+@using Colors = DesignSystem.Tokens.Colors
+@using DialogResult = MudBlazor.DialogResult
+@rendermode InteractiveServer
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>@ContentText</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Style="@($"color: {Colors.DarkGray}")">Anuluj</MudButton>
+        <MudButton Style="@($"background-color: {Colors.DarkGray}; color: {Colors.White}")" OnClick="Submit">Usuń</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+    
+    [Parameter] public string Title { get; set; } = "Potwierdź usunięcie";
+    [Parameter] public string ContentText { get; set; } = "Czy na pewno chcesz usunąć ten element?";
+    
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -18,12 +18,23 @@ public class AuthenticationService : CircuitHandler
 
     private void CheckAccess(object? sender, LocationChangedEventArgs e)
     {
-        if (e.Location != _navigationManager.BaseUri && 
-            e.Location != _navigationManager.BaseUri + "/" && 
+        CheckCurrentPage(e.Location);
+    }
+
+    private void CheckCurrentPage(string currentUrl)
+    {
+        if (currentUrl != _navigationManager.BaseUri && 
+            currentUrl != _navigationManager.BaseUri + "/" && 
             !_tokenService.HasToken)
         {
-            _navigationManager.NavigateTo("/access-denied", forceLoad: true);
+            _navigationManager.NavigateTo("/", forceLoad: true);
         }
+    }
+
+    public override Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken)
+    {
+        CheckCurrentPage(_navigationManager.Uri);
+        return base.OnCircuitOpenedAsync(circuit, cancellationToken);
     }
 
     public override Task OnCircuitClosedAsync(Circuit circuit, CancellationToken cancellationToken)

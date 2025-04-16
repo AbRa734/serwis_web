@@ -22,4 +22,10 @@
       <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css.map" />
     </ItemGroup>
 
+    <ItemGroup>
+      <AdditionalFiles Include="Layout\EmptyLayout.razor" />
+      <AdditionalFiles Include="Layout\MainLayout.razor" />
+      <AdditionalFiles Include="Layout\TopNavMenu.razor" />
+    </ItemGroup>
+
 </Project>

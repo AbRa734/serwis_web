@@ -1,0 +1,177 @@
+@page "/reset-hasla"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Colors = DesignSystem.Tokens.Colors
+@using ApiService
+@using ApiService.Models
+@using serwis_web.Layout
+@using ButtonType = MudBlazor.ButtonType
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@layout EmptyLayout
+
+<main
+    style="@($"background-color: {Colors.Primary}; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; background-image: url('/shape.png'); background-size: cover; background-position: center;"))">
+    <section
+        style="@($"background-color: {Colors.White}; border-radius: 8px; padding: 40px 20px; margin: 0 20px; width: 80%; max-width: 700px; position: relative;"))">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Dark" Size="Size.Medium"
+                       Style="position: absolute; top: 10px; left: 10px;"
+                       OnClick="NavigateToLogin"/>
+        <h1 style="text-align: center">Resetuj hasło</h1>
+        <p style="text-align: center">Wprowadź nowe hasło, aby zresetować swoje konto</p>
+
+        <EditForm Model="@_resetPasswordModel" OnValidSubmit="ResetHasla">
+            <DataAnnotationsValidator/>
+
+            <MudTextField @bind-Value="_resetPasswordModel.NewPassword" Label="Nowe hasło" Variant="Variant.Outlined"
+                          InputType="@(_pokazHaslo ? InputType.Text : InputType.Password)"
+                          Style="border-radius: 8px; margin: 10px 0;"
+                          For="@(() => _resetPasswordModel.NewPassword)"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@(_pokazHaslo ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                          OnAdornmentClick="@(() => _pokazHaslo = !_pokazHaslo)"
+                          Disabled="_isDisabled"></MudTextField>
+
+            <MudTextField @bind-Value="_resetPasswordModel.ConfirmPassword" Label="Potwierdź hasło"
+                          Variant="Variant.Outlined"
+                          InputType="@(_pokazConfirmHaslo ? InputType.Text : InputType.Password)"
+                          Style="border-radius: 8px; margin: 10px 0;"
+                          For="@(() => _resetPasswordModel.ConfirmPassword)"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@(_pokazConfirmHaslo ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                          OnAdornmentClick="@(() => _pokazConfirmHaslo = !_pokazConfirmHaslo)"
+                          Disabled="_isDisabled"></MudTextField>
+
+            <MudButton Variant="Variant.Filled" ButtonType="ButtonType.Submit"
+                       Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")"
+                       Disabled="_isDisabled || _isLoading">
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                    <span class="ms-2">Resetowanie...</span>
+                }
+                else
+                {
+                    <span>Zresetuj hasło</span>
+                }
+            </MudButton>
+        </EditForm>
+    </section>
+</main>
+
+@code {
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private readonly ResetPasswordModel _resetPasswordModel = new();
+    private bool _pokazHaslo;
+    private bool _pokazConfirmHaslo;
+    private bool _isLoading;
+    private bool _isDisabled;
+    private ResetHasla initialResetHasla;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            Snackbar.Add("Token jest wymagany do zresetowania hasła.", Severity.Error);
+            _isDisabled = true;
+            return;
+        }
+
+        try
+        {
+            var result = await ApiService.AdministracjaRepo.RestartHaslaGet(Token);
+
+            if (result.Error != null || result.Data == null || (result.Data != null && result.Data.CzyZrestartowanoHaslo))
+            {
+                Snackbar.Add(result.Error, Severity.Error);
+                _isDisabled = true;
+            }
+            else
+            {
+                if (result?.Data?.ResetHaslaId != null)
+                {
+                    await ApiService.AdministracjaRepo.RestartHaslaPut(result.Data.ResetHaslaId.ToString(), new ResetHaslaDto
+                    {
+                        Token = Token,
+                        CzyLinkKlikniety = true,
+                        CzyZrestartowanoHaslo = result.Data.CzyZrestartowanoHaslo,
+                    });
+
+                    initialResetHasla = new ResetHasla
+                    {
+                        Token = Token,
+                        CzyLinkKlikniety = result.Data.CzyLinkKlikniety,
+                        CzyZrestartowanoHaslo = true,
+                        UzytkownikId = result.Data.UzytkownikId,
+                        ResetHaslaId = result.Data.ResetHaslaId,
+                    };
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            _isDisabled = true;
+        }
+    }
+
+    private async Task ResetHasla()
+    {
+        if (_isDisabled)
+            return;
+
+        _isLoading = true;
+
+        try
+        {
+            var result = await ApiService.AdministracjaRepo.ZrestartujHaslo(initialResetHasla.Token, new ZmianaHaslaRequest
+            {
+                Haslo = _resetPasswordModel.NewPassword,
+                UzytkownikId = initialResetHasla.UzytkownikId,
+            });
+
+            if (result.Error == null)
+            {
+                Snackbar.Add("Hasło zostało pomyślnie zresetowane.", Severity.Success);
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add(result?.Error ?? "Nie udało się zresetować hasła. Spróbuj ponownie.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    public class ResetPasswordModel
+    {
+        [Required(ErrorMessage = "Nowe hasło jest wymagane")]
+        [MinLength(6, ErrorMessage = "Hasło musi mieć co najmniej 6 znaków")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,}$",
+            ErrorMessage = "Hasło musi zawierać co najmniej jedną małą literę, jedną dużą literę, jedną cyfrę i jeden znak specjalny")]
+        public string NewPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Potwierdzenie hasła jest wymagane")]
+        [Compare("NewPassword", ErrorMessage = "Hasła nie są identyczne")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+}

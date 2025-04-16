@@ -1,0 +1,31 @@
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using Colors = DesignSystem.Tokens.Colors
+@using DialogResult = MudBlazor.DialogResult
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@(IsNew ? "Dodaj rolę użytkownika" : "Edytuj rolę użytkownika")</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="Rola.Nazwa" Label="Nazwa" Required="true"
+                      RequiredError="Nazwa jest wymagana" />
+        <MudTextField @bind-Value="Rola.Opis" Label="Opis" Lines="3" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary"
+                   Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")"
+                   OnClick="Submit">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public DicRolaUzytkownikaDto Rola { get; set; } = new();
+    [Parameter] public bool IsNew { get; set; }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Rola));
+    private void Cancel() => MudDialog.Cancel();
+}

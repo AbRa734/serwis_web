@@ -1,0 +1,218 @@
+@page "/bank/typy-serwisu"
+@rendermode InteractiveServer
+@using ApiService
+@using ApiService.Models
+@using serwis_web.Components
+@using Colors = DesignSystem.Tokens.Colors
+@using Size = MudBlazor.Size
+@inject ISnackbar Snackbar
+@inject ApiService ApiService
+@inject IDialogService DialogService
+
+<PageTitle>Typy serwisu</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudCard Elevation="3" Class="mb-4">
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Typy serwisu</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => OpenDialog(new DicTypSerwisuDto()))">Dodaj typ serwisu</MudButton>
+        </MudCardHeader>
+    </MudCard>
+
+    <MudTable Items="@_typySerwisu" Hover="true" Loading="@_loading"
+              LoadingProgressColor="@MudBlazor.Color.Info" Style="@($"--mud-palette-primary: {Colors.Primary}")"
+              Filter="new Func<DicTypSerwisu,bool>(FilterFunc)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Lista typów serwisu</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Szukaj" Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"
+                          Immediate="true" OnDebounceIntervalElapsed="StateHasChanged"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicTypSerwisu, object>(x => x.TypSerwisuId)">ID</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicTypSerwisu, object>(x => x.Nazwa)">Nazwa</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicTypSerwisu, object?>(x => x.Opis)">Opis</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicTypSerwisu, object>(x => x.DataDodania)">Data utworzenia</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicTypSerwisu, object?>(x => x.DataAktualizacji)">Aktualizacja</MudTableSortLabel></MudTh>
+            <MudTh>Akcje</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.TypSerwisuId</MudTd>
+            <MudTd DataLabel="Nazwa">@context.Nazwa</MudTd>
+            <MudTd DataLabel="Opis">@context.Opis</MudTd>
+            <MudTd DataLabel="Data utworzenia">@context.DataDodania.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Aktualizacja">@(context.DataAktualizacji?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
+            <MudTd>
+                <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Style="@($"color: {Colors.Primary}")"
+                                   OnClick="@(() => OpenDialog(MapToDto(context)))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Style="@($"color: {Colors.DarkGray}")"
+                                   OnClick="@(() => DeleteConfirm(context.TypSerwisuId))" />
+                </MudButtonGroup>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
+        </PagerContent>
+        <NoRecordsContent>
+            <MudText>Nie znaleziono typów serwisu</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudContainer>
+
+@code {
+    private List<DicTypSerwisu> _typySerwisu = new();
+    private string _searchString = "";
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        StateHasChanged();
+        var result = await ApiService.TypySerwisuRepo.TypySerwisuGet();
+        if (result.Data != null)
+        {
+            _typySerwisu = result.Data;
+        }
+        else
+        {
+            Snackbar.Add("Błąd podczas pobierania danych: " + result.Error, Severity.Error);
+        }
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private bool FilterFunc(DicTypSerwisu element)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (element.Nazwa.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (element.Opis != null && element.Opis.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    private async Task OpenDialog(DicTypSerwisuDto typSerwisu)
+    {
+        StateHasChanged();
+        var currentId = string.IsNullOrEmpty(typSerwisu.Nazwa) ? 0 : GetIdFromTypSerwisu(typSerwisu);
+
+        var parameters = new DialogParameters
+        {
+            ["TypSerwisu"] = typSerwisu,
+            ["IsNew"] = currentId == 0
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var title = currentId > 0 ? "Edytuj typ serwisu" : "Dodaj nowy typ serwisu";
+
+        var dialog = await DialogService.ShowAsync<TypSerwisuDialog>(title, parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            if (result.Data is DicTypSerwisuDto updatedTypSerwisu)
+            {
+                if (currentId > 0)
+                {
+                    var updateResult = await ApiService.TypySerwisuRepo.TypSerwisuPut(currentId, updatedTypSerwisu);
+                    if (updateResult.Data != null)
+                    {
+                        Snackbar.Add("Typ serwisu został zaktualizowany", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Błąd: " + updateResult.Error, Severity.Error);
+                    }
+                }
+                else
+                {
+                    var createResult = await ApiService.TypySerwisuRepo.TypSerwisuPost(updatedTypSerwisu);
+                    if (createResult.Data != null)
+                    {
+                        Snackbar.Add("Typ serwisu został dodany", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Błąd: " + createResult.Error, Severity.Error);
+                    }
+                }
+                await LoadData();
+            }
+        }
+    }
+
+    private int GetIdFromTypSerwisu(DicTypSerwisuDto typSerwisu)
+    {
+        var existingRecord = _typySerwisu.FirstOrDefault(t =>
+            t.Nazwa == typSerwisu.Nazwa &&
+            t.Opis == typSerwisu.Opis);
+
+        return existingRecord?.TypSerwisuId ?? 0;
+    }
+
+    private async Task DeleteConfirm(int id)
+    {
+        StateHasChanged();
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = "Czy na pewno chcesz usunąć ten typ serwisu?"
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Potwierdź usunięcie", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await DeleteTypSerwisu(id);
+        }
+    }
+
+    private async Task DeleteTypSerwisu(int id)
+    {
+        var result = await ApiService.TypySerwisuRepo.TypSerwisuDelete(id);
+        if (result.Data)
+        {
+            Snackbar.Add("Typ serwisu został usunięty", Severity.Success);
+            await LoadData();
+        }
+        else
+        {
+            Snackbar.Add("Błąd podczas usuwania: " + result.Error, Severity.Error);
+        }
+    }
+
+    private DicTypSerwisuDto MapToDto(DicTypSerwisu model)
+    {
+        return new DicTypSerwisuDto
+        {
+            Nazwa = model.Nazwa,
+            Opis = model.Opis
+        };
+    }
+}

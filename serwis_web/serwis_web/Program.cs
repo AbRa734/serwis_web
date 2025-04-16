@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using serwis_web.Components;
 using MudBlazor.Services;
+using serwis_web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +16,7 @@ builder.Services.AddScoped<TokenService.TokenService>();
 builder.Services.AddScoped<ApiService.ApiService>();
 
 //zakomentować w sytuacji gdy nie ma potrzeby sprawdzania tokenu
-//builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
+builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
 
 builder.Services.AddBootstrapBlazor();
 builder.Services.AddMudServices();

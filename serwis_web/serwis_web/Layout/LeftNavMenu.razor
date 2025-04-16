@@ -1,0 +1,189 @@
+﻿@using ApiService
+@using ApiService.Models
+@inject NavigationManager Navigation
+@inject ApiService ApiService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<div class="navbar-container">
+    <div class="mobile-navbar" @onclick="ToggleMobileMenu">
+        <span class="mobile-line"></span>
+        <span class="mobile-line"></span>
+        <span class="mobile-line"></span>
+    </div>
+
+    @if (_isMobileMenuOpen)
+    {
+        <nav class="nav-links">
+            @foreach (var menuItem in GetMenuItems())
+            {
+                @if (menuItem.IsDivider)
+                {
+                    <span class="nav-line"></span>
+                    continue;
+                }
+
+                @if (menuItem.ShowForRoles != null && (_uzytkownik?.RoleUzytkownika == null || 
+                     !menuItem.ShowForRoles.Contains(_uzytkownik.RoleUzytkownika.FirstOrDefault()?.Nazwa)))
+                {
+                    continue;
+                }
+
+                <div class="@IsActive(menuItem.Path)">
+                    <i class="@menuItem.IconClass" style="color: @(IsCurrentPage(menuItem.Path) ? "#FFFFFF" : "#202224")"></i>
+                    <a class="@(IsCurrentPage(menuItem.Path) ? "nav-link-active" : "nav-link")" href="@menuItem.Path">@menuItem.Label</a>
+                </div>
+            }
+            <div class="nav-item">
+                <i class="fa-solid fa-power-off" style='color: #202224'></i>
+                <a class="nav-link" href="">Wyloguj się</a>
+            </div>
+        </nav>
+    }
+</div>
+
+@code {
+    private bool _isMobileMenuOpen = true;
+    private string? _currentUrl;
+    private Uzytkownik? _uzytkownik;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        if (!_currentUrl.StartsWith("/"))
+        {
+            _currentUrl = "/" + _currentUrl;
+        }
+
+        Navigation.LocationChanged += LocationChanged!;
+        
+        try
+        {
+            _uzytkownik = await ApiService.GetUzytkownik();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= LocationChanged!;
+    }
+
+    private void LocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        if (!_currentUrl.StartsWith("/"))
+        {
+            _currentUrl = "/" + _currentUrl;
+        }
+        StateHasChanged();
+    }
+
+    private void ToggleMobileMenu()
+    {
+        _isMobileMenuOpen = !_isMobileMenuOpen;
+    }
+
+    private bool IsCurrentPage(string path)
+    {
+        return _currentUrl!.Equals(path, StringComparison.OrdinalIgnoreCase) ||
+               _currentUrl.StartsWith(path + "/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string IsActive(string path) => IsCurrentPage(path) ? "nav-item-active" : "nav-item";
+
+    private string GetUserRole()
+    {
+        if (_uzytkownik?.RoleUzytkownika == null || !_uzytkownik.RoleUzytkownika.Any())
+            return "Użytkownik";
+
+        return _uzytkownik.RoleUzytkownika.FirstOrDefault()?.Nazwa ?? "Administrator"; //FIXME: zmienić
+    }
+
+    private List<MenuItem> GetMenuItems()
+    {
+        var userRole = GetUserRole();
+        
+        var allMenuItems = new List<MenuItem>
+        {
+            new MenuItem { 
+                Path = "/index", 
+                IconClass = userRole == "Klient" ? "fa-solid fa-house" : "fa-solid fa-gauge",
+                Label = userRole == "Klient" ? "Strona Główna" : "Panel Kontrolny" 
+            },
+            
+            new MenuItem { Path = "/orders", IconClass = "fa-solid fa-list-check", Label = "Lista Zleceń" },
+            new MenuItem { Path = "/services", IconClass = "fa-solid fa-database", Label = "Usługi" },
+            
+            new MenuItem { 
+                Path = "/users", 
+                IconClass = "fa-solid fa-user-group", 
+                Label = "Użytkownicy",
+                ShowForRoles = new[] { "Administrator" }
+            },
+            
+            new MenuItem { 
+                Path = "/avability", 
+                IconClass = "fa-solid fa-calendar-days", 
+                Label = "Dostępność",
+                ShowForRoles = new[] { "Administrator", "Serwisant" }
+            },
+            
+            new MenuItem { IsDivider = true },
+            
+            new MenuItem { Path = "/report", IconClass = "fa-solid fa-file", Label = "Raport" },
+            
+            new MenuItem { 
+                Path = "/statistics", 
+                IconClass = "fa-solid fa-chart-simple", 
+                Label = "Statystyki",
+                ShowForRoles = new[] { "Administrator", "Serwisant" }
+            },
+            
+            new MenuItem { Path = "/contact", IconClass = "fa-solid fa-user-group", Label = "Kontakt" },
+            new MenuItem { Path = "/settings", IconClass = "fa-solid fa-gear", Label = "Ustawienia" },
+            new MenuItem { Path = "/bank/metody-platnosci", IconClass = "fa-solid fa-money-bill", Label = "Metody płatności" },
+            new MenuItem { Path = "/bank/priorytety", IconClass = "fa-solid fa-flag", Label = "Priorytety" },
+            new MenuItem { 
+                Path = "/bank/role-uzytkownika", 
+                IconClass = "fa-solid fa-user-tag", 
+                Label = "Role użytkownika" 
+            },
+            new MenuItem { 
+                Path = "/bank/statusy", 
+                IconClass = "fa-solid fa-tag", 
+                Label = "Statusy" 
+            },
+            new MenuItem { 
+                Path = "/bank/typy-klienta", 
+                IconClass = "fa-solid fa-users", 
+                Label = "Typy klienta" 
+            },
+            new MenuItem { 
+                Path = "/bank/typy-oceny", 
+                IconClass = "fa-solid fa-star", 
+                Label = "Typy oceny" 
+            },
+            new MenuItem {
+                Path = "/bank/typy-serwisu",
+                IconClass = "fa-solid fa-screwdriver-wrench",
+                Label = "Typy serwisu"
+            },
+        };
+
+        return allMenuItems;
+    }
+
+    private class MenuItem
+    {
+        public string Path { get; set; } = null!;
+        public string IconClass { get; set; } = null!;
+        public string Label { get; set; } = null!;
+        public string[] ShowForRoles { get; set; } = null!;
+        public bool IsDivider { get; set; }
+    }
+}

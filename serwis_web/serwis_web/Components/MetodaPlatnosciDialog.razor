@@ -1,0 +1,49 @@
+@using ApiService.Models
+@using Colors = DesignSystem.Tokens.Colors
+@using DialogResult = MudBlazor.DialogResult
+@rendermode InteractiveServer
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@DialogTitle</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" Model="@Metoda">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Metoda.Nazwa" Label="Nazwa" Required="true"
+                                  RequiredError="Nazwa jest wymagana" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Metoda.Opis" Label="Opis" Lines="3" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Style="@($"color: {Colors.DarkGray}")">Anuluj</MudButton>
+        <MudButton OnClick="Submit" Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public DicMetodaPlatnosciDto Metoda { get; set; } = new();
+    [Parameter] public bool IsNew { get; set; }
+    
+    private MudForm _form = null!;
+    
+    private string DialogTitle => IsNew ? "Dodaj nową metodę płatności" : "Edytuj metodę płatności";
+    
+    private void Submit()
+    {
+        _form.Validate();
+        if (_form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(Metoda));
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+}

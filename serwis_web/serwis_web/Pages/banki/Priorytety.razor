@@ -1,0 +1,218 @@
+@page "/bank/priorytety"
+@rendermode InteractiveServer
+@using ApiService
+@using ApiService.Models
+@using serwis_web.Components
+@using Colors = DesignSystem.Tokens.Colors
+@using Size = MudBlazor.Size
+@inject ISnackbar Snackbar
+@inject ApiService ApiService
+@inject IDialogService DialogService
+
+<PageTitle>Priorytety</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudCard Elevation="3" Class="mb-4">
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Priorytety</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => OpenDialog(new DicPriorytetDto()))">Dodaj priorytet</MudButton>
+        </MudCardHeader>
+    </MudCard>
+
+    <MudTable Items="@_priorytety" Hover="true" Loading="@_loading"
+              LoadingProgressColor="@MudBlazor.Color.Info" Style="@($"--mud-palette-primary: {Colors.Primary}")"
+              Filter="new Func<DicPriorytet,bool>(FilterFunc)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Lista priorytetów</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Szukaj" Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"
+                          Immediate="true" OnDebounceIntervalElapsed="StateHasChanged"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicPriorytet, object>(x => x.PriorytetId)">ID</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicPriorytet, object>(x => x.Nazwa)">Nazwa</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicPriorytet, object?>(x => x.Opis)">Opis</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicPriorytet, object>(x => x.DataDodania)">Data utworzenia</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<DicPriorytet, object?>(x => x.DataAktualizacji)">Aktualizacja</MudTableSortLabel></MudTh>
+            <MudTh>Akcje</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.PriorytetId</MudTd>
+            <MudTd DataLabel="Nazwa">@context.Nazwa</MudTd>
+            <MudTd DataLabel="Opis">@context.Opis</MudTd>
+            <MudTd DataLabel="Data utworzenia">@context.DataDodania.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Aktualizacja">@(context.DataAktualizacji?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
+            <MudTd>
+                <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Style="@($"color: {Colors.Primary}")"
+                                   OnClick="@(() => OpenDialog(MapToDto(context)))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Style="@($"color: {Colors.DarkGray}")"
+                                   OnClick="@(() => DeleteConfirm(context.PriorytetId))" />
+                </MudButtonGroup>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
+        </PagerContent>
+        <NoRecordsContent>
+            <MudText>Nie znaleziono priorytetów</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudContainer>
+
+@code {
+    private List<DicPriorytet> _priorytety = new();
+    private string _searchString = "";
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        StateHasChanged();
+        var result = await ApiService.PriotytetyRepo.PriotytetyGet();
+        if (result.Data != null)
+        {
+            _priorytety = result.Data;
+        }
+        else
+        {
+            Snackbar.Add("Błąd podczas pobierania danych: " + result.Error, Severity.Error);
+        }
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private bool FilterFunc(DicPriorytet element)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (element.Nazwa.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (element.Opis != null && element.Opis.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    private async Task OpenDialog(DicPriorytetDto priorytet)
+    {
+        StateHasChanged();
+        var currentId = GetIdFromPriorytet(priorytet);
+
+        var parameters = new DialogParameters
+        {
+            ["Priorytet"] = priorytet,
+            ["IsNew"] = currentId == 0
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var title = currentId > 0 ? "Edytuj priorytet" : "Dodaj nowy priorytet";
+
+        var dialog = await DialogService.ShowAsync<PriorytetDialog>(title, parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            if (result.Data is DicPriorytetDto updatedPriorytet)
+            {
+                if (currentId > 0)
+                {
+                    var updateResult = await ApiService.PriotytetyRepo.PriorytetPut(currentId, updatedPriorytet);
+                    if (updateResult.Data != null)
+                    {
+                        Snackbar.Add("Priorytet został zaktualizowany", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Błąd: " + updateResult.Error, Severity.Error);
+                    }
+                }
+                else
+                {
+                    var createResult = await ApiService.PriotytetyRepo.PriorytetPost(updatedPriorytet);
+                    if (createResult.Data != null)
+                    {
+                        Snackbar.Add("Priorytet został dodany", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Błąd: " + createResult.Error, Severity.Error);
+                    }
+                }
+                await LoadData();
+            }
+        }
+    }
+
+    private int GetIdFromPriorytet(DicPriorytetDto priorytet)
+    {
+        var existingRecord = _priorytety.FirstOrDefault(p =>
+            p.Nazwa == priorytet.Nazwa &&
+            p.Opis == priorytet.Opis);
+
+        return existingRecord?.PriorytetId ?? 0;
+    }
+
+    private async Task DeleteConfirm(int id)
+    {
+        StateHasChanged();
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = "Czy na pewno chcesz usunąć ten priorytet?"
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Potwierdź usunięcie", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await DeletePriorytet(id);
+        }
+    }
+
+    private async Task DeletePriorytet(int id)
+    {
+        var result = await ApiService.PriotytetyRepo.PriorytetDelete(id);
+        if (result.Data)
+        {
+            Snackbar.Add("Priorytet został usunięty", Severity.Success);
+            await LoadData();
+        }
+        else
+        {
+            Snackbar.Add("Błąd podczas usuwania: " + result.Error, Severity.Error);
+        }
+    }
+
+    private DicPriorytetDto MapToDto(DicPriorytet model)
+    {
+        return new DicPriorytetDto
+        {
+            Nazwa = model.Nazwa,
+            Opis = model.Opis
+        };
+    }
+}

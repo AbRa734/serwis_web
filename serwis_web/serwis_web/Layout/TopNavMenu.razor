@@ -1,0 +1,80 @@
+﻿@using ApiService
+@using ApiService.Models
+@inject ApiService ApiService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<div class="navbar-container">
+    <div class="logo-search">
+        <a class="navbar-logo" href="/index">Serwis <span style="color: #4880FF">24</span></a>
+        <MudTextField @bind-Value="searchText" Label="Wyszukaj" Variant="Variant.Outlined"
+                      Margin="Margin.Dense" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input"></MudTextField>
+    </div>
+    <div class="notifications-user">
+        <a href="/settings"><i class="fa-solid fa-user"></i></a>
+        <div class="user-inf">
+            <div class="user-name">@(_uzytkownik?.Imie ?? "Użytkownik")</div>
+            <div class="user-role">@GetUserRole()</div>
+        </div>
+        <div class="dropdown-container">
+            <i class="fa-solid @(_isDropdownOpen ? "fa-angle-up" : "fa-angle-down")" @onclick="ToggleDropdown"></i>
+            @if (_isDropdownOpen)
+            {
+                <div class="user-dropdown">
+                    <div class="dropdown-header">
+                        <div class="dropdown-avatar">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="dropdown-user-info">
+                            <div class="dropdown-name">@(_uzytkownik?.Imie ?? "") @(_uzytkownik?.Nazwisko ?? "")</div>
+                            <div class="dropdown-email">@(_uzytkownik?.AdresEmail.Email ?? "")</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-menu-items">
+                        <a href="/settings" class="dropdown-item" @onclick="ToggleDropdown">
+                            <i class="fa-solid fa-gear"></i> Ustawienia profilu
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/logout" class="dropdown-item" @onclick="ToggleDropdown">
+                            <i class="fa-solid fa-power-off"></i> Wyloguj się
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private Uzytkownik? _uzytkownik = null;
+    private string? searchText = null;
+    private bool _isDropdownOpen = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _uzytkownik = await ApiService.GetUzytkownik();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void ToggleDropdown()
+    {
+        _isDropdownOpen = !_isDropdownOpen;
+    }
+
+    private string GetUserRole()
+    {
+        if (_uzytkownik?.RoleUzytkownika == null || !_uzytkownik.RoleUzytkownika.Any())
+            return "Brak roli";
+
+        return _uzytkownik.RoleUzytkownika.FirstOrDefault()?.Nazwa ?? "Brak roli";
+    }
+}

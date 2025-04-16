@@ -1,4 +1,5 @@
-﻿using ApiService.Repositories;
+﻿using ApiService.Models;
+using ApiService.Repositories;
 
 namespace ApiService;
 
@@ -33,7 +34,7 @@ public class ApiService
     {
         this._httpClientFactory = httpClientFactory;
         _tokenService = tokenService;
-        
+
         var httpClient = httpClientFactory.CreateClient("ApiWithAuth");
 
         UzytkownicyRepo = new UzytkownicyRepo(httpClient, tokenService);
@@ -56,5 +57,29 @@ public class ApiService
         DostepnosciSerwisantaRepo = new DostepnosciSerwisantaRepo(httpClient, tokenService);
         AdresyRepo = new AdresyRepo(httpClient, tokenService);
         AdresyEmailRepo = new AdresyEmailRepo(httpClient, tokenService);
+    }
+
+    public  async Task<Uzytkownik> GetUzytkownik()
+    {
+        var uzytkownikEmail = _tokenService.GetUserEmail();
+        Uzytkownik uzytkownik = null!;
+        var uzytkownicy = await UzytkownicyRepo.UzytkownicyGet();
+        if (uzytkownicy.Data != null)
+        {
+            foreach (var uzytkownikItem in uzytkownicy.Data)
+            {
+                if (uzytkownikItem.AdresEmail.Email == uzytkownikEmail)
+                {
+                    uzytkownik = uzytkownikItem;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            throw new Exception("Nie można pobrać użytkowników");
+        }
+
+        return uzytkownik;
     }
 }

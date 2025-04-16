@@ -1,0 +1,31 @@
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using Colors = DesignSystem.Tokens.Colors
+@using DialogResult = MudBlazor.DialogResult
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@(IsNew ? "Dodaj typ serwisu" : "Edytuj typ serwisu")</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="TypSerwisu.Nazwa" Label="Nazwa" Required="true"
+                      RequiredError="Nazwa jest wymagana" />
+        <MudTextField @bind-Value="TypSerwisu.Opis" Label="Opis" Lines="3" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary"
+                   Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")"
+                   OnClick="Submit">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public DicTypSerwisuDto TypSerwisu { get; set; } = new();
+    [Parameter] public bool IsNew { get; set; }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(TypSerwisu));
+    private void Cancel() => MudDialog.Cancel();
+}

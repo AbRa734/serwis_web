@@ -1,0 +1,19 @@
+﻿@inherits LayoutComponentBase
+
+<BootstrapBlazorRoot>
+    <MudThemeProvider @rendermode="InteractiveServer"/>
+    <div class="layout-container">
+        <div class="navbar-topbar">
+            <TopNavMenu />
+        </div>
+        <div class="navbar-leftbar">
+            <LeftNavMenu />
+            <div class="body-content">
+                @Body
+            </div>
+        </div>
+    </div>
+    <MudPopoverProvider @rendermode="InteractiveServer"/>
+    <MudSnackbarProvider @rendermode="InteractiveServer"/>
+    <MudDialogProvider @rendermode="InteractiveServer" />
+</BootstrapBlazorRoot>
