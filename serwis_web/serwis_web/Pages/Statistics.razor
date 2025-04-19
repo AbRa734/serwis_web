@@ -3,5 +3,98 @@
 
 <PageTitle>Statystyki</PageTitle>
 
-<h1>Statystyki</h1>
+<div class="services-container">
+    <h2>Statystyki</h2>
 
+    <div class="service-back">
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3>Serwisy według statusu</h3>
+                <MudPaper Elevation="0" Class="pa-4 chart-paper">
+                    <MudChart ChartType="ChartType.Pie"
+                              Width="300px"
+                              Height="300px"
+                              InputData="@_serviceStatusData"
+                              InputLabels="@_serviceStatusLabels" />
+                </MudPaper>
+            </div>
+
+            <div class="chart-container">
+                <h3>Obciążenie serwisantów</h3>
+                <MudPaper Elevation="0" Class="pa-4 chart-paper">
+                    <MudChart ChartType="ChartType.Bar"
+                              Width="500px"
+                              Height="300px"
+                              ChartSeries="@_technicianWorkloadSeries"
+                              XAxisLabels="@_technicianNames"/>
+                </MudPaper>
+            </div>
+        </div>
+
+        <div class="chart-full-width">
+            <h3>Zgłoszenia w czasie</h3>
+            <MudPaper Elevation="0" Class="pa-4 chart-paper">
+                <MudChart ChartType="ChartType.Line"
+                          ChartSeries="@_monthlySeries"
+                          XAxisLabels="@_monthLabels"
+                          Width="100%"
+                          Height="350px"/>
+            </MudPaper>
+        </div>
+
+        <div class="stats-cards">
+            <MudCard Elevation="2" Class="stat-card status-new">
+                <MudCardContent>
+                    <div class="stat-value">42</div>
+                    <div class="stat-label">Nowe zlecenia</div>
+                </MudCardContent>
+            </MudCard>
+
+            <MudCard Elevation="2" Class="stat-card status-realization">
+                <MudCardContent>
+                    <div class="stat-value">18</div>
+                    <div class="stat-label">W trakcie realizacji</div>
+                </MudCardContent>
+            </MudCard>
+
+            <MudCard Elevation="2" Class="stat-card status-waiting">
+                <MudCardContent>
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Oczekujące</div>
+                </MudCardContent>
+            </MudCard>
+
+            <MudCard Elevation="2" Class="stat-card status-finished">
+                <MudCardContent>
+                    <div class="stat-value">135</div>
+                    <div class="stat-label">Zakończone</div>
+                </MudCardContent>
+            </MudCard>
+
+            <MudCard Elevation="2" Class="stat-card status-canceled">
+                <MudCardContent>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Anulowane</div>
+                </MudCardContent>
+            </MudCard>
+        </div>
+    </div>
+</div>
+
+@code {
+    private double[] _serviceStatusData = { 42, 18, 7, 135, 12 };
+    private string[] _serviceStatusLabels = { "Nowe", "W realizacji", "Oczekujące", "Zakończone", "Anulowane" };
+
+    private List<ChartSeries> _technicianWorkloadSeries = new List<ChartSeries>
+    {
+        new ChartSeries() { Name = "Przypisane zlecenia", Data = new double[] { 12, 8, 15, 7, 3 }, ShowDataMarkers = true}
+    };
+    private string[] _technicianNames = { "Jan K.", "Anna N.", "Piotr W.", "Marta K.", "Tomasz Z." };
+
+    private List<ChartSeries> _monthlySeries = new List<ChartSeries>
+    {
+        new ChartSeries() { Name = "Nowe zlecenia", Data = new double[] { 12, 14, 18, 15, 22, 27, 30, 25, 21, 28, 32, 42 }, ShowDataMarkers = true},
+        new ChartSeries() { Name = "Zakończone", Data = new double[] { 10, 12, 15, 14, 20, 23, 25, 22, 19, 25, 30, 35 }, ShowDataMarkers = true}
+    };
+    private string[] _monthLabels = { "Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru" };
+}

@@ -1,7 +1,102 @@
 ﻿@page "/contact"
 @rendermode InteractiveServer
+@inject ISnackbar Snackbar
 
 <PageTitle>Kontakt</PageTitle>
 
-<h1>Kontakt</h1>
+<div class="services-container">
+    <h2>Kontakt</h2>
 
+    <div class="service-back">
+        <div class="team-section">
+            <h3>Zespół projektowy</h3>
+            <div class="team-members">
+                <div class="team-member">
+                    <div class="member-photo">
+                        <img src="placeholder.png" alt="Kornelia Kołowska" />
+                    </div>
+                    <h4>Kornelia Kołowska</h4>
+                    <p>Mobile Developer</p>
+                    <p class="email">245845@edu.p.lodz.pl</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <img src="placeholder.png" alt="Bartłomiej Mielnicki" />
+                    </div>
+                    <h4>Bartłomiej Mielnicki</h4>
+                    <p>Mobile Developer</p>
+                    <p class="email">245876@edu.p.lodz.pl</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <img src="placeholder.png" alt="Jakub Borkiewicz" />
+                    </div>
+                    <h4>Jakub Borkiewicz</h4>
+                    <p>Mobile Developer</p>
+                    <p class="email">245775@edu.p.lodz.pl</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <img src="placeholder.png" alt="Daniel Karolak" />
+                    </div>
+                    <h4>Daniel Karolak</h4>
+                    <p>Frontend Developer</p>
+                    <p class="email">245838@edu.p.lodz.pl</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <img src="placeholder.png" alt="Oliwier Szafrański" />
+                    </div>
+                    <h4>Oliwier Szafrański</h4>
+                    <p>Fullstack Developer</p>
+                    <p class="email">245935@edu.p.lodz.pl</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="service-tab">
+            <div class="service-col">
+                <h3>Formularz kontaktowy</h3>
+                <h4>Imię</h4>
+                <input type="text" placeholder="Podaj swoje imię" @bind="_name" />
+
+                <h4>Email</h4>
+                <input type="email" placeholder="Podaj swój adres email" @bind="_email" />
+
+                <h4>Temat</h4>
+                <input type="text" placeholder="Temat wiadomości" @bind="_subject" />
+            </div>
+            <div class="service-col">
+                <h3>&nbsp;</h3>
+                <h4>Treść wiadomości</h4>
+                <textarea class="textarea" placeholder="Opisz swój problem lub pytanie..." @bind="_message"></textarea>
+            </div>
+        </div>
+
+        <button @onclick="SendMessage">Wyślij wiadomość</button>
+    </div>
+</div>
+
+@code {
+    private string _name = "";
+    private string _email = "";
+    private string _subject = "";
+    private string _message = "";
+
+    private void SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(_name) || string.IsNullOrWhiteSpace(_email) ||
+            string.IsNullOrWhiteSpace(_subject) || string.IsNullOrWhiteSpace(_message))
+        {
+            Snackbar.Add("Wypełnij wszystkie pola formularza", Severity.Warning);
+            return;
+        }
+
+        Snackbar.Add("Wiadomość została wysłana! Dziękujemy za kontakt.", Severity.Success);
+
+        _name = "";
+        _email = "";
+        _subject = "";
+        _message = "";
+    }
+}

@@ -1,0 +1,174 @@
+@page "/search"
+@using ApiService
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
+@inject ApiService ApiService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<PageTitle>Wyniki wyszukiwania</PageTitle>
+
+<div class="services-container">
+    <h2>Wyniki wyszukiwania: @searchQuery</h2>
+
+    <div class="service-back">
+        @if (isLoading)
+        {
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        }
+        else
+        {
+            @if (showNoResults)
+            {
+                <div class="no-results">
+                    <i class="fa-solid fa-search fa-3x"></i>
+                    <h3>Brak wyników dla zapytania "@searchQuery"</h3>
+                    <p>Spróbuj użyć innych słów kluczowych.</p>
+                </div>
+            }
+            else
+            {
+                <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-3">
+                    <MudTabPanel Text="Użytkownicy" Icon="@Icons.Material.Filled.Person">
+                        @if (users.Any())
+                        {
+                            <div class="search-results">
+                                @foreach (var user in users)
+                                {
+                                    <MudCard Elevation="2" Class="my-2">
+                                        <MudCardContent>
+                                            <div class="d-flex gap-4">
+                                                <MudAvatar Color="Color.Primary">@user.Imie[0]@user.Nazwisko[0]</MudAvatar>
+                                                <div>
+                                                    <MudText Typo="Typo.h6">@user.Imie @user.Nazwisko</MudText>
+                                                    <MudText Typo="Typo.body2">@user.AdresEmail.Email</MudText>
+                                                </div>
+                                            </div>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                                                     Href="@($"/users/{user.UzytkownikId}")">
+                                                Szczegóły
+                                            </MudButton>
+                                        </MudCardActions>
+                                    </MudCard>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="no-results">
+                                <p>Brak pasujących użytkowników.</p>
+                            </div>
+                        }
+                    </MudTabPanel>
+                    <MudTabPanel Text="Zamówienia" Icon="@Icons.Material.Filled.ShoppingCart">
+                        @if (orders.Any())
+                        {
+                            <div class="search-results">
+                                @foreach (var order in orders)
+                                {
+                                    <MudCard Elevation="2" Class="my-2">
+                                        <MudCardContent>
+                                            <MudText Typo="Typo.h6">Zamówienie #@order.ZamowienieId</MudText>
+                                            <MudText Typo="Typo.body2">@order.Status</MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                                                      Href="@($"/orders/{order.ZamowienieId}")">
+                                                Szczegóły
+                                            </MudButton>
+                                        </MudCardActions>
+                                    </MudCard>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="no-results">
+                                <p>Brak pasujących zamówień.</p>
+                            </div>
+                        }
+                    </MudTabPanel>
+                    <MudTabPanel Text="Serwisy" Icon="@Icons.Material.Filled.Build">
+                        @if (services.Any())
+                        {
+                            <div class="search-results">
+                                @foreach (var service in services)
+                                {
+                                    <MudCard Elevation="2" Class="my-2">
+                                        <MudCardContent>
+                                            <MudText Typo="Typo.h6">Serwis #@service.SerwisId</MudText>
+                                            <MudText Typo="Typo.body2">@service.Opis</MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                                                     Href="@($"/services/{service.SerwisId}")">
+                                                Szczegóły
+                                            </MudButton>
+                                        </MudCardActions>
+                                    </MudCard>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="no-results">
+                                <p>Brak pasujących serwisów.</p>
+                            </div>
+                        }
+                    </MudTabPanel>
+                </MudTabs>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? searchQuery { get; set; }
+    
+    private bool isLoading = true;
+    private bool showNoResults = false;
+    private List<Uzytkownik> users = new();
+    private List<Zamowienie> orders = new(); 
+    private List<Serwis> services = new(); 
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            isLoading = false;
+            showNoResults = true;
+            return;
+        }
+        
+        await PerformSearch();
+    }
+    
+    private async Task PerformSearch()
+    {
+        isLoading = true;
+        showNoResults = false;
+        
+        try
+        {
+            //TODO: dodać logikę
+            users = new List<Uzytkownik>();
+            orders = new List<Zamowienie>();
+            services = new List<Serwis>();
+            
+            showNoResults = !users.Any() && !orders.Any() && !services.Any();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas wyszukiwania: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

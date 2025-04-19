@@ -2,11 +2,13 @@
 @rendermode InteractiveServer
 @using ApiService
 @using ApiService.Models
+@using serwis_web.Components
 @using Color = MudBlazor.Color
 @using Placement = MudBlazor.Placement
 @using Size = MudBlazor.Size
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Strona Główna</PageTitle>
 
@@ -44,7 +46,8 @@
         border-top-left-radius: 15px !important;
         border-bottom-left-radius: 15px !important;
     }
-    .order-category-right{
+
+    .order-category-right {
         font-size: 16px;
         font-weight: 500;
         padding: 14px 10px;
@@ -55,7 +58,8 @@
         border-top-right-radius: 15px !important;
         border-bottom-right-radius: 15px !important;
     }
-    .order-category-single-item{
+
+    .order-category-single-item {
         font-size: 16px;
         font-weight: 500;
         text-decoration: none;
@@ -68,7 +72,7 @@
         color: #000000 !important;
     }
 
-    .status-finished{
+    .status-finished {
         background-color: #d0f0e4;
         color: #0d8a5f;
         border: none;
@@ -78,8 +82,8 @@
         font-weight: 600;
         font-size: 16px;
     }
-    .status-realization
-    {
+
+    .status-realization {
         background-color: #e6e1ff;
         color: #6952e9;
         border: none;
@@ -90,7 +94,7 @@
         font-size: 16px;
     }
 
-    .status-canceled{
+    .status-canceled {
         background-color: #ffd9d9;
         color: #e75757;
         border: none;
@@ -101,7 +105,7 @@
         font-size: 16px;
     }
 
-    .status-waiting{
+    .status-waiting {
         background-color: #ffe9d1;
         color: #e99c52;
         border: none;
@@ -112,7 +116,7 @@
         font-size: 16px;
     }
 
-    .status-new{
+    .status-new {
         background-color: #e6e1ff;
         color: #6952e9;
         border: none;
@@ -123,7 +127,7 @@
         font-size: 16px;
     }
 
-    .status-default{
+    .status-default {
         background-color: inherit;
         border: none;
         min-width: 75% !important;
@@ -172,7 +176,7 @@
         </a>
     </div>
 
-    <div class="add-comment">
+    <div class="add-comment" @onclick="OpenCommentDialog">
         <div class="comment-top">
             <div class="comment-box">
                 <i class="fa-regular fa-keyboard" style="color: #BA29FF; font-size: 32px;"></i>
@@ -182,7 +186,7 @@
         <p>Podziel się swoją opinią na temat wykonanej usługi, aby ulepszyć jakość naszych usług</p>
     </div>
 
-    <div class="add-rate">
+    <div class="add-rate" @onclick="OpenRatingDialog">
         <div class="rate-top">
             <div class="rate-box">
                 <i class="fa-solid fa-star" style="color: #FEC53D; font-size: 32px;"></i>
@@ -207,40 +211,49 @@
 
                 <Columns>
 
-                    <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.ZamowienieId" Title="Numer Zlecenia" HeaderClass="order-category-left">
+                    <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.ZamowienieId" Title="Numer Zlecenia"
+                                    HeaderClass="order-category-left">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                                <MudLink Href="@($"/orders/{context.Item.ZamowienieId}")" Class="order-category-single-item-id">@context.Item.ZamowienieId.ToString("D5")</MudLink>
+                                <MudLink Href="@($"/orders/{context.Item.ZamowienieId}")"
+                                         Class="order-category-single-item-id">@context.Item.ZamowienieId.ToString("D5")</MudLink>
                             </MudChip>
                         </CellTemplate>
                     </PropertyColumn>
 
-                    <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
+                    <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania"
+                                    Title="Data Utworzenia" HeaderClass="order-category">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                                <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
+                                <MudText
+                                    Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
                             </MudChip>
                         </CellTemplate>
                     </PropertyColumn>
 
 
-                    <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
+                    <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania"
+                                    Title="Data Utworzenia" HeaderClass="order-category">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                                <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
+                                <MudText
+                                    Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
                             </MudChip>
                         </CellTemplate>
                     </PropertyColumn>
 
-                    <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
+                    <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo"
+                                    Title="Data Wykonania" HeaderClass="order-category">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                                <MudText Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
+                                <MudText
+                                    Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
                             </MudChip>
                         </CellTemplate>
                     </PropertyColumn>
 
-                    <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status" HeaderClass="order-category">
+                    <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status"
+                                    HeaderClass="order-category">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
                                 <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
@@ -249,7 +262,8 @@
                     </PropertyColumn>
 
 
-                    <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status" HeaderClass="order-category-right">
+                    <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status"
+                                    HeaderClass="order-category-right">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
                                 <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
@@ -259,8 +273,9 @@
 
                 </Columns>
 
-                <PagerContent >
-                    <MudDataGridPager T="Zamowienie" RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" Style="display: none;" />
+                <PagerContent>
+                    <MudDataGridPager T="Zamowienie" RowsPerPageString="Wierszy na stronę"
+                                      InfoFormat="{first_item}-{last_item} z {all_items}" Style="display: none;"/>
                 </PagerContent>
                 <NoRecordsContent>
                     <MudText>Nie znaleziono zleceń</MudText>
@@ -323,4 +338,81 @@
             _ => "status-default"
         };
     }
+
+    private async Task OpenCommentDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["Orders"] = _zamowienia,
+            ["CommentText"] = string.Empty,
+            ["SelectedOrderId"] = 0
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
+
+        var dialog = await DialogService.ShowAsync<CommentDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var commentResult = (CommentDialog.CommentDialogResult)result.Data;
+            try
+            {
+                // TODO: dodać logikę zapisu komentarza
+                // await ApiService.AddComment(commentResult.OrderId, commentResult.Comment);
+
+                Snackbar.Add("Komentarz został dodany pomyślnie", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Błąd podczas dodawania komentarza: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenRatingDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["Orders"] = _zamowienia,
+            ["SelectedOrderId"] = 0,
+            ["SelectedRatingValue"] = 0,
+            ["RatingComment"] = string.Empty
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
+
+        var dialog = await DialogService.ShowAsync<RatingDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var ratingResult = (RatingDialog.RatingDialogResult)result.Data;
+            try
+            {
+                //TODO: dodać logikę zapisu oceny
+                // await ApiService.AddRating(ratingResult.OrderId, ratingResult.Rating, ratingResult.Comment);
+                Snackbar.Add("Ocena została dodana pomyślnie", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Błąd podczas dodawania oceny: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
 }

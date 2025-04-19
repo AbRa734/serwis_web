@@ -1,0 +1,71 @@
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using Colors = DesignSystem.Tokens.Colors
+@using DialogResult = MudBlazor.DialogResult
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Comment" Class="mr-3" />
+            Dodaj komentarz do usługi
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 500px; overflow-y: scroll">
+            <MudForm @ref="form">
+                <MudSelect T="int" Label="Wybierz zamówienie" @bind-Value="SelectedOrderId" Required RequiredError="Wybór zamówienia jest wymagany">
+                    @foreach (var order in Orders.Where(z => z.Status.Nazwa == "Zakończony"))
+                    {
+                        <MudSelectItem Value="@order.ZamowienieId">Zamówienie #@order.ZamowienieId.ToString("D5")</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudTextField T="string" Label="Komentarz" @bind-Value="CommentText"
+                            Required RequiredError="Komentarz jest wymagany"
+                            Counter="500" MaxLength="500" Immediate="true"
+                            Lines="5" Class="mt-3" />
+            </MudForm>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Outlined" Color="Color.Default">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")" 
+                   OnClick="Submit"
+                   Disabled="@(!IsFormValid())">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    
+    [Parameter] public List<Zamowienie> Orders { get; set; } = new();
+    [Parameter] public string CommentText { get; set; } = string.Empty;
+    [Parameter] public int SelectedOrderId { get; set; }
+    
+    private MudForm form;
+    
+    private bool IsFormValid() => !string.IsNullOrWhiteSpace(CommentText) && SelectedOrderId > 0;
+    
+    private void Submit()
+    {
+        form.Validate();
+        if (form.IsValid)
+        {
+            var result = new CommentDialogResult
+            {
+                OrderId = SelectedOrderId,
+                Comment = CommentText
+            };
+            MudDialog.Close(DialogResult.Ok(result));
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+    
+    public class CommentDialogResult
+    {
+        public int OrderId { get; set; }
+        public string Comment { get; set; }
+    }
+}

@@ -1,25 +1,56 @@
 ﻿@using ApiService
 @using ApiService.Models
+@using Color = MudBlazor.Color
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 <style>
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-button {
+        height: 40px;
+        min-width: 40px;
+        padding: 0;
+    }
+
+    .search-icon-button {
+        cursor: pointer;
+        color: #4880FF;
+    }
 
     @@media (max-width: 768px) {
         .search-input {
             display: none;
         }
-    }
 
+        .search-button {
+            display: none;
+        }
+    }
 </style>
 
 <div class="navbar-container">
     <div class="logo-search">
         <a class="navbar-logo" href="/index">Serwis <span style="color: #4880FF">24</span></a>
-        <MudTextField @bind-Value="searchText" Label="Wyszukaj" Variant="Variant.Outlined"
-                      Margin="Margin.Dense" Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input"></MudTextField>
+        <div class="search-container">
+            <MudTextField @bind-Value="searchText" Label="Wyszukaj" Variant="Variant.Outlined"
+                          Margin="Margin.Dense" Adornment="Adornment.Start"
+                          OnKeyUp="@HandleKeyUp"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          AdornmentColor="Color.Primary"
+                          Class="search-input"></MudTextField>
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowForward"
+                           Color="Color.Primary"
+                           Class="search-button"
+                           Disabled="@string.IsNullOrWhiteSpace(searchText)"
+                           OnClick="@(() => NavigateToSearch())" />
+        </div>
     </div>
     <div class="notifications-user">
         <a href="/settings"><i class="fa-solid fa-user"></i></a>
@@ -86,5 +117,21 @@
             return "Brak roli";
 
         return _uzytkownik.RoleUzytkownika.FirstOrDefault()?.Nazwa ?? "Brak roli";
+    }
+
+    private void NavigateToSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            NavigationManager.NavigateTo($"/search?q={Uri.EscapeDataString(searchText)}");
+        }
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            NavigateToSearch();
+        }
     }
 }
