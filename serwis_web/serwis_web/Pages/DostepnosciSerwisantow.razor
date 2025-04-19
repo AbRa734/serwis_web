@@ -6,24 +6,123 @@
 @inject ApiService ApiService
 @rendermode InteractiveServer
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudCard Elevation="3" Class="mb-4">
-        <MudCardHeader>
-            <MudText Typo="Typo.h5">Lista dostępności serwisantów</MudText>
-            <MudSpacer />
-            <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       >Nowa dostępność</MudButton>
+<style>
+    .container {
+        margin: 0;
+        padding: 0;
+        min-width: 100%;
+    }
+
+    .header-card {
+        border: none;
+        box-shadow: none;
+        background-color: inherit;
+        margin: 0 0 25px 0;
+        padding: 0;
+    }
+
+    .header-content {
+        border: none;
+        box-shadow: none;
+        background-color: inherit;
+        margin: 0;
+        padding: 0 40px 0 0;
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .header-title {
+        font-size: 30px;
+        font-weight: 600;
+    }
+
+    .new-button {
+        background-color: #4880FF;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 50px;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+    }
+
+    .new-button:hover {
+        background-color: #336ff5;
+    }
+
+    .calendar {
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    @@media (max-width: 1280px) {
+        .header-content {
+            padding: 0;
+        }
+    }
+
+    @@media (max-width: 1024px) {
+        .header-content {
+            flex-direction: column;
+        }
+        .new-button {
+            width: 100%;
+            margin-top: 10px;
+        }
+    }
+
+
+</style>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="container">
+    <MudCard Class="header-card">
+        <MudCardHeader Class="header-content">
+            <MudText Class="header-title">Lista dostępności serwisantów</MudText>
+            <MudButton Class="new-button" @onclick="ToggleNewAvabilityModal">
+                Nowa dostępność
+            </MudButton>
         </MudCardHeader>
     </MudCard>
 
     <MudCalendar Items="_events"
                  CellClicked="CellClicked"
                  ItemClicked="ItemClicked"
-                 DayTimeInterval="CalendarTimeInterval.Minutes15" />
+                 DayTimeInterval="CalendarTimeInterval.Minutes15"
+                 Bordered="false"
+                 Dense="false"
+                 Class="calendar" />
 </MudContainer>
 
+@if (addNewAvabilityModal && isAdmin)
+{
+    <div class="modal">
+        <div class="containerForm">
+            <i class="fa-solid fa-times" @onclick="CloseNewAvabilityModal"></i>
+            <div class="form">
+                <h2>Dodaj nową dostępność</h2>
+                <div class="add-new-avability">
+                    <h4>Data początek</h4>
+                    <input type="date"/>
+
+                    <h4>Data koniec</h4>
+                    <input type="date" />
+
+                    <button>Dodaj</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+
+    private Boolean isAdmin = true;
+    private bool addNewAvabilityModal = false;
+
     private List<CalendarItem> _events = new();
     private Dictionary<CalendarItem, DostepnoscSerwisanta> _eventToDostepnosc = new();
     private List<DostepnoscSerwisanta> _wszystkieDostepnosci = new();
@@ -39,11 +138,11 @@
             {
                 var imieNazwisko = $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
                 var item = new CalendarItem
-                {
-                    Start = d.DataOd,
-                    End = d.DataDo,
-                    Text = $"{imieNazwisko} ({(d.CzyDostepny ? "Dostępny" : "Niedostępny")})"
-                };
+                    {
+                        Start = d.DataOd,
+                        End = d.DataDo,
+                        Text = $"{imieNazwisko} ({(d.CzyDostepny ? "Dostępny" : "Niedostępny")})"
+                    };
                 _events.Add(item);
                 _eventToDostepnosc[item] = d;
             }
@@ -107,4 +206,15 @@
             }
         }
     }
+
+    private void ToggleNewAvabilityModal()
+    {
+        addNewAvabilityModal = true;
+    }
+
+    private void CloseNewAvabilityModal()
+    {
+        addNewAvabilityModal = false;
+    }
+
 }

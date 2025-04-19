@@ -1,0 +1,102 @@
+﻿@page "/users/{OrderId}"
+@rendermode InteractiveServer
+
+<PageTitle>Dane Użytkownika</PageTitle>
+
+<div class="services-container">
+
+	<div class="title-changes">
+		<h2>Dane Użytkownika</h2>
+		<a href="/new-user" class="btn-changes">Nowy użytkownik</a>
+	</div>
+
+	<div class="service-back">
+		<div class="service-tab">
+
+			@if (OrderId == null)
+			{
+				<h5>Nie znaleziono uzytkownika o numerze @OrderId</h5>
+			}
+			else
+			{
+				<div class="service-col">
+
+					<h4>Imię</h4>
+					<input type="text" placeholder="Anna" />
+
+					<h4>Nazwisko</h4>
+					<input type="text" placeholder="Nowak" />
+
+					<div class="service-row">
+						<div class="single-col">
+							<h4>Numer Telefonu</h4>
+							<input type="number" placeholder="536937321" />
+						</div>
+						<div class="single-col">
+							<h4>Adres Email</h4>
+							<input type="email" placeholder="anowak@gmail.com" />
+						</div>
+					</div>
+
+					<h4>Państwo</h4>
+					<input type="text" placeholder="Polska" />
+
+					<div class="service-row">
+						<div class="single-col">
+							<h4>Ulica</h4>
+							<input type="text" placeholder="Radwańska" />
+						</div>
+						<div class="single-col">
+							<h4>Numer Domu</h4>
+							<input type="number" placeholder="42" />
+						</div>
+					</div>
+
+					<div class="service-row">
+						<div class="single-col">
+							<h4>Miasto</h4>
+							<input type="text" placeholder="Łódź" />
+						</div>
+						<div class="single-col">
+							<h4>Kod pocztowy</h4>
+							<input type="number" placeholder="90-012" />
+						</div>
+					</div>
+					<button>Zapisz zmiany</button>
+
+				</div>
+
+				<div class="service-col">
+
+					<h4>Id Użytkownika</h4>
+					<input type="number" placeholder="@OrderId" />
+
+					<h4>Rola Użytkownika</h4>
+					<select>
+						<option>Klient</option>
+						<option>Serwisant</option>
+						<option>Administrator</option>
+					</select>
+
+					<h4>Data Utworzenia Konta</h4>
+					<input type="date" placeholder="26-04-2025" />
+
+					<h4>Ostatnia Data Aktualizacji</h4>
+					<input type="date" placeholder="30-04-2025" />
+
+					<button class="reset-password">Zresetuj hasło użytkownika</button>
+
+					<button class="delete-account">Usuń konto</button>
+
+				</div>
+			}
+
+		</div>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public String OrderId { get; set; }
+
+}

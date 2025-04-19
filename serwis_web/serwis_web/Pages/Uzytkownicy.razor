@@ -1,4 +1,4 @@
-﻿@page "/report"
+﻿@page "/users"
 @rendermode InteractiveServer
 @using ApiService
 @using ApiService.Models
@@ -8,7 +8,7 @@
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 
-<PageTitle>Dostępne Raporty</PageTitle>
+<PageTitle>Użytkownicy</PageTitle>
 
 <style>
     .order-container {
@@ -190,13 +190,13 @@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
 
     <MudCardHeader Class="order-header">
-        <MudText Class="order-header-tittle">Dostępne Raporty</MudText>
+        <MudText Class="order-header-tittle">Użytkownicy</MudText>
     </MudCardHeader>
 
     <MudCardHeader Class="order-header-search-button">
         <MudItem>
             <MudTextField @bind-Value="_searchString"
-                          Placeholder="Szukaj raportu"
+                          Placeholder="Szukaj użytkownika"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium"
@@ -220,7 +220,7 @@
             <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.ZamowienieId" Title="Numer Zlecenia" HeaderClass="order-category-left">
                 <CellTemplate>
                     <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                        <MudLink Href="@($"/report/{context.Item.ZamowienieId}")" Class="order-category-single-item-id">@context.Item.ZamowienieId.ToString("D5")</MudLink>
+                        <MudLink Href="@($"/users/{context.Item.ZamowienieId}")" Class="order-category-single-item-id">@context.Item.ZamowienieId.ToString("D5")</MudLink>
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
