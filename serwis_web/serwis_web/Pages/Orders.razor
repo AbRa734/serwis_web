@@ -10,66 +10,270 @@
 
 <PageTitle>Lista zleceń</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudCard Elevation="3" Class="mb-4">
-        <MudCardHeader>
-            <MudText Typo="Typo.h5">Lista zleceń</MudText>
-            <MudSpacer />
-            <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       Href="/services">Nowe zlecenie</MudButton>
-        </MudCardHeader>
-    </MudCard>
+<style>
+    .order-container {
+        margin: 0;
+        padding: 0;
+        min-width: 100%;
+        border: none;
+    }
+    .order-header{
+        margin: 0 0 10px 0;
+        padding: 0;
+    }
+    .order-header-tittle{
+        font-size: 30px;
+        font-weight: 600
+    }
 
-    <MudDataGrid T="Serwis" Items="@_filteredSerwisy" Hover="true" Loading="@_loading"
+    .order-header-search-button{
+        margin: 0 0 25px 0;
+        padding: 0 40px 0 0;
+        width: 100%;
+        justify-content: space-between
+    }
+    .order-search{
+        max-width: 300px;
+    }
+
+    .new-button {
+        background-color: #4880FF;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 50px;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+    }
+
+    .new-button:hover {
+        background-color: #336ff5;
+    }
+
+    .order-grid {
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .order-category {
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+        background-color: #FCFDFD !important;
+        border-top-left-radius: 15px !important;
+        border-top-right-radius: 15px !important;
+        border-bottom: solid 2px #efefef !important;
+    }
+
+    .order-category-left {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 10px;
+        margin: 0;
+        text-align: center;
+        background-color: #FCFDFD !important;
+        border-top-left-radius: 15px !important;
+        border-top-right-radius: 15px !important;
+        border-bottom: solid 2px #efefef !important;
+    }
+
+    .order-category-right {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 14px 10px;
+        margin: 0;
+        text-align: center;
+        background-color: #f1f4f9 !important;
+        border: none;
+        border-top-right-radius: 15px !important;
+        border-bottom-right-radius: 15px !important;
+    }
+
+    .order-category-single-item {
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    .order-category-single-item-id {
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none !important;
+        color: #000000 !important;
+    }
+
+    .status-finished {
+        background-color: #d0f0e4;
+        color: #0d8a5f;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-realization {
+        background-color: #e6e1ff;
+        color: #6952e9;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-canceled {
+        background-color: #ffd9d9;
+        color: #e75757;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-waiting {
+        background-color: #ffe9d1;
+        color: #e99c52;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-new {
+        background-color: #e6e1ff;
+        color: #6952e9;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-default {
+        background-color: inherit;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    @@media (max-width: 1024px) {
+        .order-header-search-button {
+            padding: 0;
+        }
+        .order-search{
+            display: none;
+        }
+
+        .new-button {
+            width: 100%;
+            margin-top: 10px;
+        }
+    }
+
+
+</style>
+
+
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
+
+    <MudCardHeader Class="order-header">
+        <MudText Class="order-header-tittle">Lista zleceń</MudText>
+    </MudCardHeader>
+     
+    <MudCardHeader Class="order-header-search-button">
+        <MudItem>
+            <MudTextField @bind-Value="_searchString"
+                            Placeholder="Szukaj zlecenia"
+                            Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.Search"
+                            IconSize="Size.Medium"
+                            Immediate="true"
+                            DebounceInterval="500"
+                            OnDebounceIntervalElapsed="ApplySearch"
+                            Class="order-search"></MudTextField>
+        </MudItem>
+        <MudButton Href="/services" Class="new-button">
+            Nowe zlecenie
+        </MudButton>
+    </MudCardHeader>
+    
+
+    <MudDataGrid T="Zamowienie" Items="@_filteredZamówienia" Hover="true" Loading="@_loading"
                  LoadingProgressColor="Color.Info" Filterable="true"
                  FilterMode="DataGridFilterMode.ColumnFilterMenu"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
-                 Bordered="false" Dense="false">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Zlecenia</MudText>
-            <MudSpacer />
-            <MudTextField @bind-Value="_searchString" Placeholder="Szukaj globalnie" Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 mr-2"
-                          Immediate="true" DebounceInterval="500" OnDebounceIntervalElapsed="ApplySearch"></MudTextField>
-        </ToolBarContent>
+                 FixedHeader="true" Pagination="false" Height="auto"
+                 RowsPerPage="7"
+                 Bordered="false" Dense="false" Class="order-grid">
+
         <Columns>
-            <PropertyColumn T="Serwis" TProperty="int" Property="x => x.SerwisId" Title="Numer zlecenia">
+            <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.ZamowienieId" Title="Numer Zlecenia" HeaderClass="order-category-left">
                 <CellTemplate>
-                    <MudLink Href="@($"/orders/{context.Item.SerwisId}")">@context.Item.SerwisId.ToString("D6")</MudLink>
-                </CellTemplate>
-                <FooterTemplate>
-                    <MudText Typo="Typo.body2"><b>Suma zleceń: @(_filteredSerwisy.Count)</b></MudText>
-                </FooterTemplate>
-            </PropertyColumn>
-            <PropertyColumn T="Serwis" TProperty="string" Property="x => x.Nazwa" Title="Nazwa" />
-            <PropertyColumn T="Serwis" TProperty="string" Property="x => x.Opis ?? string.Empty" Title="Opis">
-                <CellTemplate>
-                    @{
-                        var opis = string.IsNullOrEmpty(context.Item.Opis) ? "-" : context.Item.Opis;
-                        var shortOpis = opis.Length > 50 ? opis.Substring(0, 47) + "..." : opis;
-                    }
-                    <div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        <MudTooltip Text="@opis" Placement="Placement.Top" Arrow="true" Disabled="@(opis.Length <= 50 || opis == "-")">
-                            <MudText Typo="Typo.body2">@shortOpis</MudText>
-                        </MudTooltip>
-                    </div>
+                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                        <MudLink Href="@($"/orders/{context.Item.ZamowienieId}")" Class="order-category-single-item-id">@context.Item.ZamowienieId.ToString("D5")</MudLink>
+                    </MudChip>
                 </CellTemplate>
             </PropertyColumn>
-            <PropertyColumn T="Serwis" TProperty="DicTypSerwisu" Property="x => x.TypSerwisu" Title="Rodzaj">
+
+            <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
                 <CellTemplate>
-                    @(context.Item.TypSerwisu.Nazwa)
+                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                        <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
+                    </MudChip>
                 </CellTemplate>
             </PropertyColumn>
-            <PropertyColumn T="Serwis" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" Format="dd.MM.yyyy" />
-            <PropertyColumn T="Serwis" TProperty="DateTime?" Property="x => x.DataAktualizacji" Title="Data aktualizacji">
+
+
+            <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
                 <CellTemplate>
-                    @(context.Item.DataAktualizacji?.ToString("dd.MM.yyyy") ?? "-")
+                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                        <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
+                    </MudChip>
                 </CellTemplate>
             </PropertyColumn>
+
+            <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                        <MudText Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status" HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
+                        <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
+
+            <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status" HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
+                        <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
         </Columns>
         <PagerContent>
-            <MudDataGridPager T="Serwis" RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
+            <MudDataGridPager T="Zamowienie" RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
         </PagerContent>
         <NoRecordsContent>
             <MudText>Nie znaleziono zleceń</MudText>
@@ -80,26 +284,26 @@
 @code {
     private string _searchString = "";
     private bool _loading = true;
-    private List<Serwis> _serwisy = new();
-    private List<Serwis> _filteredSerwisy = new();
+    private List<Zamowienie> _zamowienia = new();
+    private List<Zamowienie> _filteredZamówienia = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadServicesAsync();
+        await LoadOrdersAsync();
     }
 
-    private async Task LoadServicesAsync()
+    private async Task LoadOrdersAsync()
     {
         _loading = true;
         try
         {
-            var result = await ApiService.SerwisyRepo.SerwisyGet();
+            var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
             if (result.Data != null)
             {
-                _serwisy = result.Data;
-                _filteredSerwisy = _serwisy;
-                
-                if (_serwisy.Count == 0)
+                _zamowienia = result.Data;
+                _filteredZamówienia = _zamowienia;
+
+                if (_zamowienia.Count == 0)
                 {
                     Snackbar.Add("Nie znaleziono żadnych zleceń", Severity.Info);
                 }
@@ -124,21 +328,34 @@
     {
         if (string.IsNullOrWhiteSpace(_searchString))
         {
-            _filteredSerwisy = _serwisy;
+            _filteredZamówienia = _zamowienia;
         }
         else
         {
             string searchLower = _searchString.ToLower();
-            _filteredSerwisy = _serwisy.Where(s => 
-                s.SerwisId.ToString().Contains(searchLower) ||
-                s.Nazwa.ToLower().Contains(searchLower) ||
-                (s.Opis != null && s.Opis.ToLower().Contains(searchLower)) ||
-                (s.TypSerwisu.Nazwa.ToLower().Contains(searchLower)) ||
-                s.DataDodania.ToString("dd.MM.yyyy").Contains(searchLower) ||
-                (s.DataAktualizacji.HasValue && s.DataAktualizacji.Value.ToString("dd.MM.yyyy").Contains(searchLower))
+            _filteredZamówienia = _zamowienia.Where(s =>
+                s.ZamowienieId.ToString().Contains(searchLower) ||
+                // s.RodzajZlecenia?.ToLower().Contains(searchLower) == true ||
+                s.DataDodania.ToString("dd MMMM yyyy").ToLower().Contains(searchLower) ||
+                (s.ZrealizowanaDataRealizacjiDo.HasValue && s.ZrealizowanaDataRealizacjiDo.Value.ToString("dd MMMM yyyy").ToLower().Contains(searchLower)) ||
+                // (s.Koszt.HasValue && s.Koszt.ToString().Contains(searchLower)) ||
+                s.Status.Nazwa.ToLower().Contains(searchLower)
             ).ToList();
         }
-        
+
         StateHasChanged();
+    }
+
+    private string GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Zakończony" => "status-finished",
+            "W realizacji" => "status-realization",
+            "Anulowany" => "status-canceled",
+            "Oczekujący" => "status-waiting",
+            "Nowy" => "status-new",
+            _ => "status-default"
+        };
     }
 }

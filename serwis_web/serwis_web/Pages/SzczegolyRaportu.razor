@@ -1,0 +1,281 @@
+﻿@page "/report/{OrderId}"
+@rendermode InteractiveServer
+
+<PageTitle>Raport zlecenia</PageTitle>
+
+<div class="order-container">
+
+	<h2>Raport zlecenia</h2>
+
+	<div class="order-back">
+		<div class="order-tab">
+
+			@if (order == null)
+			{
+				<h5>Nie znaleziono zlecenia o numerze @OrderId</h5>
+			}
+			else
+			{
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Numer Zlecenia</h4>
+						<input type="number" placeholder="@order?.NumerZlecenia" />
+					</div>
+					<div class="single-col">
+						<h4>Rodzaj zlecenia</h4>
+						<input type="text" placeholder="@order?.Rodzaj" />
+					</div>
+				</div>
+
+				<h4>Data utworzenia zlecenia</h4>
+				<input type="date" placeholder="29.03.2025" />
+
+				<h4>Priorytet</h4>
+				<input type="text" placeholder="@order?.Priorytet" />
+
+				<textarea placeholder="Laptop bardzo się przegrzewa i samoczynnie wyłącza po kilkunastu minutach pracy. Wentylator działa głośno, a system działa wolno. Proszę o diagnozę i naprawę." class="textarea"></textarea>
+
+				<h4>Klient</h4>
+				<input type="text" placeholder="Anna Nowak" />
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Numer Telefonu Klienta</h4>
+						<input type="number" placeholder="536875432" />
+					</div>
+					<div class="single-col">
+						<h4>Adres Email Klienta</h4>
+						<input type="email" placeholder="anowak@gmail.com" />
+					</div>
+				</div>
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Ulica</h4>
+						<input type="text" placeholder="Radwanska" />
+					</div>
+					<div class="single-col">
+						<h4>Numer Domu</h4>
+						<input type="number" placeholder="42" />
+					</div>
+				</div>
+
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Miasto</h4>
+						<input type="text" placeholder="Łódź" />
+					</div>
+					<div class="single-col">
+						<h4>Kod pocztowy</h4>
+						<input type="number" placeholder="90-012" />
+					</div>
+				</div>
+
+				<h4>Państwo</h4>
+				<input type="text" placeholder="Polska" />
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Planowana Data Realizacji</h4>
+						<input type="date" placeholder="12.04.2025" />
+					</div>
+					<div class="single-col">
+						<h4>Planowana Data Zakończenia</h4>
+						<input type="date" placeholder="26.04.2025" />
+					</div>
+				</div>
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Data Rozpoczęcia Realizacji</h4>
+						<input type="date" placeholder="12.04.2025" style="font-weight: bold" />
+					</div>
+					<div class="single-col">
+						<h4>Data Zakończenia Realizacji</h4>
+						<input type="date" placeholder="26.04.2025" style="font-weight: bold" />
+					</div>
+				</div>
+
+				<h4>Czas realizacji</h4>
+				<input type="text" placeholder="14 dni" />
+
+				<h4>Serwisant</h4>
+				<input type="text" placeholder="Jan Kowalski" />
+
+				<div class="order-row">
+					<div class="single-col">
+						<h4>Adres Email Serwisanta</h4>
+						<input type="email" placeholder="jkowalski@gmail.com" />
+					</div>
+					<div class="single-col">
+						<h4>Numer Telefonu Serwisanta</h4>
+						<input type="number" placeholder="536875432" />
+					</div>
+				</div>
+
+				<h4>Status zlecenia</h4>
+				<span class="@GetStatusClass(order.Status)">@order.Status</span>
+
+				<h4>Metoda Płatności</h4>
+				<input type="text" placeholder="Przelew krajowy" />
+
+				<h4>Kwota do zapłaty</h4>
+				<input type="text" placeholder="@order?.Koszt zł" style="font-weight: bold; font-size: 18px" />
+
+
+				<h4>Oceń Wykonaną Usługę</h4>
+				<div class="order-rate">
+					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
+					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
+					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
+					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
+					<i class="fa-regular fa-star" style="color: #545353"></i>
+				</div>
+
+				<h4>Uwagi do zlecenia</h4>
+				<input type="text" placeholder="Instalacja naprawiona tymczasowo - wymagana modernizacja" />
+				<input type="text" placeholder="Szczególna uwaga wymagana przy naprawie instalacji w budynku A1" />
+
+				<button>Pobierz PDF <i class="fa-solid fa-file-pdf" style="color: white; margin-left: 15px"></i></button>
+			}
+
+		</div>
+
+	</div>
+
+</div>
+
+@code {
+	[Parameter]
+	public String OrderId { get; set; }
+
+	private class Order
+	{
+		public int NumerZlecenia { get; set; }
+		public string Rodzaj { get; set; }
+		public DateTime DataUtworzenia { get; set; }
+		public DateTime DataWykonania { get; set; }
+		public double Koszt { get; set; }
+		public string Status { get; set; }
+		public string Priorytet { get; set; }
+	}
+
+	private List<Order> orders = new List<Order>
+	{
+		new Order
+		{
+			NumerZlecenia = 0,
+			Rodzaj = "Instalacja",
+			DataUtworzenia = new DateTime(2025, 3, 14),
+			DataWykonania = new DateTime(2025, 3, 28),
+			Koszt = 300,
+			Status = "Zakończone",
+			Priorytet = "Wysoki"
+		},
+		new Order
+		{
+			NumerZlecenia = 1,
+			Rodzaj = "Instalacja",
+			DataUtworzenia = new DateTime(2025, 3, 14),
+			DataWykonania = new DateTime(2025, 3, 28),
+			Koszt = 300,
+			Status = "Zakończone",
+			Priorytet = "Wysoki"
+		},
+		new Order
+		{
+			NumerZlecenia = 2,
+			Rodzaj = "Naprawa",
+			DataUtworzenia = new DateTime(2025, 3, 20),
+			DataWykonania = new DateTime(2025, 4, 5),
+			Koszt = 450,
+			Status = "Realizacja",
+			Priorytet = "Wysoki"
+		},
+		new Order
+		{
+			NumerZlecenia = 3,
+			Rodzaj = "Przegląd",
+			DataUtworzenia = new DateTime(2025, 4, 1),
+			DataWykonania = new DateTime(2025, 4, 15),
+			Koszt = 0,
+			Status = "Nowe",
+			Priorytet = "Normalny"
+		},
+		new Order
+		{
+			NumerZlecenia = 4,
+			Rodzaj = "Konfiguracja",
+			DataUtworzenia = new DateTime(2025, 4, 10),
+			DataWykonania = new DateTime(2025, 4, 20),
+			Koszt = 250,
+			Status = "Oczekujące",
+			Priorytet = "Niski"
+		},
+		new Order
+		{
+			NumerZlecenia = 5,
+			Rodzaj = "Wymiana",
+			DataUtworzenia = new DateTime(2025, 4, 10),
+			DataWykonania = new DateTime(2025, 4, 30),
+			Koszt = 800,
+			Status = "Realizacja",
+			Priorytet = "Wysoki"
+		},
+		new Order
+		{
+			NumerZlecenia = 6,
+			Rodzaj = "Konserwacja",
+			DataUtworzenia = new DateTime(2025, 3, 28),
+			DataWykonania = new DateTime(2025, 4, 12),
+			Koszt = 150,
+			Status = "Zakończone",
+			Priorytet = "Normalny"
+		},
+		new Order
+		{
+			NumerZlecenia = 7,
+			Rodzaj = "Diagnostyka",
+			DataUtworzenia = new DateTime(2025, 3, 15),
+			DataWykonania = new DateTime(2025, 3, 20),
+			Koszt = 0,
+			Status = "Anulowane",
+			Priorytet = "Niski"
+		},
+		new Order
+		{
+			NumerZlecenia = 8,
+			Rodzaj = "Modernizacja",
+			DataUtworzenia = new DateTime(2025, 4, 5),
+			DataWykonania = new DateTime(2025, 5, 1),
+			Koszt = 1200,
+			Status = "Oczekujące",
+			Priorytet = "Wysoki"
+		}
+	};
+	private Order order;
+
+	protected override void OnParametersSet()
+	{
+		if (int.TryParse(OrderId, out int parsedId))
+		{
+			order = orders.FirstOrDefault(o => o.NumerZlecenia == parsedId);
+		}
+	}
+
+	private string GetStatusClass(string status)
+	{
+		return status switch
+		{
+			"Zakończone" => "status-finished",
+			"Realizacja" => "status-realization",
+			"Anulowane" => "status-canceled",
+			"Oczekujące" => "status-waiting",
+			"Nowe" => "status-new",
+			_ => ""
+		};
+	}
+
+
+}

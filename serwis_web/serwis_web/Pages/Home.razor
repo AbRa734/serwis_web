@@ -3,10 +3,139 @@
 @using ApiService
 @using ApiService.Models
 @using Color = MudBlazor.Color
+@using Placement = MudBlazor.Placement
+@using Size = MudBlazor.Size
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 
 <PageTitle>Strona Główna</PageTitle>
+
+<style>
+    .order-container {
+        margin: 0;
+        padding: 0;
+        min-width: 100%;
+        border: none;
+    }
+
+    .order-grid {
+        border: none;
+        box-shadow: none;
+    }
+
+    .order-category {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 14px 10px;
+        margin: 0;
+        text-align: center;
+        background-color: #f1f4f9 !important;
+        border: none;
+    }
+
+    .order-category-left {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 14px 10px;
+        margin: 0;
+        text-align: center;
+        background-color: #f1f4f9 !important;
+        border: none;
+        border-top-left-radius: 15px !important;
+        border-bottom-left-radius: 15px !important;
+    }
+    .order-category-right{
+        font-size: 16px;
+        font-weight: 500;
+        padding: 14px 10px;
+        margin: 0;
+        text-align: center;
+        background-color: #f1f4f9 !important;
+        border: none;
+        border-top-right-radius: 15px !important;
+        border-bottom-right-radius: 15px !important;
+    }
+    .order-category-single-item{
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    .order-category-single-item-id {
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none !important;
+        color: #000000 !important;
+    }
+
+    .status-finished{
+        background-color: #d0f0e4;
+        color: #0d8a5f;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    .status-realization
+    {
+        background-color: #e6e1ff;
+        color: #6952e9;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-canceled{
+        background-color: #ffd9d9;
+        color: #e75757;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-waiting{
+        background-color: #ffe9d1;
+        color: #e99c52;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-new{
+        background-color: #e6e1ff;
+        color: #6952e9;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-default{
+        background-color: inherit;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+</style>
+
+
 
 <div class="home-container">
     <h2>Strona Główna</h2>
@@ -68,39 +197,84 @@
             <h3>Ostatnie zlecenia</h3>
             <a class="see-more" href="/orders">Zobacz więcej</a>
         </div>
-        
-        <MudDataGrid T="Serwis" Items="@_latestSerwisy" Hover="true" Loading="@_loading"
-                    LoadingProgressColor="Color.Info" Bordered="false" Dense="true" 
-                    FixedHeader="true" RowsPerPage="5" Pagination="false" Height="auto">
-            <Columns>
-                <PropertyColumn T="Serwis" TProperty="int" Property="x => x.SerwisId" Title="Numer zlecenia">
-                    <CellTemplate>
-                        <MudLink Href="@($"/orders/{context.Item.SerwisId}")">@context.Item.SerwisId.ToString("D6")</MudLink>
-                    </CellTemplate>
-                </PropertyColumn>
-                <PropertyColumn T="Serwis" TProperty="DicTypSerwisu" Property="x => x.TypSerwisu" Title="Rodzaj">
-                    <CellTemplate>
-                        @(context.Item.TypSerwisu.Nazwa)
-                    </CellTemplate>
-                </PropertyColumn>
-                <PropertyColumn T="Serwis" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" Format="dd.MM.yyyy" />
-                <PropertyColumn T="Serwis" TProperty="DateTime?" Property="x => x.DataAktualizacji" Title="Data aktualizacji">
-                    <CellTemplate>
-                        @(context.Item.DataAktualizacji?.ToString("dd.MM.yyyy") ?? "-")
-                    </CellTemplate>
-                </PropertyColumn>
-            </Columns>
-            <NoRecordsContent>
-                <MudText>Brak zleceń do wyświetlenia</MudText>
-            </NoRecordsContent>
-        </MudDataGrid>
+
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
+
+            <MudDataGrid T="Zamowienie" Items="@_latestZamowienia" Hover="false" Loading="@_loading"
+                         LoadingProgressColor="Color.Info" Bordered="false" Dense="false"
+                         FixedHeader="true" RowsPerPage="3" Pagination="false" Height="auto"
+                         Class="order-grid">
+
+                <Columns>
+
+                    <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.ZamowienieId" Title="Numer Zlecenia" HeaderClass="order-category-left">
+                        <CellTemplate>
+                            <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                                <MudLink Href="@($"/orders/{context.Item.ZamowienieId}")" Class="order-category-single-item-id">@context.Item.ZamowienieId.ToString("D5")</MudLink>
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
+                        <CellTemplate>
+                            <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                                <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+
+                    <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
+                        <CellTemplate>
+                            <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                                <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
+                        <CellTemplate>
+                            <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                                <MudText Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status" HeaderClass="order-category">
+                        <CellTemplate>
+                            <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
+                                <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+
+                    <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status" HeaderClass="order-category-right">
+                        <CellTemplate>
+                            <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
+                                <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                </Columns>
+
+                <PagerContent >
+                    <MudDataGridPager T="Zamowienie" RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" Style="display: none;" />
+                </PagerContent>
+                <NoRecordsContent>
+                    <MudText>Nie znaleziono zleceń</MudText>
+                </NoRecordsContent>
+            </MudDataGrid>
+        </MudContainer>
+
     </div>
 </div>
 
 @code {
     private bool _loading = true;
-    private List<Serwis> _serwisy = new();
-    private List<Serwis> _latestSerwisy = new();
+    private List<Zamowienie> _zamowienia = new();
+    private List<Zamowienie> _latestZamowienia = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,12 +286,12 @@
         _loading = true;
         try
         {
-            var result = await ApiService.SerwisyRepo.SerwisyGet();
+            var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
             if (result.Data != null)
             {
-                _serwisy = result.Data;
-                
-                _latestSerwisy = _serwisy
+                _zamowienia = result.Data;
+
+                _latestZamowienia = _zamowienia
                     .OrderByDescending(s => s.DataDodania)
                     .Take(5)
                     .ToList();
@@ -135,5 +309,18 @@
         {
             _loading = false;
         }
+    }
+
+    private string GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Zakończony" => "status-finished",
+            "W realizacji" => "status-realization",
+            "Anulowany" => "status-canceled",
+            "Oczekujący" => "status-waiting",
+            "Nowy" => "status-new",
+            _ => "status-default"
+        };
     }
 }
