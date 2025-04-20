@@ -1,0 +1,152 @@
+@using ApiService.Models
+@using System.ComponentModel.DataAnnotations
+@using Color = MudBlazor.Color
+@using DialogResult = MudBlazor.DialogResult
+@using Size = MudBlazor.Size
+@inject ApiService.ApiService ApiService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="@_model" OnValidSubmit="Submit">
+            <DataAnnotationsValidator />
+
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudSelect T="int" Label="Serwisant" @bind-Value="_model.SerwisantId" Required>
+                        @foreach (var pair in TechnicianDict ?? new Dictionary<int, string>())
+                        {
+                            <MudSelectItem Value="@pair.Key">@pair.Value</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Checked="_model.CzyDostepny" Color="Color.Primary" Label="Dostępny" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudDatePicker Label="Data od" @bind-Date="_dateFrom" Required />
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudTimePicker Label="Godzina od" @bind-Time="_timeFrom" Required />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudDatePicker Label="Data do" @bind-Date="_dateTo" Required />
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudTimePicker Label="Godzina do" @bind-Time="_timeTo" Required />
+                </MudItem>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+                    </MudItem>
+                }
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@_isSaving">
+            @if (_isSaving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Zapisywanie...</span>
+            }
+            else
+            {
+                <span>Zapisz</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public Dictionary<int, string>? TechnicianDict { get; set; }
+    
+    private string _errorMessage = string.Empty;
+    private bool _isSaving = false;
+
+    private DateTime? _dateFrom;
+    private TimeSpan? _timeFrom;
+    private DateTime? _dateTo;
+    private TimeSpan? _timeTo;
+
+    private class AvailabilityModel
+    {
+        [Required(ErrorMessage = "Wybierz serwisanta")]
+        public int SerwisantId { get; set; }
+
+        public bool CzyDostepny { get; set; } = true;
+    }
+
+    private AvailabilityModel _model = new();
+    
+    protected override void OnInitialized()
+    {
+        _dateFrom = DateTime.Today;
+        _dateTo = DateTime.Today;
+        
+        _timeFrom = new TimeSpan(8, 0, 0);
+        _timeTo = new TimeSpan(17, 0, 0);
+    }
+    
+    private async Task Submit()
+    {
+        if (_dateFrom == null || _timeFrom == null || _dateTo == null || _timeTo == null)
+        {
+            _errorMessage = "Wszystkie pola daty i czasu są wymagane";
+            return;
+        }
+
+        if (_model.SerwisantId == 0)
+        {
+            _errorMessage = "Wybierz serwisanta";
+            return;
+        }
+
+        var dataOd = _dateFrom.Value.Date.Add(_timeFrom.Value);
+        var dataDo = _dateTo.Value.Date.Add(_timeTo.Value);
+
+        if (dataDo <= dataOd)
+        {
+            _errorMessage = "Data i czas zakończenia musi być późniejszy niż data i czas rozpoczęcia";
+            return;
+        }
+
+        try
+        {
+            _isSaving = true;
+            _errorMessage = string.Empty;
+
+            var dostepnoscDto = new DostepnoscSerwisantaDto
+            {
+                SerwisantId = _model.SerwisantId,
+                CzyDostepny = _model.CzyDostepny,
+                DataOd = dataOd,
+                DataDo = dataDo
+            };
+
+            MudDialog.Close(DialogResult.Ok(dostepnoscDto));
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Wystąpił nieoczekiwany błąd: {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

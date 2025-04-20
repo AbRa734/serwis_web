@@ -1,0 +1,60 @@
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using DialogResult = MudBlazor.DialogResult
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Dostępności na @Date.ToString("dd.MM.yyyy HH:mm")</MudText>
+
+        @if (AvailableTechnicians.Any())
+        {
+            <MudText Typo="Typo.subtitle1" Color="Color.Success" Class="mt-3">Dostępni serwisanci:</MudText>
+            <MudList T="string" Dense="true">
+                @foreach (var technician in AvailableTechnicians)
+                {
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        @technician
+                    </MudListItem>
+                }
+            </MudList>
+        }
+        else
+        {
+            <MudText Color="Color.Warning" Class="mt-3">Brak dostępnych serwisantów o tej godzinie</MudText>
+        }
+
+        @if (UnavailableTechnicians.Any())
+        {
+            <MudText Typo="Typo.subtitle1" Color="Color.Error" Class="mt-3">Niedostępni serwisanci:</MudText>
+            <MudList T="string" Dense="true">
+                @foreach (var technician in UnavailableTechnicians)
+                {
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Close">
+                        @technician
+                    </MudListItem>
+                }
+            </MudList>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Zamknij</MudButton>
+        <MudButton Color="Color.Primary" OnClick="AddAvailability">Dodaj dostępność</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public DateTime Date { get; set; }
+    [Parameter] public List<string> AvailableTechnicians { get; set; } = new();
+    [Parameter] public List<string> UnavailableTechnicians { get; set; } = new();
+    
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void AddAvailability()
+    {
+        MudDialog.Close(DialogResult.Ok("add"));
+    }
+}

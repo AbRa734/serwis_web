@@ -21,6 +21,6 @@
     [Parameter] public string Title { get; set; } = "Potwierdź usunięcie";
     [Parameter] public string ContentText { get; set; } = "Czy na pewno chcesz usunąć ten element?";
     
-    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
-    private void Cancel() => MudDialog.Cancel();
+    private void Submit() => MudDialog?.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog?.Cancel();
 }

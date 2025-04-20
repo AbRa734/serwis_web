@@ -1,9 +1,11 @@
 @page "/avability"
 @using ApiService
 @using ApiService.Models
+@using serwis_web.Components
 @using Color = MudBlazor.Color
 @inject IDialogService DialogService
 @inject ApiService ApiService
+@inject ISnackbar Snackbar
 @rendermode InteractiveServer
 
 <style>
@@ -58,6 +60,47 @@
         border-radius: 15px;
         box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
     }
+    
+    .legend {
+        display: flex;
+        gap: 20px;
+        margin: 15px 0;
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+    
+    .legend-available {
+        width: 12px;
+        height: 12px;
+        background-color: #4CAF50;
+        border-radius: 50%;
+    }
+    
+    .legend-unavailable {
+        width: 12px;
+        height: 12px;
+        background-color: #F44336;
+        border-radius: 50%;
+    }
+    
+    .technician-filter {
+        margin-bottom: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .filter-chip {
+        cursor: pointer;
+    }
 
     @@media (max-width: 1280px) {
         .header-content {
@@ -74,61 +117,79 @@
             margin-top: 10px;
         }
     }
-
-
 </style>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="container">
     <MudCard Class="header-card">
         <MudCardHeader Class="header-content">
             <MudText Class="header-title">Lista dostępności serwisantów</MudText>
-            <MudButton Class="new-button" @onclick="ToggleNewAvabilityModal">
+            <MudButton Class="new-button" @onclick="OpenAddAvailabilityDialog">
                 Nowa dostępność
             </MudButton>
         </MudCardHeader>
     </MudCard>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-available"></div>
+            <span>Dostępny</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-unavailable"></div>
+            <span>Niedostępny</span>
+        </div>
+    </div>
+    
+    <div class="technician-filter">
+        <MudChip 
+            T="string"
+            Color="@(selectedTechnicianId == null ? Color.Primary : Color.Default)"
+            OnClick="@(() => FilterByTechnician(null))"
+            Class="filter-chip">
+            Wszyscy
+        </MudChip>
+        @foreach (var technician in _technicians)
+        {
+            <MudChip T="string"
+                Color="@(selectedTechnicianId == technician.Key ? Color.Primary : Color.Default)"
+                OnClick="@(() => FilterByTechnician(technician.Key))"
+                Class="filter-chip">
+                @technician.Value
+            </MudChip>
+        }
+    </div>
 
-    <MudCalendar Items="_events"
+    <MudCalendar Items="_filteredEvents"
                  CellClicked="CellClicked"
                  ItemClicked="ItemClicked"
-                 DayTimeInterval="CalendarTimeInterval.Minutes15"
+                 DayTimeInterval="CalendarTimeInterval.Minutes30"
                  Bordered="false"
                  Dense="false"
                  Class="calendar" />
 </MudContainer>
 
-@if (addNewAvabilityModal && isAdmin)
-{
-    <div class="modal">
-        <div class="containerForm">
-            <i class="fa-solid fa-times" @onclick="CloseNewAvabilityModal"></i>
-            <div class="form">
-                <h2>Dodaj nową dostępność</h2>
-                <div class="add-new-avability">
-                    <h4>Data początek</h4>
-                    <input type="date"/>
-
-                    <h4>Data koniec</h4>
-                    <input type="date" />
-
-                    <button>Dodaj</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
 @code {
-
-    private Boolean isAdmin = true;
-    private bool addNewAvabilityModal = false;
-
+    private bool isAdmin = true;
     private List<CalendarItem> _events = new();
+    private List<CalendarItem> _filteredEvents = new();
     private Dictionary<CalendarItem, DostepnoscSerwisanta> _eventToDostepnosc = new();
     private List<DostepnoscSerwisanta> _wszystkieDostepnosci = new();
+    private Dictionary<int, string> _technicians = new();
+    private int? selectedTechnicianId = null;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadAvailabilities();
+    }
+
+    private async Task LoadAvailabilities()
+    {
+        _events.Clear();
+        _filteredEvents.Clear();
+        _eventToDostepnosc.Clear();
+        _wszystkieDostepnosci.Clear();
+        _technicians.Clear();
+        
         var result = await ApiService.DostepnosciSerwisantaRepo.DostepnosciSerwisantaGet();
         if (result.Data is not null)
         {
@@ -137,84 +198,181 @@
             foreach (var d in result.Data)
             {
                 var imieNazwisko = $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
+                
+                if (!_technicians.ContainsKey(d.SerwisantId))
+                {
+                    _technicians[d.SerwisantId] = imieNazwisko;
+                }
+                
                 var item = new CalendarItem
-                    {
-                        Start = d.DataOd,
-                        End = d.DataDo,
-                        Text = $"{imieNazwisko} ({(d.CzyDostepny ? "Dostępny" : "Niedostępny")})"
-                    };
+                {
+                    Start = d.DataOd,
+                    End = d.DataDo,
+                    Text = $"{imieNazwisko} ({(d.CzyDostepny ? "Dostępny" : "Niedostępny")})",
+                };
                 _events.Add(item);
                 _eventToDostepnosc[item] = d;
             }
+            
+            _filteredEvents = new List<CalendarItem>(_events);
         }
     }
 
+    private void FilterByTechnician(int? technicianId)
+    {
+        selectedTechnicianId = technicianId;
+        
+        if (technicianId == null)
+        {
+            _filteredEvents = new List<CalendarItem>(_events);
+        }
+        else
+        {
+            _filteredEvents = _events
+                .Where(e => _eventToDostepnosc.TryGetValue(e, out var d) && d.SerwisantId == technicianId)
+                .ToList();
+        }
+    }
+    private async Task OpenAddAvailabilityDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["TechnicianDict"] = _technicians
+        };
+    
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddAvailabilityDialog>("Dodaj nową dostępność", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var newAvailability = (DostepnoscSerwisantaDto)result.Data;
+        
+            var apiResult = await ApiService.DostepnosciSerwisantaRepo.DostepnoscSerwisantaPost(newAvailability);
+        
+            if (apiResult.Data != null)
+            {
+                Snackbar.Add("Dostępność została dodana pomyślnie", Severity.Success);
+                await LoadAvailabilities(); // Reload all data
+            }
+            else
+            {
+                Snackbar.Add($"Błąd: {apiResult.Error}", Severity.Error);
+            }
+        }
+    }
     private async Task CellClicked(DateTime dateTime)
     {
         var dzien = dateTime.Date;
-        var lista = _wszystkieDostepnosci
-            .Where(d =>
-                d.DataOd.Date <= dzien &&
-                d.DataDo.Date >= dzien)
-            .GroupBy(d => d.SerwisantId)
-            .Select(g => g.OrderByDescending(x => x.DataDo).First())
+        var godzina = dateTime.TimeOfDay;
+    
+        var dostepniSerwisanci = _wszystkieDostepnosci
+            .Where(d => 
+                d.DataOd <= dateTime && 
+                d.DataDo >= dateTime && 
+                d.CzyDostepny)
+            .Select(d => $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim())
+            .ToList();
+        
+        var niedostepniSerwisanci = _wszystkieDostepnosci
+            .Where(d => 
+                d.DataOd <= dateTime && 
+                d.DataDo >= dateTime && 
+                !d.CzyDostepny)
+            .Select(d => $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim())
             .ToList();
 
-        if (!lista.Any())
+        var parameters = new DialogParameters
         {
-            await DialogService.ShowMessageBox("Brak danych", $"Brak informacji o serwisantach na dzień {dzien:d}");
-            return;
-        }
-
-        var linie = lista
-            .Select(d =>
+            ["Date"] = dateTime,
+            ["AvailableTechnicians"] = dostepniSerwisanci,
+            ["UnavailableTechnicians"] = niedostepniSerwisanci
+        };
+    
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        };
+    
+        var dialog = await DialogService.ShowAsync<TechnicianAvailabilityDialog>(
+            $"Dostępność na {dzien:dd.MM.yyyy}, {godzina:hh\\:mm}", 
+            parameters, 
+            options);
+        
+        var result = await dialog.Result;
+    
+        if (!result.Canceled && result.Data is string action)
+        {
+            if (action == "add")
             {
-                var imieNazwisko = $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
-                var status = d.CzyDostepny ? "✅ Dostępny" : "❌ Niedostępny";
-                return $"{imieNazwisko} – {status}";
-            });
-
-        var wiadomosc = string.Join("\n", linie);
-        await DialogService.ShowMessageBox($"Serwisanci w dniu {dzien:dddd, dd MMM yyyy}", wiadomosc);
+                await OpenAddAvailabilityDialog();
+            }
+        }
     }
-
     private async Task ItemClicked(CalendarItem item)
     {
         if (!_eventToDostepnosc.TryGetValue(item, out var dostepnosc))
             return;
 
         var imieNazwisko = $"{dostepnosc.Serwisant.Uzytkownik.Imie} {dostepnosc.Serwisant.Uzytkownik.Nazwisko}".Trim();
+        var statusText = dostepnosc.CzyDostepny ? "Dostępny" : "Niedostępny";
 
-        bool? confirm = await DialogService.ShowMessageBox(
-            "Usuń dostępność",
-            $"Czy chcesz usunąć dostępność:\n\n{imieNazwisko}\n{dostepnosc.DataOd:g} – {dostepnosc.DataDo:g}?",
-            yesText: "Tak", noText: "Nie");
-
-        if (confirm == true)
+        var parameters = new DialogParameters
         {
-            var result = await ApiService.DostepnosciSerwisantaRepo.DostepnoscSerwisantaDelete(dostepnosc.DostepnoscSerwisantaId);
-            if (result.Data)
+            ["Dostepnosc"] = dostepnosc,
+            ["SerwisantName"] = imieNazwisko,
+            ["StatusText"] = statusText,
+            ["AllowEditing"] = isAdmin
+        };
+    
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        };
+    
+        var dialog = await DialogService.ShowAsync<AvailabilityDetailsDialog>($"Szczegóły dostępności", parameters, options);
+        var result = await dialog.Result;
+    
+        if (!result.Canceled && result.Data is string action)
+        {
+            if (action == "delete")
             {
-                _events.Remove(item);
-                _eventToDostepnosc.Remove(item);
-                StateHasChanged();
-                await DialogService.ShowMessageBox("Sukces", "Dostępność została usunięta.");
+                bool? confirm = await DialogService.ShowMessageBox(
+                    "Usuń dostępność",
+                    $"Czy na pewno chcesz usunąć dostępność serwisanta {imieNazwisko}?",
+                    yesText: "Tak", noText: "Nie");
+            
+                if (confirm == true)
+                {
+                    var apiResult = await ApiService.DostepnosciSerwisantaRepo.DostepnoscSerwisantaDelete(dostepnosc.DostepnoscSerwisantaId);
+                    if (apiResult.Data)
+                    {
+                        Snackbar.Add("Dostępność została usunięta", Severity.Success);
+                        await LoadAvailabilities();
+                    }
+                    else
+                    {
+                        Snackbar.Add($"Błąd: {apiResult.Error}", Severity.Error);
+                    }
+                }
             }
-            else
+            else if (action == "edit")
             {
-                await DialogService.ShowMessageBox("Błąd", $"Nie udało się usunąć dostępności: {result.Error}");
+                Snackbar.Add("Funkcja edycji nie jest jeszcze dostępna", Severity.Info);
             }
         }
     }
-
-    private void ToggleNewAvabilityModal()
-    {
-        addNewAvabilityModal = true;
-    }
-
-    private void CloseNewAvabilityModal()
-    {
-        addNewAvabilityModal = false;
-    }
-
 }

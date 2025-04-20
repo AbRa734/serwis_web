@@ -2,11 +2,14 @@
 @rendermode InteractiveServer
 @using ApiService
 @using ApiService.Models
+@using serwis_web.Components
 @using Color = MudBlazor.Color
+@using DialogService = MudBlazor.DialogService
 @using Placement = MudBlazor.Placement
 @using Size = MudBlazor.Size
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Użytkownicy</PageTitle>
 
@@ -182,13 +185,10 @@
             margin-top: 10px;
         }
     }
-
 </style>
 
-
-
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
-
+    
     <MudCardHeader Class="order-header">
         <MudText Class="order-header-tittle">Użytkownicy</MudText>
     </MudCardHeader>
@@ -205,10 +205,10 @@
                           OnDebounceIntervalElapsed="ApplySearch"
                           Class="order-search"></MudTextField>
         </MudItem>
+        <MudButton Class="new-button" OnClick="@(() => NavigateToNewUser())">Dodaj użytkownika</MudButton>
     </MudCardHeader>
 
-
-    <MudDataGrid T="Zamowienie" Items="@_filteredZamówienia" Hover="true" Loading="@_loading"
+    <MudDataGrid T="Uzytkownik" Items="@_filteredUzytkownicy" Hover="true" Loading="@_loading"
                  LoadingProgressColor="Color.Info" Filterable="true"
                  FilterMode="DataGridFilterMode.ColumnFilterMenu"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
@@ -217,62 +217,66 @@
                  Bordered="false" Dense="false" Class="order-grid">
 
         <Columns>
-            <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.ZamowienieId" Title="Numer Zlecenia" HeaderClass="order-category-left">
+            <PropertyColumn T="Uzytkownik" TProperty="int" Property="x => x.UzytkownikId" Title="ID" HeaderClass="order-category-left">
                 <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                        <MudLink Href="@($"/users/{context.Item.ZamowienieId}")" Class="order-category-single-item-id">@context.Item.ZamowienieId.ToString("D5")</MudLink>
+                    <MudChip Size="Size.Medium" Class="status-default">
+                        <MudLink Href="@($"/users/{context.Item.UzytkownikId}")" Class="order-category-single-item-id">@context.Item.UzytkownikId.ToString("D5")</MudLink>
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
 
-            <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
+            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.Imie" Title="Imię" HeaderClass="order-category">
                 <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                    <MudChip Size="Size.Medium" Class="status-default">
+                        <MudText Class="order-category-single-item">@(context.Item.Imie ?? "Nie określono")</MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.Nazwisko" Title="Nazwisko" HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="status-default">
+                        <MudText Class="order-category-single-item">@(context.Item.Nazwisko ?? "Nie określono")</MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.AdresEmail.Email" Title="Email" HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="status-default">
+                        <MudText Class="order-category-single-item">@context.Item.AdresEmail.Email</MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.NumerTelefonu.Numer" Title="Telefon" HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="status-default">
+                        <MudText Class="order-category-single-item">@(context.Item.NumerTelefonu?.Numer ?? "Nie określono")</MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn T="Uzytkownik" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="status-default">
                         <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
 
-
-            <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
+            <TemplateColumn HeaderClass="order-category" Title="Akcje">
                 <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                        <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
-                    </MudChip>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditUser(context.Item.UzytkownikId))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteUser(context.Item.UzytkownikId))" />
                 </CellTemplate>
-            </PropertyColumn>
-
-            <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
-                <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                        <MudText Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
-                    </MudChip>
-                </CellTemplate>
-            </PropertyColumn>
-
-            <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status" HeaderClass="order-category">
-                <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
-                        <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
-                    </MudChip>
-                </CellTemplate>
-            </PropertyColumn>
-
-
-            <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status" HeaderClass="order-category">
-                <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
-                        <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
-                    </MudChip>
-                </CellTemplate>
-            </PropertyColumn>
-
+            </TemplateColumn>
         </Columns>
         <PagerContent>
-            <MudDataGridPager T="Zamowienie" RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
+            <MudDataGridPager T="Uzytkownik" RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
         </PagerContent>
         <NoRecordsContent>
-            <MudText>Nie znaleziono zleceń</MudText>
+            <MudText>Nie znaleziono użytkowników</MudText>
         </NoRecordsContent>
     </MudDataGrid>
 </MudContainer>
@@ -280,33 +284,33 @@
 @code {
     private string _searchString = "";
     private bool _loading = true;
-    private List<Zamowienie> _zamowienia = new();
-    private List<Zamowienie> _filteredZamówienia = new();
+    private List<Uzytkownik> _uzytkownicy = new();
+    private List<Uzytkownik> _filteredUzytkownicy = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadOrdersAsync();
+        await LoadUsersAsync();
     }
 
-    private async Task LoadOrdersAsync()
+    private async Task LoadUsersAsync()
     {
         _loading = true;
         try
         {
-            var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+            var result = await ApiService.UzytkownicyRepo.UzytkownicyGet();
             if (result.Data != null)
             {
-                _zamowienia = result.Data;
-                _filteredZamówienia = _zamowienia;
+                _uzytkownicy = result.Data;
+                _filteredUzytkownicy = _uzytkownicy;
 
-                if (_zamowienia.Count == 0)
+                if (_uzytkownicy.Count == 0)
                 {
-                    Snackbar.Add("Nie znaleziono żadnych zleceń", Severity.Info);
+                    Snackbar.Add("Nie znaleziono żadnych użytkowników", Severity.Info);
                 }
             }
             else
             {
-                Snackbar.Add($"Błąd podczas ładowania zleceń: {result.Error}", Severity.Error);
+                Snackbar.Add($"Błąd podczas ładowania użytkowników: {result.Error}", Severity.Error);
             }
         }
         catch (Exception ex)
@@ -324,34 +328,51 @@
     {
         if (string.IsNullOrWhiteSpace(_searchString))
         {
-            _filteredZamówienia = _zamowienia;
+            _filteredUzytkownicy = _uzytkownicy;
         }
         else
         {
             string searchLower = _searchString.ToLower();
-            _filteredZamówienia = _zamowienia.Where(s =>
-                s.ZamowienieId.ToString().Contains(searchLower) ||
-                // s.RodzajZlecenia?.ToLower().Contains(searchLower) == true ||
-                s.DataDodania.ToString("dd MMMM yyyy").ToLower().Contains(searchLower) ||
-                (s.ZrealizowanaDataRealizacjiDo.HasValue && s.ZrealizowanaDataRealizacjiDo.Value.ToString("dd MMMM yyyy").ToLower().Contains(searchLower)) ||
-                // (s.Koszt.HasValue && s.Koszt.ToString().Contains(searchLower)) ||
-                s.Status.Nazwa.ToLower().Contains(searchLower)
+            _filteredUzytkownicy = _uzytkownicy.Where(u =>
+                u.UzytkownikId.ToString().Contains(searchLower) ||
+                (u.Imie?.ToLower().Contains(searchLower) == true) ||
+                (u.Nazwisko?.ToLower().Contains(searchLower) == true) ||
+                u.AdresEmail.Email.ToLower().Contains(searchLower) ||
+                (u.NumerTelefonu?.Numer?.ToLower().Contains(searchLower) == true) ||
+                u.DataDodania.ToString("dd MMMM yyyy").ToLower().Contains(searchLower)
             ).ToList();
         }
 
         StateHasChanged();
     }
 
-    private string GetStatusStyle(string status)
+    private void NavigateToNewUser()
     {
-        return status switch
+    }
+
+    private void EditUser(int userId)
+    {
+    }
+
+    private async Task DeleteUser(int id)
+    {
+        StateHasChanged();
+        var parameters = new DialogParameters
         {
-            "Zakończony" => "status-finished",
-            "W realizacji" => "status-realization",
-            "Anulowany" => "status-canceled",
-            "Oczekujący" => "status-waiting",
-            "Nowy" => "status-new",
-            _ => "status-default"
+            ["ContentText"] = "Czy na pewno chcesz usunąć tego użytkownika?"
         };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Potwierdź usunięcie", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+        }
     }
 }

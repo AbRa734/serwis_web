@@ -1,5 +1,10 @@
 ﻿@page "/statistics"
 @rendermode InteractiveServer
+@inject ApiService.ApiService ApiService
+@using ApiService.Models
+@using System.Linq
+@using System.Collections.Generic
+@using Color = MudBlazor.Color
 
 <PageTitle>Statystyki</PageTitle>
 
@@ -7,94 +12,223 @@
     <h2>Statystyki</h2>
 
     <div class="service-back">
-        <div class="charts-section">
-            <div class="chart-container">
-                <h3>Serwisy według statusu</h3>
+        @if (_isLoading)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            <p>Ładowanie danych...</p>
+        }
+        else
+        {
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3>Zamówienia według statusu</h3>
+                    <MudPaper Elevation="0" Class="pa-4 chart-paper">
+                        <MudChart ChartType="ChartType.Pie"
+                                  Width="300px"
+                                  Height="300px"
+                                  InputData="@_orderStatusData"
+                                  InputLabels="@_orderStatusLabels" />
+                    </MudPaper>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Obciążenie serwisantów</h3>
+                    <MudPaper Elevation="0" Class="pa-4 chart-paper">
+                        <MudChart ChartType="ChartType.Bar"
+                                  Width="500px"
+                                  Height="300px"
+                                  ChartSeries="@_technicianWorkloadSeries"
+                                  XAxisLabels="@_technicianNames"/>
+                    </MudPaper>
+                </div>
+            </div>
+
+            <div class="chart-full-width">
+                <h3>Zamówienia w czasie</h3>
                 <MudPaper Elevation="0" Class="pa-4 chart-paper">
-                    <MudChart ChartType="ChartType.Pie"
-                              Width="300px"
-                              Height="300px"
-                              InputData="@_serviceStatusData"
-                              InputLabels="@_serviceStatusLabels" />
+                    <MudChart ChartType="ChartType.Line"
+                              ChartSeries="@_monthlySeries"
+                              XAxisLabels="@_monthLabels"
+                              Width="100%"
+                              Height="350px"/>
                 </MudPaper>
             </div>
 
-            <div class="chart-container">
-                <h3>Obciążenie serwisantów</h3>
-                <MudPaper Elevation="0" Class="pa-4 chart-paper">
-                    <MudChart ChartType="ChartType.Bar"
-                              Width="500px"
-                              Height="300px"
-                              ChartSeries="@_technicianWorkloadSeries"
-                              XAxisLabels="@_technicianNames"/>
-                </MudPaper>
+            <div class="stats-cards">
+                @foreach (var card in _statusCards)
+                {
+                    <MudCard Elevation="2" Class="@($"stat-card {card.CssClass}")">
+                        <MudCardContent>
+                            <div class="stat-value">@card.Count</div>
+                            <div class="stat-label">@card.Label</div>
+                        </MudCardContent>
+                    </MudCard>
+                }
             </div>
-        </div>
-
-        <div class="chart-full-width">
-            <h3>Zgłoszenia w czasie</h3>
-            <MudPaper Elevation="0" Class="pa-4 chart-paper">
-                <MudChart ChartType="ChartType.Line"
-                          ChartSeries="@_monthlySeries"
-                          XAxisLabels="@_monthLabels"
-                          Width="100%"
-                          Height="350px"/>
-            </MudPaper>
-        </div>
-
-        <div class="stats-cards">
-            <MudCard Elevation="2" Class="stat-card status-new">
-                <MudCardContent>
-                    <div class="stat-value">42</div>
-                    <div class="stat-label">Nowe zlecenia</div>
-                </MudCardContent>
-            </MudCard>
-
-            <MudCard Elevation="2" Class="stat-card status-realization">
-                <MudCardContent>
-                    <div class="stat-value">18</div>
-                    <div class="stat-label">W trakcie realizacji</div>
-                </MudCardContent>
-            </MudCard>
-
-            <MudCard Elevation="2" Class="stat-card status-waiting">
-                <MudCardContent>
-                    <div class="stat-value">7</div>
-                    <div class="stat-label">Oczekujące</div>
-                </MudCardContent>
-            </MudCard>
-
-            <MudCard Elevation="2" Class="stat-card status-finished">
-                <MudCardContent>
-                    <div class="stat-value">135</div>
-                    <div class="stat-label">Zakończone</div>
-                </MudCardContent>
-            </MudCard>
-
-            <MudCard Elevation="2" Class="stat-card status-canceled">
-                <MudCardContent>
-                    <div class="stat-value">12</div>
-                    <div class="stat-label">Anulowane</div>
-                </MudCardContent>
-            </MudCard>
-        </div>
+        }
     </div>
 </div>
 
 @code {
-    private double[] _serviceStatusData = { 42, 18, 7, 135, 12 };
-    private string[] _serviceStatusLabels = { "Nowe", "W realizacji", "Oczekujące", "Zakończone", "Anulowane" };
-
-    private List<ChartSeries> _technicianWorkloadSeries = new List<ChartSeries>
-    {
-        new ChartSeries() { Name = "Przypisane zlecenia", Data = new double[] { 12, 8, 15, 7, 3 }, ShowDataMarkers = true}
-    };
-    private string[] _technicianNames = { "Jan K.", "Anna N.", "Piotr W.", "Marta K.", "Tomasz Z." };
-
-    private List<ChartSeries> _monthlySeries = new List<ChartSeries>
-    {
-        new ChartSeries() { Name = "Nowe zlecenia", Data = new double[] { 12, 14, 18, 15, 22, 27, 30, 25, 21, 28, 32, 42 }, ShowDataMarkers = true},
-        new ChartSeries() { Name = "Zakończone", Data = new double[] { 10, 12, 15, 14, 20, 23, 25, 22, 19, 25, 30, 35 }, ShowDataMarkers = true}
-    };
+    private double[] _orderStatusData = Array.Empty<double>();
+    private string[] _orderStatusLabels = Array.Empty<string>();
+    private List<ChartSeries> _technicianWorkloadSeries = new();
+    private string[] _technicianNames = Array.Empty<string>();
+    private List<ChartSeries> _monthlySeries = new();
     private string[] _monthLabels = { "Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru" };
+    private List<StatusCard> _statusCards = new();
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            _isLoading = true;
+
+            await Task.WhenAll(
+                LoadOrderStatusData(),
+                LoadTechnicianWorkloadData(),
+                LoadMonthlyOrderData()
+            );
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"Error loading statistics: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadOrderStatusData()
+    {
+        var statusesResult = await ApiService.StatusyRepo.StatusyGet();
+        var ordersResult = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+
+        if (statusesResult.Data != null && ordersResult.Data != null)
+        {
+            var statusGroups = ordersResult.Data
+                .GroupBy(z => z.StatusId)
+                .Select(g => new { StatusId = g.Key, Count = g.Count() })
+                .ToList();
+
+            var statusLabels = new List<string>();
+            var statusData = new List<double>();
+            var statusCards = new List<StatusCard>();
+
+            foreach (var status in statusesResult.Data)
+            {
+                var count = statusGroups.FirstOrDefault(g => g.StatusId == status.StatusId)?.Count ?? 0;
+                
+                statusLabels.Add(status.Nazwa);
+                statusData.Add(count);
+                
+                string cssClass = status.Nazwa switch
+                {
+                    "Nowe" => "status-new",
+                    "W trakcie realizacji" => "status-realization",
+                    "Oczekujące" => "status-waiting",
+                    "Zakończone" => "status-finished",
+                    "Anulowane" => "status-canceled",
+                    _ => "status-default"
+                };
+
+                statusCards.Add(new StatusCard
+                {
+                    Label = status.Nazwa,
+                    Count = count,
+                    CssClass = cssClass
+                });
+            }
+
+            _orderStatusLabels = statusLabels.ToArray();
+            _orderStatusData = statusData.ToArray();
+            _statusCards = statusCards;
+        }
+    }
+
+    private async Task LoadTechnicianWorkloadData()
+    {
+        var serwisanciResult = await ApiService.SerwisanciRepo.SerwisanciGet();
+        var ordersResult = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+
+        if (serwisanciResult.Data != null && ordersResult.Data != null)
+        {
+            var technicianWorkload = serwisanciResult.Data
+                .Take(5) 
+                .Select(s => {
+                    var assignedOrders = ordersResult.Data.Count(order => order.SerwisantId == s.SerwisantId);
+                    return new { 
+                        Name = $"{s.Uzytkownik?.Imie?.FirstOrDefault() ?? '?'}.{s.Uzytkownik?.Nazwisko ?? "?"}",
+                        AssignedCount = assignedOrders 
+                    };
+                })
+                .OrderByDescending(t => t.AssignedCount)
+                .ToList();
+
+            _technicianNames = technicianWorkload.Select(t => t.Name).ToArray();
+            _technicianWorkloadSeries = new List<ChartSeries>
+            {
+                new ChartSeries() { 
+                    Name = "Przypisane zamówienia", 
+                    Data = technicianWorkload.Select(t => (double)t.AssignedCount).ToArray(), 
+                    ShowDataMarkers = true 
+                }
+            };
+        }
+    }
+
+    private async Task LoadMonthlyOrderData()
+    {
+        var ordersResult = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+
+        if (ordersResult.Data != null)
+        {
+            var currentYear = DateTime.Now.Year;
+            var monthlyNewOrders = new double[12];
+            var monthlyCompletedOrders = new double[12];
+
+            foreach (var order in ordersResult.Data)
+            {
+                if (order.DataDodania.Year == currentYear)
+                {
+                    int month = order.DataDodania.Month - 1; // 0-based index for array
+                    monthlyNewOrders[month]++;
+                }
+
+                if (order.Status?.Nazwa == "Zakończone" && order.DataAktualizacji?.Year == currentYear)
+                {
+                    int month = order.DataAktualizacji.Value.Month - 1;
+                    monthlyCompletedOrders[month]++;
+                }
+            }
+
+            _monthlySeries = new List<ChartSeries>
+            {
+                new ChartSeries() { 
+                    Name = "Nowe zamówienia", 
+                    Data = monthlyNewOrders, 
+                    ShowDataMarkers = true 
+                },
+                new ChartSeries() { 
+                    Name = "Zakończone", 
+                    Data = monthlyCompletedOrders, 
+                    ShowDataMarkers = true 
+                }
+            };
+        }
+    }
+
+    private class StatusCard
+    {
+        public string Label { get; set; } = string.Empty;
+        public double Count { get; set; }
+        public string CssClass { get; set; } = "status-default";
+    }
 }

@@ -30,7 +30,7 @@
             else
             {
                 <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-3">
-                    <MudTabPanel Text="Użytkownicy" Icon="@Icons.Material.Filled.Person">
+                    <MudTabPanel Text="@($"Użytkownicy ({users.Count})")" Icon="@Icons.Material.Filled.Person">
                         @if (users.Any())
                         {
                             <div class="search-results">
@@ -39,16 +39,16 @@
                                     <MudCard Elevation="2" Class="my-2">
                                         <MudCardContent>
                                             <div class="d-flex gap-4">
-                                                <MudAvatar Color="Color.Primary">@user.Imie[0]@user.Nazwisko[0]</MudAvatar>
+                                                <MudAvatar Color="Color.Primary">@(user.Imie?.Length > 0 ? user.Imie[0] : ' ')@(user.Nazwisko?.Length > 0 ? user.Nazwisko[0] : ' ')</MudAvatar>
                                                 <div>
                                                     <MudText Typo="Typo.h6">@user.Imie @user.Nazwisko</MudText>
-                                                    <MudText Typo="Typo.body2">@user.AdresEmail.Email</MudText>
+                                                    <MudText Typo="Typo.body2">@(user.AdresEmail?.Email ?? "")</MudText>
                                                 </div>
                                             </div>
                                         </MudCardContent>
                                         <MudCardActions>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" 
-                                                     Href="@($"/users/{user.UzytkownikId}")">
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                                       Href="@($"/users/{user.UzytkownikId}")">
                                                 Szczegóły
                                             </MudButton>
                                         </MudCardActions>
@@ -63,7 +63,7 @@
                             </div>
                         }
                     </MudTabPanel>
-                    <MudTabPanel Text="Zamówienia" Icon="@Icons.Material.Filled.ShoppingCart">
+                    <MudTabPanel Text="@($"Zamówienia ({orders.Count})")" Icon="@Icons.Material.Filled.ShoppingCart">
                         @if (orders.Any())
                         {
                             <div class="search-results">
@@ -72,11 +72,19 @@
                                     <MudCard Elevation="2" Class="my-2">
                                         <MudCardContent>
                                             <MudText Typo="Typo.h6">Zamówienie #@order.ZamowienieId</MudText>
-                                            <MudText Typo="Typo.body2">@order.Status</MudText>
+                                            <MudText Typo="Typo.body2">Status: @(order.Status?.Nazwa ?? "Nieznany")</MudText>
+                                            @if (order.DataDodania != default)
+                                            {
+                                                <MudText Typo="Typo.body2">Data utworzenia: @order.DataDodania.ToString("dd.MM.yyyy")</MudText>
+                                            }
+                                            @if (order.Klient != null)
+                                            {
+                                                <MudText Typo="Typo.body2">Klient: @order.Klient.Uzytkownik?.Imie @order.Klient.Uzytkownik?.Nazwisko</MudText>
+                                            }
                                         </MudCardContent>
                                         <MudCardActions>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" 
-                                                      Href="@($"/orders/{order.ZamowienieId}")">
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                                       Href="@($"/orders/{order.ZamowienieId}")">
                                                 Szczegóły
                                             </MudButton>
                                         </MudCardActions>
@@ -91,7 +99,7 @@
                             </div>
                         }
                     </MudTabPanel>
-                    <MudTabPanel Text="Serwisy" Icon="@Icons.Material.Filled.Build">
+                    <MudTabPanel Text="@($"Serwisy ({services.Count})")" Icon="@Icons.Material.Filled.Build">
                         @if (services.Any())
                         {
                             <div class="search-results">
@@ -99,12 +107,19 @@
                                 {
                                     <MudCard Elevation="2" Class="my-2">
                                         <MudCardContent>
-                                            <MudText Typo="Typo.h6">Serwis #@service.SerwisId</MudText>
+                                            <MudText Typo="Typo.h6">@service.Nazwa</MudText>
+                                            <MudText Typo="Typo.subtitle1">Serwis #@service.SerwisId</MudText>
                                             <MudText Typo="Typo.body2">@service.Opis</MudText>
+                                            <MudText Typo="Typo.body2">
+                                                Typ: @(service.TypSerwisu?.Nazwa ?? "Nieznany")
+                                            </MudText>
+                                            <MudText Typo="Typo.body2">
+                                                Dodano: @service.DataDodania.ToString("dd.MM.yyyy")
+                                            </MudText>
                                         </MudCardContent>
                                         <MudCardActions>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" 
-                                                     Href="@($"/services/{service.SerwisId}")">
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                                       Href="@($"/services/{service.SerwisId}")">
                                                 Szczegóły
                                             </MudButton>
                                         </MudCardActions>
@@ -129,13 +144,13 @@
     [Parameter]
     [SupplyParameterFromQuery(Name = "q")]
     public string? searchQuery { get; set; }
-    
+
     private bool isLoading = true;
     private bool showNoResults = false;
     private List<Uzytkownik> users = new();
-    private List<Zamowienie> orders = new(); 
-    private List<Serwis> services = new(); 
-    
+    private List<Zamowienie> orders = new();
+    private List<Serwis> services = new();
+
     protected override async Task OnParametersSetAsync()
     {
         if (string.IsNullOrWhiteSpace(searchQuery))
@@ -144,22 +159,61 @@
             showNoResults = true;
             return;
         }
-        
+
         await PerformSearch();
     }
-    
+
     private async Task PerformSearch()
     {
         isLoading = true;
         showNoResults = false;
-        
+
         try
         {
-            //TODO: dodać logikę
-            users = new List<Uzytkownik>();
-            orders = new List<Zamowienie>();
-            services = new List<Serwis>();
-            
+            var searchTerms = searchQuery.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var usersResult = await ApiService.UzytkownicyRepo.UzytkownicyGet();
+            var ordersResult = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+            var servicesResult = await ApiService.SerwisyRepo.SerwisyGet();
+
+            if (usersResult.Data != null)
+            {
+                users = usersResult.Data.Where(u =>
+                    searchTerms.Any(term =>
+                        (u.Imie != null && u.Imie.ToLower().Contains(term)) ||
+                        (u.Nazwisko != null && u.Nazwisko.ToLower().Contains(term)) ||
+                        (u.AdresEmail != null && u.AdresEmail.Email != null && u.AdresEmail.Email.ToLower().Contains(term)) ||
+                        u.UzytkownikId.ToString() == term
+                    )
+                ).ToList();
+            }
+
+            if (ordersResult.Data != null)
+            {
+                orders = ordersResult.Data.Where(o =>
+                    searchTerms.Any(term =>
+                        o.ZamowienieId.ToString() == term ||
+                        (o.Status != null && o.Status.Nazwa != null && o.Status.Nazwa.ToLower().Contains(term)) ||
+                        (o.Klient != null && o.Klient.Uzytkownik != null &&
+                         ((o.Klient.Uzytkownik.Imie != null && o.Klient.Uzytkownik.Imie.ToLower().Contains(term)) ||
+                          (o.Klient.Uzytkownik.Nazwisko != null && o.Klient.Uzytkownik.Nazwisko.ToLower().Contains(term))))
+                    )
+                ).ToList();
+            }
+
+            if (servicesResult.Data != null)
+            {
+                services = servicesResult.Data.Where(s =>
+                    searchTerms.Any(term =>
+                        s.SerwisId.ToString() == term ||
+                        (s.Nazwa != null && s.Nazwa.ToLower().Contains(term)) ||
+                        (s.Opis != null && s.Opis.ToLower().Contains(term)) ||
+                        (s.TypSerwisu != null && s.TypSerwisu.Nazwa != null &&
+                         s.TypSerwisu.Nazwa.ToLower().Contains(term))
+                    )
+                ).ToList();
+            }
+
             showNoResults = !users.Any() && !orders.Any() && !services.Any();
         }
         catch (Exception ex)

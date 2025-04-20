@@ -1,5 +1,9 @@
 ﻿@page "/contact"
+@using ApiService
+@using ApiService.Models
+@using ApiService.Repositories
 @rendermode InteractiveServer
+@inject ApiService ApiService
 @inject ISnackbar Snackbar
 
 <PageTitle>Kontakt</PageTitle>
@@ -73,7 +77,16 @@
             </div>
         </div>
 
-        <button @onclick="SendMessage">Wyślij wiadomość</button>
+        <button @onclick="SendMessage" disabled="@_isSending">
+            @if (_isSending)
+            {
+                <span>Wysyłanie...</span>
+            }
+            else
+            {
+                <span>Wyślij wiadomość</span>
+            }
+        </button>
     </div>
 </div>
 
@@ -82,8 +95,9 @@
     private string _email = "";
     private string _subject = "";
     private string _message = "";
+    private bool _isSending = false;
 
-    private void SendMessage()
+    private async Task SendMessage()
     {
         if (string.IsNullOrWhiteSpace(_name) || string.IsNullOrWhiteSpace(_email) ||
             string.IsNullOrWhiteSpace(_subject) || string.IsNullOrWhiteSpace(_message))
@@ -92,11 +106,64 @@
             return;
         }
 
-        Snackbar.Add("Wiadomość została wysłana! Dziękujemy za kontakt.", Severity.Success);
+        if (!IsValidEmail(_email))
+        {
+            Snackbar.Add("Podaj prawidłowy adres email", Severity.Warning);
+            return;
+        }
 
+        try
+        {
+            _isSending = true;
+
+            var emailRequest = new KontaktEmailRequest
+            {
+                Imie = _name,
+                Email = _email,
+                Temat = _subject,
+                Tresc = _message
+            };
+
+            var result = await ApiService.KontaktEmailRepo.KontaktEmailPost(emailRequest);
+
+            if (result.Error == null && result.Data)
+            {
+                Snackbar.Add("Wiadomość została wysłana! Dziękujemy za kontakt.", Severity.Success);
+                ResetForm();
+            }
+            else
+            {
+                Snackbar.Add($"Wystąpił błąd podczas wysyłania wiadomości: {result.Error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił nieoczekiwany błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSending = false;
+        }
+    }
+
+    private void ResetForm()
+    {
         _name = "";
         _email = "";
         _subject = "";
         _message = "";
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

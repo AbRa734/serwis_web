@@ -1,85 +1,498 @@
 ﻿@page "/settings"
+@inject ApiService ApiService
 @rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using ApiService
+@using ApiService.Models
+@using ApiService.Repositories
+
+<style>
+	.settings-container {
+		display: flex;
+		flex-direction: column;
+		gap: 23px;
+		padding: 0;
+		margin: 0;
+		padding-left: 5px;
+		padding-right: 20px;
+	}
+
+	.settings-container h2 {
+		font-size: 30px;
+		font-weight: 600;
+		margin: 0;
+		padding: 0;
+	}
+
+	.settings-back {
+		display: flex;
+		flex-direction: column;
+		gap: 25px;
+		width: 100%;
+		padding: 30px;
+		background-color: #FFFFFF;
+		border-radius: 10px;
+		box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+		margin: 0;
+	}
+
+	.settings-tab {
+		display: flex;
+		width: 100%;
+		gap: 100px;
+		padding: 0;
+		margin: 0;
+	}
+
+	.settings-col {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.settings-col h2 {
+		font-size: 30px;
+		text-align: center;
+	}
+
+	.settings-col h4 {
+		font-size: 16px;
+		font-weight: 500;
+		padding: 0;
+		margin: 0;
+		color: #606060;
+	}
+
+	.settings-row {
+		display: flex;
+		align-items: center;
+		gap: 40px;
+		width: 100%;
+	}
+
+	.single-col {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		width: 100%;
+	}
+
+	input {
+		background-color: #F5F6FA;
+		border: solid 1px #D5D5D5;
+		width: 100%;
+		padding: 15px;
+		border-radius: 5px;
+		color: #A6A6A6;
+		font-size: 14px;
+		margin-bottom: 10px;
+	}
+
+	input {
+		height: 50px;
+	}
+
+	.setting-btn {
+		background-color: #4880FF;
+		border: none;
+		border-radius: 10px;
+		padding: 15px;
+		color: #FFFFFF;
+		font-size: 16px;
+		transition: all 0.3s ease-in-out;
+		cursor: pointer;
+		margin-top: 5px;
+	}
+
+	.setting-btn:hover {
+		background-color: #336ff5;
+	}
+
+	.success-message {
+		background-color: #d4edda;
+		color: #155724;
+		border: 1px solid #c3e6cb;
+		padding: 10px;
+		margin-bottom: 15px;
+		border-radius: 4px;
+	}
+
+	.error-message {
+		background-color: #f8d7da;
+		color: #721c24;
+		border: 1px solid #f5c6cb;
+		padding: 10px;
+		margin-bottom: 15px;
+		border-radius: 4px;
+	}
+
+	@@media (max-width: 1366px) {
+	.settings-tab {
+		gap: 80px;
+	}
+	}
+
+	@@media (max-width: 1280px) {
+	.settings-container {
+		gap: 30px;
+		padding-right: 15px;
+	}
+
+	.settings-row {
+		gap: 40px;
+	}
+
+	.settings-tab {
+		flex-direction: column;
+		gap: 50px;
+	}
+
+	input {
+		margin-bottom: 15px;
+	}
+
+	.single-col {
+		gap: 8px;
+	}
+	}
+
+	@@media (max-width: 768px) {
+	.settings-container {
+		padding-right: 5px;
+		padding-top: 10px;
+	}
+	.settings-col h2 {
+		margin-bottom: 15px;
+		text-align: start;
+	}
+	}
+
+	@@media (max-width: 640px) {
+	.settings-row {
+		flex-direction: column;
+		gap: 8px;
+	}
+	.settings-col h2 {
+		font-size: 28px;
+	}
+	}
+</style>
 
 <PageTitle>Ustawienia</PageTitle>
 
 <div class="settings-container">
 	<h2>Ustawienia</h2>
 
+	@if (!string.IsNullOrEmpty(_message))
+	{
+		<div class="@_messageClass">@_message</div>
+	}
+
 	<div class="settings-back">
 		<div class="settings-tab">
 			<div class="settings-col">
+				<EditForm Model="@_userDataModel" OnValidSubmit="SaveUserData">
+					<DataAnnotationsValidator />
+					<ValidationSummary />
 
-				<h2>Dane kontaktowe</h2>
+					<h2>Dane kontaktowe</h2>
 
-				<h4>Imię</h4>
-				<input type="text" placeholder="Anna" />
+					<h4>Imię</h4>
+					<InputText @bind-Value="_userDataModel.Imie" placeholder="Anna" />
 
-				<h4>Nazwisko</h4>
-				<input type="text" placeholder="Nowak" />
+					<h4>Nazwisko</h4>
+					<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nowak" />
 
-				<div class="settings-row">
-					<div class="single-col">
-						<h4>Numer Telefonu</h4>
-						<input type="number" placeholder="536871456" />
+					<div class="settings-row">
+						<div class="single-col">
+							<h4>Numer Telefonu</h4>
+							<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="536871456" />
+							<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)" />
+						</div>
+						<div class="single-col">
+							<h4>Adres Email</h4>
+							<InputText @bind-Value="_userDataModel.Email" placeholder="anowak@gmail.com" />
+							<ValidationMessage For="@(() => _userDataModel.Email)" />
+						</div>
 					</div>
-					<div class="single-col">
-						<h4>Adres Email</h4>
-						<input type="email" placeholder="anowak@gmail.com" />
-					</div>
-				</div>
 
-				<h4>Państwo</h4>
-				<input type="text" placeholder="Polska" />
+					<h4>Państwo</h4>
+					<InputText @bind-Value="_userDataModel.Kraj" placeholder="Polska" />
 
-				<div class="settings-row">
-					<div class="single-col">
-						<h4>Ulica</h4>
-						<input type="text" placeholder="Radwańska" />
+					<div class="settings-row">
+						<div class="single-col">
+							<h4>Ulica</h4>
+							<InputText @bind-Value="_userDataModel.Ulica" placeholder="Radwańska" />
+						</div>
+						<div class="single-col">
+							<h4>Numer Domu</h4>
+							<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="42" />
+						</div>
 					</div>
-					<div class="single-col">
-						<h4>Numer Domu</h4>
-						<input type="number" placeholder="42" />
-					</div>
-				</div>
 
-				<div class="settings-row">
-					<div class="single-col">
-						<h4>Miasto</h4>
-						<input type="text" placeholder="Łódź" />
+					<div class="settings-row">
+						<div class="single-col">
+							<h4>Miasto</h4>
+							<InputText @bind-Value="_userDataModel.Miasto" placeholder="Łódź" />
+						</div>
+						<div class="single-col">
+							<h4>Kod pocztowy</h4>
+							<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="90-012" />
+						</div>
 					</div>
-					<div class="single-col">
-						<h4>Kod pocztowy</h4>
-						<input type="number" placeholder="90-012" />
-					</div>
-				</div>
 
-				<button class="setting-btn">Zapisz zmiany</button>
-
+					<button type="submit" class="setting-btn">Zapisz zmiany</button>
+				</EditForm>
 			</div>
 			<div class="settings-col">
+				<EditForm Model="@_passwordModel" OnValidSubmit="ChangePassword">
+					<DataAnnotationsValidator />
+					<ValidationSummary />
 
-				<h2>Zmień hasło</h2>
+					<h2>Zmień hasło</h2>
 
-				<h4>Obecne Hasło</h4>
-				<input type="password" placeholder="" />
+					<h4>Obecne Hasło</h4>
+					<InputText type="password" @bind-Value="_passwordModel.CurrentPassword" placeholder="" />
+					<ValidationMessage For="@(() => _passwordModel.CurrentPassword)" />
 
-				<h4>Nowe Hasło</h4>
-				<input type="password" placeholder="" />
+					<h4>Nowe Hasło</h4>
+					<InputText type="password" @bind-Value="_passwordModel.NewPassword" placeholder="" />
+					<ValidationMessage For="@(() => _passwordModel.NewPassword)" />
 
-				<h4>Powtórz Nowe Hasło</h4>
-				<input type="password" placeholder="" />
+					<h4>Powtórz Nowe Hasło</h4>
+					<InputText type="password" @bind-Value="_passwordModel.ConfirmPassword" placeholder="" />
+					<ValidationMessage For="@(() => _passwordModel.ConfirmPassword)" />
 
-				<button class="setting-btn">Zapisz zmiany</button>
-
+					<button type="submit" class="setting-btn">Zapisz zmiany</button>
+				</EditForm>
 			</div>
 		</div>
-
-
 	</div>
-
 </div>
 
 @code {
+	private UserDataModel _userDataModel = new();
+	private PasswordChangeModel _passwordModel = new();
+	private string? _message;
+	private string _messageClass = "success-message";
+	private int _userId = 1; //  TODO: zmienić
+	private Uzytkownik? _currentUser;
+	private AdresEmail? _currentEmail;
+	private NumerTelefonu? _currentPhone;
+	private Adres? _currentAddress;
 
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadUserData();
+	}
+
+	private async Task LoadUserData()
+	{
+		var userResult = await ApiService.UzytkownicyRepo.UzytkownikGet(_userId);
+
+		if (userResult.Error != null)
+		{
+			ShowError("Błąd podczas ładowania danych użytkownika: " + userResult.Error);
+			return;
+		}
+
+		_currentUser = userResult.Data;
+
+		if (_currentUser == null)
+		{
+			ShowError("Nie znaleziono danych użytkownika");
+			return;
+		}
+
+		if (_currentUser.AdresEmailId > 0)
+		{
+			var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_currentUser.AdresEmailId);
+			_currentEmail = emailResult.Data;
+		}
+
+		if (_currentUser.NumerTelefonuId.HasValue && _currentUser.NumerTelefonuId.Value > 0)
+		{
+			var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_currentUser.NumerTelefonuId.Value);
+			_currentPhone = phoneResult.Data;
+		}
+
+		if (_currentUser.Adresy != null && _currentUser.Adresy.Any())
+		{
+			_currentAddress = _currentUser.Adresy.FirstOrDefault();
+		}
+
+		_userDataModel.Imie = _currentUser.Imie;
+		_userDataModel.Nazwisko = _currentUser.Nazwisko;
+		_userDataModel.Email = _currentEmail?.Email;
+		_userDataModel.NumerTelefonu = _currentPhone?.Numer;
+
+		if (_currentAddress != null)
+		{
+			_userDataModel.Ulica = _currentAddress.Ulica;
+			_userDataModel.NumerDomu = _currentAddress.NumerDomu;
+			_userDataModel.NumerMieszkania = _currentAddress.NumerMieszkania;
+			_userDataModel.KodPocztowy = _currentAddress.KodPocztowy;
+			_userDataModel.Miasto = _currentAddress.Miasto;
+			_userDataModel.Kraj = _currentAddress.Kraj;
+		}
+	}
+
+	private async Task SaveUserData()
+	{
+		try
+		{
+			int adresEmailId = _currentUser?.AdresEmailId ?? 0;
+
+			if (!string.IsNullOrWhiteSpace(_userDataModel.Email))
+			{
+				var emailDto = new AdresEmailDto { Email = _userDataModel.Email };
+
+				var emailResult = adresEmailId > 0
+					? await ApiService.AdresyEmailRepo.AdresEmailPut(adresEmailId, emailDto)
+					: await ApiService.AdresyEmailRepo.AdresEmailPost(emailDto);
+
+				if (emailResult.Error != null)
+				{
+					ShowError("Błąd podczas zapisywania adresu email: " + emailResult.Error);
+					return;
+				}
+
+				adresEmailId = emailResult.Data?.AdresEmailId ?? 0;
+			}
+
+			int? numerTelefonuId = _currentUser?.NumerTelefonuId;
+
+			if (!string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu))
+			{
+				var phoneDto = new NumerTelefonuDto { Numer = _userDataModel.NumerTelefonu };
+
+				var phoneResult = numerTelefonuId.HasValue && numerTelefonuId.Value > 0
+					? await ApiService.NumeryTelefonuRepo.NumerTelefonuPut(numerTelefonuId.Value, phoneDto)
+					: await ApiService.NumeryTelefonuRepo.NumerTelefonuPost(phoneDto);
+
+				if (phoneResult.Error != null)
+				{
+					ShowError("Błąd podczas zapisywania numeru telefonu: " + phoneResult.Error);
+					return;
+				}
+
+				numerTelefonuId = phoneResult.Data?.NumerTelefonuId;
+			}
+
+			int? adresId = _currentAddress?.AdresId;
+			List<int> adresyIds = new List<int>();
+
+			if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
+			{
+				var adresDto = new AdresDto
+				{
+					Ulica = _userDataModel.Ulica,
+					NumerDomu = _userDataModel.NumerDomu,
+					NumerMieszkania = _userDataModel.NumerMieszkania,
+					KodPocztowy = _userDataModel.KodPocztowy,
+					Miasto = _userDataModel.Miasto,
+					Kraj = _userDataModel.Kraj
+				};
+
+				var adresResult = adresId.HasValue && adresId.Value > 0
+					? await ApiService.AdresyRepo.AdresPut(adresId.Value, adresDto)
+					: await ApiService.AdresyRepo.AdresPost(adresDto);
+
+				if (adresResult.Error != null)
+				{
+					ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
+					return;
+				}
+
+				if (adresResult.Data != null)
+				{
+					adresyIds.Add(adresResult.Data.AdresId);
+				}
+			}
+
+			var uzytkownikDto = new UzytkownikDto
+			{
+				Imie = _userDataModel.Imie,
+				Nazwisko = _userDataModel.Nazwisko,
+				AdresEmailId = adresEmailId,
+				NumerTelefonuId = numerTelefonuId,
+				AdresyIds = adresyIds,
+				RoleUzytkownikaIds = _currentUser?.RoleUzytkownika?.Select(r => r.RolaUzytkownikaId)?.ToList() ?? new List<int>()
+			};
+
+			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_userId, uzytkownikDto);
+
+			if (userResult.Error != null)
+			{
+				ShowError("Błąd podczas zapisywania danych użytkownika: " + userResult.Error);
+				return;
+			}
+
+			ShowSuccess("Dane zostały zaktualizowane pomyślnie");
+
+			await LoadUserData();
+		}
+		catch (Exception ex)
+		{
+			ShowError("Wystąpił nieoczekiwany błąd: " + ex.Message);
+		}
+	}
+
+	private async Task ChangePassword()
+	{
+		if (_passwordModel.NewPassword != _passwordModel.ConfirmPassword)
+		{
+			ShowError("Nowe hasła nie są identyczne");
+			return;
+		}
+
+		ShowSuccess("Hasło zostało zmienione pomyślnie");
+		_passwordModel = new PasswordChangeModel();
+	}
+
+	private void ShowSuccess(string message)
+	{
+		_message = message;
+		_messageClass = "success-message";
+	}
+
+	private void ShowError(string error)
+	{
+		_message = error;
+		_messageClass = "error-message";
+	}
+
+	public class UserDataModel
+	{
+		public string? Imie { get; set; }
+		public string? Nazwisko { get; set; }
+
+		[EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
+		public string? Email { get; set; }
+
+		[RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
+		public string? NumerTelefonu { get; set; }
+
+		public string? Ulica { get; set; }
+		public int NumerDomu { get; set; }
+		public int? NumerMieszkania { get; set; }
+		public string? KodPocztowy { get; set; }
+		public string? Miasto { get; set; }
+		public string? Kraj { get; set; }
+	}
+
+	public class PasswordChangeModel
+	{
+		[Required(ErrorMessage = "Obecne hasło jest wymagane")]
+		public string CurrentPassword { get; set; } = string.Empty;
+
+		[Required(ErrorMessage = "Nowe hasło jest wymagane")]
+		[MinLength(6, ErrorMessage = "Hasło musi mieć co najmniej 6 znaków")]
+		public string NewPassword { get; set; } = string.Empty;
+
+		[Required(ErrorMessage = "Potwierdzenie hasła jest wymagane")]
+		[Compare("NewPassword", ErrorMessage = "Hasła muszą być identyczne")]
+		public string ConfirmPassword { get; set; } = string.Empty;
+	}
 }

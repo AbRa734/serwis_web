@@ -13,7 +13,7 @@
     </TitleContent>
     <DialogContent>
         <MudContainer>
-            <MudForm @ref="ratingForm">
+            <MudForm @ref="_ratingForm">
                 <MudSelect T="int" Label="Wybierz zamówienie" @bind-Value="SelectedOrderId"
                          Required RequiredError="Wybór zamówienia jest wymagany" Class="mb-4">
                     @foreach (var order in Orders.Where(z => z.Status.Nazwa == "Zakończony"))
@@ -50,12 +50,12 @@
     [Parameter] public int SelectedRatingValue { get; set; }
     [Parameter] public string RatingComment { get; set; } = string.Empty;
     
-    private MudForm ratingForm;
-    private int? activeRatingValue;
+    private MudForm _ratingForm = null!;
+    private int? _activeRatingValue;
     
-    private void HandleHoveredValueChanged(int? val) => activeRatingValue = val;
+    private void HandleHoveredValueChanged(int? val) => _activeRatingValue = val;
     
-    private string RatingLabelText => (activeRatingValue ?? SelectedRatingValue) switch
+    private string RatingLabelText => (_activeRatingValue ?? SelectedRatingValue) switch
     {
         1 => "Bardzo słabo",
         2 => "Słabo",
@@ -69,8 +69,8 @@
     
     private void Submit()
     {
-        ratingForm.Validate();
-        if (ratingForm.IsValid)
+        _ratingForm.Validate();
+        if (_ratingForm.IsValid)
         {
             var result = new RatingDialogResult
             {
@@ -88,6 +88,6 @@
     {
         public int OrderId { get; set; }
         public int Rating { get; set; }
-        public string Comment { get; set; }
+        public string Comment { get; set; } = null!;
     }
 }

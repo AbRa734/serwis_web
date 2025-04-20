@@ -1,0 +1,122 @@
+@using Color = MudBlazor.Color
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 400px; overflow-y: auto;">
+            @if (OrderChanges != null && OrderChanges.Any())
+            {
+                <MudList T="string" Clickable="false">
+                    @foreach (var change in OrderChanges)
+                    {
+                        <MudListItem T="string">
+                            <MudPaper Elevation="2" Class="pa-3 mb-3">
+                                <MudText><strong>Data:</strong> @(GetPropertyValue(change, "Date") as DateTime?)?.ToString("dd.MM.yyyy HH:mm")</MudText>
+                                <MudText><strong>Użytkownik:</strong> @GetPropertyValue(change, "User")</MudText>
+                                <MudText><strong>Status:</strong> @GetPropertyValue(change, "Status")</MudText>
+                                <MudText><strong>Uwaga:</strong> @GetPropertyValue(change, "Note")</MudText>
+                            </MudPaper>
+                        </MudListItem>
+                    }
+
+                    @code {
+                        private object GetPropertyValue(object obj, string propertyName)
+                        {
+                            return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
+                        }
+                    }
+                </MudList>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">Brak historii zmian dla tego zlecenia</MudAlert>
+            }
+            
+            @if (IsAdmin && !showAddChangeForm)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => showAddChangeForm = true)" Class="mt-3">
+                    Dodaj nową zmianę
+                </MudButton>
+            }
+            
+            @if (IsAdmin && showAddChangeForm)
+            {
+                <MudPaper Elevation="3" Class="pa-3 mt-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">Dodaj nową zmianę</MudText>
+                    <MudForm @ref="form">
+                        <MudSelect T="string" Label="Status" @bind-Value="newStatus" Required="true">
+                            <MudSelectItem Value="@("Nowe")">Nowe</MudSelectItem>
+                            <MudSelectItem Value="@("Oczekujące")">Oczekujące</MudSelectItem>
+                            <MudSelectItem Value="@("Realizacja")">Realizacja</MudSelectItem>
+                            <MudSelectItem Value="@("Zakończone")">Zakończone</MudSelectItem>
+                            <MudSelectItem Value="@("Anulowane")">Anulowane</MudSelectItem>
+                        </MudSelect>
+                        
+                        <MudTextField T="string" Label="Komentarz" @bind-Value="newNote" 
+                                    Required="true" Class="mt-3" />
+                        
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                                OnClick="AddNewChange" Class="mt-3">Dodaj</MudButton>
+                    </MudForm>
+                </MudPaper>
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Cancel">Zamknij</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public IEnumerable<object> OrderChanges { get; set; }
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; }
+    
+    [Parameter]
+    public bool IsAdmin { get; set; }
+    
+    private bool showAddChangeForm = false;
+    private string newStatus = "Nowe";
+    private string newNote = "";
+    private MudForm form;
+    
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    
+    private void AddNewChange()
+    {
+        if (string.IsNullOrWhiteSpace(newNote))
+            return;
+            
+        var newChange = new DefaultChangeHistory
+        {
+            Date = DateTime.Now,
+            User = "Admin", 
+            Status = newStatus,
+            Note = newNote
+        };
+        
+        //OrderChanges.Add(newChange);
+        newStatus = "Nowe";
+        newNote = "";
+        showAddChangeForm = false;
+    }
+    
+    public interface IChangeHistory
+    {
+        DateTime Date { get; set; }
+        string User { get; set; }
+        string Status { get; set; }
+        string Note { get; set; }
+    }
+    
+    public class DefaultChangeHistory : IChangeHistory
+    {
+        public DateTime Date { get; set; }
+        public string User { get; set; }
+        public string Status { get; set; }
+        public string Note { get; set; }
+    }
+}

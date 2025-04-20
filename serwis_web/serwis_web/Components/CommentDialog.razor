@@ -12,7 +12,7 @@
     </TitleContent>
     <DialogContent>
         <MudContainer Style="max-height: 500px; overflow-y: scroll">
-            <MudForm @ref="form">
+            <MudForm @ref="_form">
                 <MudSelect T="int" Label="Wybierz zamówienie" @bind-Value="SelectedOrderId" Required RequiredError="Wybór zamówienia jest wymagany">
                     @foreach (var order in Orders.Where(z => z.Status.Nazwa == "Zakończony"))
                     {
@@ -43,14 +43,14 @@
     [Parameter] public string CommentText { get; set; } = string.Empty;
     [Parameter] public int SelectedOrderId { get; set; }
     
-    private MudForm form;
+    private MudForm _form = null!;
     
     private bool IsFormValid() => !string.IsNullOrWhiteSpace(CommentText) && SelectedOrderId > 0;
     
     private void Submit()
     {
-        form.Validate();
-        if (form.IsValid)
+        _form.Validate();
+        if (_form.IsValid)
         {
             var result = new CommentDialogResult
             {
@@ -66,6 +66,6 @@
     public class CommentDialogResult
     {
         public int OrderId { get; set; }
-        public string Comment { get; set; }
+        public string Comment { get; set; } = null!;
     }
 }

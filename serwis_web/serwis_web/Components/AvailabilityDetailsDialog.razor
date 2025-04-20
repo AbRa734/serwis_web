@@ -1,0 +1,53 @@
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using DialogResult = MudBlazor.DialogResult
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudText><strong>Serwisant:</strong> @SerwisantName</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText><strong>Status:</strong> @StatusText</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText><strong>Od:</strong> @Dostepnosc?.DataOd.ToString("dd.MM.yyyy HH:mm")</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText><strong>Do:</strong> @Dostepnosc?.DataDo.ToString("dd.MM.yyyy HH:mm")</MudText>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Zamknij</MudButton>
+        @if (AllowEditing)
+        {
+            <MudButton Color="Color.Primary" OnClick="Edit">Edytuj</MudButton>
+            <MudButton Color="Color.Error" OnClick="Delete">Usuń</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public DostepnoscSerwisanta? Dostepnosc { get; set; }
+    [Parameter] public string SerwisantName { get; set; } = string.Empty;
+    [Parameter] public string StatusText { get; set; } = string.Empty;
+    [Parameter] public bool AllowEditing { get; set; } = true;
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Edit()
+    {
+        MudDialog.Close(DialogResult.Ok("edit"));
+    }
+
+    private void Delete()
+    {
+        MudDialog.Close(DialogResult.Ok("delete"));
+    }
+}

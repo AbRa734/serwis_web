@@ -29,6 +29,7 @@ public class ApiService
     public DostepnosciSerwisantaRepo DostepnosciSerwisantaRepo { get; set; }
     public AdresyEmailRepo AdresyEmailRepo { get; set; }
     public AdresyRepo AdresyRepo { get; set; }
+    public KontaktEmailRepo KontaktEmailRepo { get; set; }
 
     public ApiService(IHttpClientFactory httpClientFactory, TokenService.TokenService tokenService)
     {
@@ -57,6 +58,7 @@ public class ApiService
         DostepnosciSerwisantaRepo = new DostepnosciSerwisantaRepo(httpClient, tokenService);
         AdresyRepo = new AdresyRepo(httpClient, tokenService);
         AdresyEmailRepo = new AdresyEmailRepo(httpClient, tokenService);
+        KontaktEmailRepo = new KontaktEmailRepo(httpClient, tokenService);
     }
 
     public  async Task<Uzytkownik> GetUzytkownik()

@@ -229,22 +229,16 @@
                 </CellTemplate>
             </PropertyColumn>
 
-            <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
+            <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.PlanowanaDataRealizacjiOd"
+                            Title="Planowana realizacja" HeaderClass="order-category">
                 <CellTemplate>
                     <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                        <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
+                        <MudText
+                            Class="order-category-single-item">@(context.Item.PlanowanaDataRealizacjiOd?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
 
-
-            <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania" Title="Data Utworzenia" HeaderClass="order-category">
-                <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                        <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
-                    </MudChip>
-                </CellTemplate>
-            </PropertyColumn>
 
             <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
                 <CellTemplate>
