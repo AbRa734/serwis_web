@@ -102,7 +102,8 @@
 		font-size: 16px;
 		transition: all 0.3s ease-in-out;
 		cursor: pointer;
-		margin-top: 5px;
+		width: 100%;
+		margin-top: 25px;
 	}
 
 	.setting-btn:hover {
@@ -191,82 +192,79 @@
 
 	<div class="settings-back">
 		<div class="settings-tab">
-			<div class="settings-col">
-				<EditForm Model="@_userDataModel" OnValidSubmit="SaveUserData">
-					<DataAnnotationsValidator />
-					<ValidationSummary />
+			<EditForm Model="@_userDataModel" OnValidSubmit="SaveUserData" class="settings-col">
+				<DataAnnotationsValidator />
+				<ValidationSummary />
 
-					<h2>Dane kontaktowe</h2>
+				<h2>Dane kontaktowe</h2>
 
-					<h4>Imię</h4>
-					<InputText @bind-Value="_userDataModel.Imie" placeholder="Anna" />
+				<h4>Imię</h4>
+				<InputText @bind-Value="_userDataModel.Imie" placeholder="Imię użytkownika" />
 
-					<h4>Nazwisko</h4>
-					<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nowak" />
+				<h4>Nazwisko</h4>
+				<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nazwisko użytkownika" />
 
-					<div class="settings-row">
-						<div class="single-col">
-							<h4>Numer Telefonu</h4>
-							<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="536871456" />
-							<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)" />
-						</div>
-						<div class="single-col">
-							<h4>Adres Email</h4>
-							<InputText @bind-Value="_userDataModel.Email" placeholder="anowak@gmail.com" />
-							<ValidationMessage For="@(() => _userDataModel.Email)" />
-						</div>
+				<div class="settings-row">
+					<div class="single-col">
+						<h4>Numer Telefonu</h4>
+						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" />
+						<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)" />
 					</div>
-
-					<h4>Państwo</h4>
-					<InputText @bind-Value="_userDataModel.Kraj" placeholder="Polska" />
-
-					<div class="settings-row">
-						<div class="single-col">
-							<h4>Ulica</h4>
-							<InputText @bind-Value="_userDataModel.Ulica" placeholder="Radwańska" />
-						</div>
-						<div class="single-col">
-							<h4>Numer Domu</h4>
-							<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="42" />
-						</div>
+					<div class="single-col">
+						<h4>Adres Email</h4>
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" />
+						<ValidationMessage For="@(() => _userDataModel.Email)" />
 					</div>
+				</div>
 
-					<div class="settings-row">
-						<div class="single-col">
-							<h4>Miasto</h4>
-							<InputText @bind-Value="_userDataModel.Miasto" placeholder="Łódź" />
-						</div>
-						<div class="single-col">
-							<h4>Kod pocztowy</h4>
-							<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="90-012" />
-						</div>
+				<h4>Państwo</h4>
+				<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" />
+
+				<div class="settings-row">
+					<div class="single-col">
+						<h4>Ulica</h4>
+						<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" />
 					</div>
+					<div class="single-col">
+						<h4>Numer Domu</h4>
+						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" />
+					</div>
+				</div>
 
-					<button type="submit" class="setting-btn">Zapisz zmiany</button>
-				</EditForm>
-			</div>
-			<div class="settings-col">
-				<EditForm Model="@_passwordModel" OnValidSubmit="ChangePassword">
-					<DataAnnotationsValidator />
-					<ValidationSummary />
+				<div class="settings-row">
+					<div class="single-col">
+						<h4>Miasto</h4>
+						<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" />
+					</div>
+					<div class="single-col">
+						<h4>Kod pocztowy</h4>
+						<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" />
+					</div>
+				</div>
 
-					<h2>Zmień hasło</h2>
+				<button type="submit" class="setting-btn">Zapisz zmiany</button>
+			</EditForm>
 
-					<h4>Obecne Hasło</h4>
-					<InputText type="password" @bind-Value="_passwordModel.CurrentPassword" placeholder="" />
-					<ValidationMessage For="@(() => _passwordModel.CurrentPassword)" />
+			<EditForm Model="@_passwordModel" OnValidSubmit="ChangePassword" class="settings-col">
+				<DataAnnotationsValidator />
+				<ValidationSummary />
 
-					<h4>Nowe Hasło</h4>
-					<InputText type="password" @bind-Value="_passwordModel.NewPassword" placeholder="" />
-					<ValidationMessage For="@(() => _passwordModel.NewPassword)" />
+				<h2>Zmień hasło</h2>
 
-					<h4>Powtórz Nowe Hasło</h4>
-					<InputText type="password" @bind-Value="_passwordModel.ConfirmPassword" placeholder="" />
-					<ValidationMessage For="@(() => _passwordModel.ConfirmPassword)" />
+				<h4>Obecne Hasło</h4>
+				<InputText type="password" @bind-Value="_passwordModel.CurrentPassword" placeholder="" />
+				<ValidationMessage For="@(() => _passwordModel.CurrentPassword)" />
 
-					<button type="submit" class="setting-btn">Zapisz zmiany</button>
-				</EditForm>
-			</div>
+				<h4>Nowe Hasło</h4>
+				<InputText type="password" @bind-Value="_passwordModel.NewPassword" placeholder="" />
+				<ValidationMessage For="@(() => _passwordModel.NewPassword)" />
+
+				<h4>Powtórz Nowe Hasło</h4>
+				<InputText type="password" @bind-Value="_passwordModel.ConfirmPassword" placeholder="" />
+				<ValidationMessage For="@(() => _passwordModel.ConfirmPassword)" />
+
+				<button type="submit" class="setting-btn">Zapisz zmiany</button>
+			</EditForm>
 		</div>
 	</div>
 </div>

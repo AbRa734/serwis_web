@@ -73,7 +73,7 @@
 		width: 100%;
 	}
 
-	textarea, input, select, option {
+	textarea, .form-control, select, option {
 		background-color: #F5F6FA;
 		border: solid 1px #D5D5D5;
 		width: 100%;
@@ -88,11 +88,11 @@
 		height: 287px;
 	}
 
-	input, select {
+	.form-control, select {
 		height: 50px;
 	}
 
-	button {
+	.setting-btn {
 		background-color: #4880FF;
 		border: none;
 		border-radius: 10px;
@@ -101,54 +101,56 @@
 		font-size: 16px;
 		transition: all 0.3s ease-in-out;
 		cursor: pointer;
+		width: 100%;
+		margin-top: 25px;
 	}
 
-	button:hover {
+	.setting-btn:hover {
 		background-color: #336ff5;
 	}
 
 	@@media (max-width: 1366px) {
-	.service-tab {
-		gap: 80px;
-	}
+		.service-tab {
+			gap: 80px;
+		}
 	}
 
 
 	@@media (max-width: 1280px) {
-	.services-container {
-		gap: 30px;
-		padding-right: 15px;
-	}
+		.services-container {
+			gap: 30px;
+			padding-right: 15px;
+		}
 
-	.service-row {
-		gap: 40px;
-	}
+		.service-row {
+			gap: 40px;
+		}
 
-	.service-tab {
-		flex-direction: column;
-		gap: 10px;
-	}
+		.service-tab {
+			flex-direction: column;
+			gap: 10px;
+		}
 
-	textarea, input, select {
-		margin-bottom: 15px;
-	}
+		textarea, .form-control, select {
+			margin-bottom: 15px;
+		}
 
-	.single-col {
-		gap: 8px;
-	}
+		.single-col {
+			gap: 8px;
+		}
 	}
 
 	@@media (max-width: 768px) {
 
-	.services-container {
-		padding-right: 5px;
-		padding-top: 10px;
-	}
+		.services-container {
+			padding-right: 5px;
+			padding-top: 10px;
+		}
 
-	.service-row {
-		flex-direction: column;
-		gap: 5px;
-	}
+		.service-row {
+			flex-direction: column;
+			gap: 5px;
+		}
 	}
 
 </style>

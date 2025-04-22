@@ -349,12 +349,12 @@
     {
         return status switch
         {
-            "Zakończone" => "status-finished",
-            "Realizacja" => "status-realization",
-            "Anulowane" => "status-canceled",
-            "Oczekujące" => "status-waiting",
-            "Nowe" => "status-new",
-            _ => ""
+            "Zakończony" => "status-finished",
+            "W realizacji" => "status-realization",
+            "Anulowany" => "status-canceled",
+            "Oczekujący" => "status-waiting",
+            "Nowy" => "status-new",
+            _ => "status-default"
         };
     }
 

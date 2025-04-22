@@ -1,4 +1,4 @@
-﻿.services-container {
+﻿/*.services-container {
     display: flex;
     flex-direction: column;
     gap: 23px;
@@ -130,3 +130,4 @@ button:hover {
     }
 
 }
+*/
