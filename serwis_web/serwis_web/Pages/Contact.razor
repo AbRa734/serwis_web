@@ -118,10 +118,9 @@
 
             var emailRequest = new KontaktEmailRequest
             {
-                Imie = _name,
-                Email = _email,
+                EmailOdbiorcy = "245935@edu.p.lodz.pl",
                 Temat = _subject,
-                Tresc = _message
+                Tresc = $"Imie:{_name}{Environment.NewLine}Od:{_email}{Environment.NewLine}Treść:{_message}"
             };
 
             var result = await ApiService.KontaktEmailRepo.KontaktEmailPost(emailRequest);

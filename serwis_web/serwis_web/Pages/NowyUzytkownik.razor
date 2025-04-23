@@ -338,12 +338,40 @@
 			_newUser.AdresId = addressIds.First();
 			_newUser.RolaUzytkownikaId = _selectedRoleId;
 
+	
 			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPost(_newUser);
 
 			if (userResult.Error != null)
 			{
 				_errorMessage = $"Błąd podczas tworzenia użytkownika: {userResult.Error}";
 				return;
+			}
+			
+			String hasloNowegoUzytkownika = GenerateRandomPassword();
+			var autoryzacjaResult = await ApiService.AdministracjaRepo.RejestracjaUzytkownikaWIdentity(new RegisterRequestIdentity
+			{
+				Email = emailResult.Data.Email,
+				Haslo = hasloNowegoUzytkownika,
+			});
+			
+			if (autoryzacjaResult.Error != null)
+			{
+				_errorMessage = $"Błąd podczas tworzenia użytkownika: {userResult.Error}";
+				return;
+			}
+			
+			var emailRequest = new KontaktEmailRequest
+			{
+				EmailOdbiorcy = emailResult.Data.Email,
+				Temat = "Rejestracja użytkownika",
+				Tresc = $"Utworzono konto{Environment.NewLine}Email:{emailResult.Data.Email}{Environment.NewLine}Hasło:{hasloNowegoUzytkownika}"
+			};
+
+			var result = await ApiService.KontaktEmailRepo.KontaktEmailPost(emailRequest);
+
+			if (result.Error != null)
+			{
+				Snackbar.Add($"Wystąpił błąd podczas wysyłania wiadomości: {result.Error}", Severity.Error);
 			}
 
 			Snackbar.Add("Użytkownik został utworzony pomyślnie", Severity.Success);
@@ -363,8 +391,37 @@
 	{
 		public string? Kraj { get; set; }
 		public string? Ulica { get; set; }
-		public string? NumerDomu { get; set; } // Changed from int to string to fix the error
+		public string? NumerDomu { get; set; }
 		public string? Miasto { get; set; }
 		public string? KodPocztowy { get; set; }
+	}
+	
+	private static string GenerateRandomPassword()
+	{
+		const string uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		const string lowercase = "abcdefghijklmnopqrstuvwxyz";
+		const string digits = "0123456789";
+		const string special = "!@#$%^&*()-_=+[]{}|;:,.<>?";
+    
+		Random random = new Random();
+		char[] password = new char[10];
+    
+		password[0] = uppercase[random.Next(uppercase.Length)];
+		password[1] = special[random.Next(special.Length)];  
+		password[2] = digits[random.Next(digits.Length)];     
+    
+		string allChars = uppercase + lowercase + digits + special;
+		for (int i = 3; i < 10; i++)
+		{
+			password[i] = allChars[random.Next(allChars.Length)];
+		}
+    
+		for (int i = 0; i < password.Length; i++)
+		{
+			int swapIndex = random.Next(password.Length);
+			(password[i], password[swapIndex]) = (password[swapIndex], password[i]);
+		}
+    
+		return new string(password);
 	}
 }
