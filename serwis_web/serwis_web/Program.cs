@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using MudBlazor.Services;
+using QuestPDF.Infrastructure;
 using serwis_web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,11 +9,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddHttpClient("ApiWithAuth", (sp, client) =>
-{
-    client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("SERWIS_API_URL") ?? ""); 
-});
-builder.Services.AddScoped<TokenService.TokenService>(); 
+builder.Services.AddHttpClient("ApiWithAuth",
+    (sp, client) => { client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("SERWIS_API_URL") ?? ""); });
+builder.Services.AddScoped<TokenService.TokenService>();
 builder.Services.AddScoped<ApiService.ApiService>();
 
 builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
@@ -42,5 +41,7 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(serwis_web.Client._Imports).Assembly);
 
 app.UseStatusCodePagesWithRedirects("/Error");
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 app.Run();

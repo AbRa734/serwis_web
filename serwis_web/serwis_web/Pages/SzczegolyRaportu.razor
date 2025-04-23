@@ -1,281 +1,554 @@
-﻿@page "/report/{OrderId}"
+﻿@page "/report"
 @rendermode InteractiveServer
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
+@using QuestPDF.Fluent
+@using QuestPDF.Helpers
+@using Colors = QuestPDF.Helpers.Colors
+@inject ApiService.ApiService ApiService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Raport zlecenia</PageTitle>
 
 <div class="order-container">
+    <h2>Raport zlecenia</h2>
 
-	<h2>Raport zlecenia</h2>
+    <MudSelect T="int?" Label="Wybierz numer zamówienia" Value="_selectedOrderId" ValueChanged="OnOrderSelectionChanged"
+               AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"
+               Class="mb-4" FullWidth="true">
+        @foreach (var zamowienie in _zamowienia.Where((x)=>x.ZamowienieId != 0).ToList())
+        {
+            <MudSelectItem T="int?" Value="@zamowienie.ZamowienieId">
+                Zamówienie #@zamowienie.ZamowienieId - @zamowienie.Status?.Nazwa
+            </MudSelectItem>
+        }
+    </MudSelect>
 
-	<div class="order-back">
-		<div class="order-tab">
+    <div class="order-back">
+        <div class="order-tab">
+            @if (_isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="height: 300px;">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
+                </div>
+            }
+            else if (_selectedOrder == null)
+            {
+                <MudAlert Severity="Severity.Info">Wybierz zamówienie z listy powyżej</MudAlert>
+            }
+            else
+            {
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Numer Zlecenia</h4>
+                        <input type="number" value="@_selectedOrder.ZamowienieId" readonly/>
+                    </div>
+                    <div class="single-col">
+                        <h4>Rodzaj zlecenia</h4>
+                        <input type="text" value="@_selectedOrder.Serwis?.Nazwa" readonly/>
+                    </div>
+                </div>
 
-			@if (order == null)
-			{
-				<h5>Nie znaleziono zlecenia o numerze @OrderId</h5>
-			}
-			else
-			{
-				<div class="order-row">
-					<div class="single-col">
-						<h4>Numer Zlecenia</h4>
-						<input type="number" placeholder="@order?.NumerZlecenia" />
-					</div>
-					<div class="single-col">
-						<h4>Rodzaj zlecenia</h4>
-						<input type="text" placeholder="@order?.Rodzaj" />
-					</div>
-				</div>
+                <h4>Data utworzenia zlecenia</h4>
+                <input type="text" value="@_selectedOrder.DataDodania.ToString("dd.MM.yyyy")" readonly/>
 
-				<h4>Data utworzenia zlecenia</h4>
-				<input type="date" placeholder="29.03.2025" />
+                <h4>Priorytet</h4>
+                <input type="text" value="@_selectedOrder.Priorytet?.Nazwa" readonly/>
 
-				<h4>Priorytet</h4>
-				<input type="text" placeholder="@order?.Priorytet" />
+                <h4>Opis</h4>
+                <textarea readonly>@_selectedOrder.Opis</textarea>
 
-				<textarea placeholder="Laptop bardzo się przegrzewa i samoczynnie wyłącza po kilkunastu minutach pracy. Wentylator działa głośno, a system działa wolno. Proszę o diagnozę i naprawę." class="textarea"></textarea>
+                <h4>Klient</h4>
+                <input type="text" value="@GetClientFullName()" readonly/>
 
-				<h4>Klient</h4>
-				<input type="text" placeholder="Anna Nowak" />
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Numer Telefonu Klienta</h4>
+                        <input type="text" value="@_selectedOrder.NumerTelefonu?.Numer" readonly/>
+                    </div>
+                    <div class="single-col">
+                        <h4>Adres Email Klienta</h4>
+                        <input type="email" value="@_selectedOrder.AdresEmail?.Email" readonly/>
+                    </div>
+                </div>
 
-				<div class="order-row">
-					<div class="single-col">
-						<h4>Numer Telefonu Klienta</h4>
-						<input type="number" placeholder="536875432" />
-					</div>
-					<div class="single-col">
-						<h4>Adres Email Klienta</h4>
-						<input type="email" placeholder="anowak@gmail.com" />
-					</div>
-				</div>
+                @if (_selectedOrder.Adres != null)
+                {
+                    <div class="order-row">
+                        <div class="single-col">
+                            <h4>Ulica</h4>
+                            <input type="text" value="@_selectedOrder.Adres.Ulica" readonly/>
+                        </div>
+                        <div class="single-col">
+                            <h4>Numer Domu</h4>
+                            <input type="text" value="@_selectedOrder.Adres.NumerDomu" readonly/>
+                        </div>
+                    </div>
 
-				<div class="order-row">
-					<div class="single-col">
-						<h4>Ulica</h4>
-						<input type="text" placeholder="Radwanska" />
-					</div>
-					<div class="single-col">
-						<h4>Numer Domu</h4>
-						<input type="number" placeholder="42" />
-					</div>
-				</div>
+                    <div class="order-row">
+                        <div class="single-col">
+                            <h4>Miasto</h4>
+                            <input type="text" value="@_selectedOrder.Adres.Miasto" readonly/>
+                        </div>
+                        <div class="single-col">
+                            <h4>Kod pocztowy</h4>
+                            <input type="text" value="@_selectedOrder.Adres.KodPocztowy" readonly/>
+                        </div>
+                    </div>
 
+                    <h4>Państwo</h4>
+                    <input type="text" value="@_selectedOrder.Adres.Kraj" readonly/>
+                }
 
-				<div class="order-row">
-					<div class="single-col">
-						<h4>Miasto</h4>
-						<input type="text" placeholder="Łódź" />
-					</div>
-					<div class="single-col">
-						<h4>Kod pocztowy</h4>
-						<input type="number" placeholder="90-012" />
-					</div>
-				</div>
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Planowana Data Realizacji</h4>
+                        <input type="text" value="@FormatDate(_selectedOrder.PlanowanaDataRealizacjiOd)" readonly/>
+                    </div>
+                    <div class="single-col">
+                        <h4>Planowana Data Zakończenia</h4>
+                        <input type="text" value="@FormatDate(_selectedOrder.PlanowanaDataRealizacjiDo)" readonly/>
+                    </div>
+                </div>
 
-				<h4>Państwo</h4>
-				<input type="text" placeholder="Polska" />
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Data Rozpoczęcia Realizacji</h4>
+                        <input type="text" value="@FormatDate(_selectedOrder.ZrealizowanaDataRealizacjiOd)" readonly
+                               style="font-weight: bold"/>
+                    </div>
+                    <div class="single-col">
+                        <h4>Data Zakończenia Realizacji</h4>
+                        <input type="text" value="@FormatDate(_selectedOrder.ZrealizowanaDataRealizacjiDo)" readonly
+                               style="font-weight: bold"/>
+                    </div>
+                </div>
 
-				<div class="order-row">
-					<div class="single-col">
-						<h4>Planowana Data Realizacji</h4>
-						<input type="date" placeholder="12.04.2025" />
-					</div>
-					<div class="single-col">
-						<h4>Planowana Data Zakończenia</h4>
-						<input type="date" placeholder="26.04.2025" />
-					</div>
-				</div>
+                <h4>Czas realizacji</h4>
+                <input type="text" value="@GetImplementationTime()" readonly/>
 
-				<div class="order-row">
-					<div class="single-col">
-						<h4>Data Rozpoczęcia Realizacji</h4>
-						<input type="date" placeholder="12.04.2025" style="font-weight: bold" />
-					</div>
-					<div class="single-col">
-						<h4>Data Zakończenia Realizacji</h4>
-						<input type="date" placeholder="26.04.2025" style="font-weight: bold" />
-					</div>
-				</div>
+                @if (_selectedOrder.Serwisant != null && _selectedOrder.Serwisant.Uzytkownik != null)
+                {
+                    <h4>Serwisant</h4>
+                    <input type="text" value="@GetTechnicianFullName()" readonly/>
 
-				<h4>Czas realizacji</h4>
-				<input type="text" placeholder="14 dni" />
+                    @if (_selectedOrder.Serwisant.Uzytkownik.AdresEmail != null || _selectedOrder.Serwisant.Uzytkownik.NumerTelefonu != null)
+                    {
+                        <div class="order-row">
+                            <div class="single-col">
+                                <h4>Adres Email Serwisanta</h4>
+                                <input type="email" value="@_selectedOrder.Serwisant.Uzytkownik.AdresEmail?.Email"
+                                       readonly/>
+                            </div>
+                            <div class="single-col">
+                                <h4>Numer Telefonu Serwisanta</h4>
+                                <input type="text" value="@_selectedOrder.Serwisant.Uzytkownik.NumerTelefonu?.Numer"
+                                       readonly/>
+                            </div>
+                        </div>
+                    }
+                }
 
-				<h4>Serwisant</h4>
-				<input type="text" placeholder="Jan Kowalski" />
+                <h4>Status zlecenia</h4>
+                <span class="@GetStatusClass(_selectedOrder.Status?.Nazwa ?? "")">@_selectedOrder.Status?.Nazwa</span>
 
-				<div class="order-row">
-					<div class="single-col">
-						<h4>Adres Email Serwisanta</h4>
-						<input type="email" placeholder="jkowalski@gmail.com" />
-					</div>
-					<div class="single-col">
-						<h4>Numer Telefonu Serwisanta</h4>
-						<input type="number" placeholder="536875432" />
-					</div>
-				</div>
+                <h4>Metoda Płatności</h4>
+                <input type="text" value="@_selectedOrder.MetodaPlatnosci?.Nazwa" readonly/>
 
-				<h4>Status zlecenia</h4>
-				<span class="@GetStatusClass(order.Status)">@order.Status</span>
+                <h4>Kwota do zapłaty</h4>
+                <input type="text" value="@(_selectedOrder.Koszt100 / 100.0) zł" readonly
+                       style="font-weight: bold; font-size: 18px"/>
 
-				<h4>Metoda Płatności</h4>
-				<input type="text" placeholder="Przelew krajowy" />
+                @if (_selectedOrder.Status?.Nazwa == "Zakończony")
+                {
+                    <h4>Oceń Wykonaną Usługę</h4>
+                    <div class="order-rate">
+                        <i class="fa-solid fa-star" style="color: #FEC53D"></i>
+                        <i class="fa-solid fa-star" style="color: #FEC53D"></i>
+                        <i class="fa-solid fa-star" style="color: #FEC53D"></i>
+                        <i class="fa-solid fa-star" style="color: #FEC53D"></i>
+                        <i class="fa-regular fa-star" style="color: #545353"></i>
+                    </div>
+                }
 
-				<h4>Kwota do zapłaty</h4>
-				<input type="text" placeholder="@order?.Koszt zł" style="font-weight: bold; font-size: 18px" />
+                @if (_selectedOrder.Komentarze != null && _selectedOrder.Komentarze.Any())
+                {
+                    <h4>Uwagi do zlecenia</h4>
+                    @foreach (var komentarz in _selectedOrder.Komentarze)
+                    {
+                        <input type="text" value="@komentarz.Tresc" readonly/>
+                    }
+                }
 
-
-				<h4>Oceń Wykonaną Usługę</h4>
-				<div class="order-rate">
-					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
-					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
-					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
-					<i class="fa-solid fa-star" style="color: #FEC53D"></i>
-					<i class="fa-regular fa-star" style="color: #545353"></i>
-				</div>
-
-				<h4>Uwagi do zlecenia</h4>
-				<input type="text" placeholder="Instalacja naprawiona tymczasowo - wymagana modernizacja" />
-				<input type="text" placeholder="Szczególna uwaga wymagana przy naprawie instalacji w budynku A1" />
-
-				<button>Pobierz PDF <i class="fa-solid fa-file-pdf" style="color: white; margin-left: 15px"></i></button>
-			}
-
-		</div>
-
-	</div>
-
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="DownloadPdf"
+                           Class="mt-4" StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                           Disabled="@_generatingPdf">
+                    @if (_generatingPdf)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <span class="ms-2">Generowanie...</span>
+                    }
+                    else
+                    {
+                        <span>Pobierz PDF</span>
+                    }
+                </MudButton>
+            }
+        </div>
+    </div>
 </div>
 
 @code {
-	[Parameter]
-	public String OrderId { get; set; }
+    private List<Zamowienie> _zamowienia = new();
+    private Zamowienie? _selectedOrder;
+    private int? _selectedOrderId;
+    private bool _isLoading = false;
+    private bool _generatingPdf = false;
 
-	private class Order
-	{
-		public int NumerZlecenia { get; set; }
-		public string Rodzaj { get; set; }
-		public DateTime DataUtworzenia { get; set; }
-		public DateTime DataWykonania { get; set; }
-		public double Koszt { get; set; }
-		public string Status { get; set; }
-		public string Priorytet { get; set; }
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadZamowienia();
+    }
 
-	private List<Order> orders = new List<Order>
-	{
-		new Order
-		{
-			NumerZlecenia = 0,
-			Rodzaj = "Instalacja",
-			DataUtworzenia = new DateTime(2025, 3, 14),
-			DataWykonania = new DateTime(2025, 3, 28),
-			Koszt = 300,
-			Status = "Zakończone",
-			Priorytet = "Wysoki"
-		},
-		new Order
-		{
-			NumerZlecenia = 1,
-			Rodzaj = "Instalacja",
-			DataUtworzenia = new DateTime(2025, 3, 14),
-			DataWykonania = new DateTime(2025, 3, 28),
-			Koszt = 300,
-			Status = "Zakończone",
-			Priorytet = "Wysoki"
-		},
-		new Order
-		{
-			NumerZlecenia = 2,
-			Rodzaj = "Naprawa",
-			DataUtworzenia = new DateTime(2025, 3, 20),
-			DataWykonania = new DateTime(2025, 4, 5),
-			Koszt = 450,
-			Status = "Realizacja",
-			Priorytet = "Wysoki"
-		},
-		new Order
-		{
-			NumerZlecenia = 3,
-			Rodzaj = "Przegląd",
-			DataUtworzenia = new DateTime(2025, 4, 1),
-			DataWykonania = new DateTime(2025, 4, 15),
-			Koszt = 0,
-			Status = "Nowe",
-			Priorytet = "Normalny"
-		},
-		new Order
-		{
-			NumerZlecenia = 4,
-			Rodzaj = "Konfiguracja",
-			DataUtworzenia = new DateTime(2025, 4, 10),
-			DataWykonania = new DateTime(2025, 4, 20),
-			Koszt = 250,
-			Status = "Oczekujące",
-			Priorytet = "Niski"
-		},
-		new Order
-		{
-			NumerZlecenia = 5,
-			Rodzaj = "Wymiana",
-			DataUtworzenia = new DateTime(2025, 4, 10),
-			DataWykonania = new DateTime(2025, 4, 30),
-			Koszt = 800,
-			Status = "Realizacja",
-			Priorytet = "Wysoki"
-		},
-		new Order
-		{
-			NumerZlecenia = 6,
-			Rodzaj = "Konserwacja",
-			DataUtworzenia = new DateTime(2025, 3, 28),
-			DataWykonania = new DateTime(2025, 4, 12),
-			Koszt = 150,
-			Status = "Zakończone",
-			Priorytet = "Normalny"
-		},
-		new Order
-		{
-			NumerZlecenia = 7,
-			Rodzaj = "Diagnostyka",
-			DataUtworzenia = new DateTime(2025, 3, 15),
-			DataWykonania = new DateTime(2025, 3, 20),
-			Koszt = 0,
-			Status = "Anulowane",
-			Priorytet = "Niski"
-		},
-		new Order
-		{
-			NumerZlecenia = 8,
-			Rodzaj = "Modernizacja",
-			DataUtworzenia = new DateTime(2025, 4, 5),
-			DataWykonania = new DateTime(2025, 5, 1),
-			Koszt = 1200,
-			Status = "Oczekujące",
-			Priorytet = "Wysoki"
-		}
-	};
-	private Order order;
+    private async Task LoadZamowienia()
+    {
+        _isLoading = true;
+        try
+        {
+            var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+            if (result.Data != null)
+            {
+                _zamowienia = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Error ?? "Nie udało się załadować zamówień", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
 
-	protected override void OnParametersSet()
-	{
-		if (int.TryParse(OrderId, out int parsedId))
-		{
-			order = orders.FirstOrDefault(o => o.NumerZlecenia == parsedId);
-		}
-	}
+    private async Task OnOrderSelectionChanged(int? orderId)
+    {
+        _selectedOrderId = orderId;
+        await LoadSelectedOrder();
+    }
 
-	private string GetStatusClass(string status)
-	{
-		return status switch
-		{
-			"Zakończone" => "status-finished",
-			"Realizacja" => "status-realization",
-			"Anulowane" => "status-canceled",
-			"Oczekujące" => "status-waiting",
-			"Nowe" => "status-new",
-			_ => ""
-		};
-	}
+    private async Task LoadSelectedOrder()
+    {
+        if (_selectedOrderId <= 0)
+        {
+            _selectedOrder = null;
+            StateHasChanged();
+            return;
+        }
+
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await ApiService.ZamowieniaRepo.ZamowienieGet(_selectedOrderId ?? 0);
+            if (result.Data != null)
+            {
+                _selectedOrder = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Error ?? $"Nie udało się załadować zamówienia #{_selectedOrderId}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Zakończony" => "status-finished",
+            "W realizacji" => "status-realization",
+            "Anulowany" => "status-canceled",
+            "Oczekujący" => "status-waiting",
+            "Nowy" => "status-new",
+            _ => ""
+        };
+    }
+
+    private static string FormatDate(DateTime? date)
+    {
+        return date?.ToString("dd.MM.yyyy") ?? "-";
+    }
 
 
+    private string GetImplementationTime()
+    {
+        if (_selectedOrder?.ZrealizowanaDataRealizacjiOd == null || _selectedOrder?.ZrealizowanaDataRealizacjiDo == null)
+        {
+            return "Nie zrealizowano";
+        }
+
+        var days = (_selectedOrder.ZrealizowanaDataRealizacjiDo.Value - _selectedOrder.ZrealizowanaDataRealizacjiOd.Value).Days;
+        return $"{days} {PluralizeDay(days)}";
+    }
+
+
+    private string GetClientFullName()
+    {
+        if (_selectedOrder?.Klient?.Uzytkownik == null) return "-";
+        return $"{_selectedOrder.Klient.Uzytkownik.Imie} {_selectedOrder.Klient.Uzytkownik.Nazwisko}";
+    }
+
+    private string GetTechnicianFullName()
+    {
+        if (_selectedOrder?.Serwisant?.Uzytkownik == null) return "-";
+        return $"{_selectedOrder.Serwisant.Uzytkownik.Imie} {_selectedOrder.Serwisant.Uzytkownik.Nazwisko}";
+    }
+
+    private async Task DownloadPdf()
+    {
+        if (_selectedOrder == null) return;
+
+        _generatingPdf = true;
+        StateHasChanged();
+
+        try
+        {
+            var pdfDocument = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(style => style.FontSize(11));
+
+                    page.Header().Element(header =>
+                    {
+                        header.BorderBottom(1).BorderColor(Colors.Black).PaddingTop(5)
+                            .Row(row =>
+                            {
+                                row.RelativeItem().Column(column =>
+                                {
+                                    column.Item().Text("Serwis24 - Raport zlecenia").FontSize(20).Bold();
+                                    column.Item().Text($"Numer zlecenia: {_selectedOrder.ZamowienieId}").FontSize(14);
+                                });
+                            });
+                    });
+
+                    page.Content().Element(content =>
+                    {
+                        content.PaddingVertical(10).Column(column =>
+                        {
+                            column.Item().Text("Informacje o zleceniu").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(150);
+                                    columns.RelativeColumn();
+                                });
+
+                                table.Cell().Text("Rodzaj zlecenia:");
+                                table.Cell().Text(_selectedOrder.Serwis?.Nazwa ?? "-");
+
+                                table.Cell().Text("Data utworzenia:");
+                                table.Cell().Text(_selectedOrder.DataDodania.ToString("dd.MM.yyyy"));
+
+                                table.Cell().Text("Status:");
+                                table.Cell().Text(_selectedOrder.Status?.Nazwa ?? "-");
+
+                                table.Cell().Text("Priorytet:");
+                                table.Cell().Text(_selectedOrder.Priorytet?.Nazwa ?? "-");
+
+                                table.Cell().Text("Metoda płatności:");
+                                table.Cell().Text(_selectedOrder.MetodaPlatnosci?.Nazwa ?? "-");
+
+                                table.Cell().Text("Kwota do zapłaty:");
+                                table.Cell().Text($"{_selectedOrder.Koszt100 / 100.0:0.00} zł");
+                            });
+
+                            column.Item().PaddingTop(10).Text("Opis").FontSize(14).Bold();
+                            column.Item().Background(Colors.Grey.Lighten5)
+                                .Border(1)
+                                .BorderColor(Colors.Grey.Lighten2)
+                                .Padding(5)
+                                .Text(_selectedOrder.Opis);
+
+                            column.Item().PaddingTop(10).Text("Daty realizacji").FontSize(14).Bold();
+                            column.Item().PaddingVertical(5).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(200);
+                                    columns.RelativeColumn();
+                                });
+
+                                table.Cell().Text("Planowana data rozpoczęcia:");
+                                table.Cell().Text(FormatDate(_selectedOrder.PlanowanaDataRealizacjiOd));
+
+                                table.Cell().Text("Planowana data zakończenia:");
+                                table.Cell().Text(FormatDate(_selectedOrder.PlanowanaDataRealizacjiDo));
+
+                                table.Cell().Text("Data rozpoczęcia realizacji:");
+                                table.Cell().Text(FormatDate(_selectedOrder.ZrealizowanaDataRealizacjiOd));
+
+                                table.Cell().Text("Data zakończenia realizacji:");
+                                table.Cell().Text(FormatDate(_selectedOrder.ZrealizowanaDataRealizacjiDo));
+
+                                table.Cell().Text("Czas realizacji:");
+                                table.Cell().Text(GetImplementationTime());
+                            });
+
+                            column.Item().PaddingTop(15).Text("Dane klienta").FontSize(14).Bold();
+                            column.Item().PaddingVertical(5).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(150);
+                                    columns.RelativeColumn();
+                                });
+
+                                table.Cell().Text("Klient:");
+                                table.Cell().Text(GetClientFullName());
+
+                                table.Cell().Text("Numer telefonu:");
+                                table.Cell().Text(_selectedOrder.NumerTelefonu?.Numer ?? "-");
+
+                                table.Cell().Text("Adres email:");
+                                table.Cell().Text(_selectedOrder.AdresEmail?.Email ?? "-");
+                            });
+
+                            if (_selectedOrder.Adres != null)
+                            {
+                                column.Item().PaddingTop(10).Text("Adres").FontSize(12).Bold();
+                                column.Item().PaddingVertical(5).Table(table =>
+                                {
+                                    table.ColumnsDefinition(columns =>
+                                    {
+                                        columns.ConstantColumn(150);
+                                        columns.RelativeColumn();
+                                    });
+
+                                    table.Cell().Text("Ulica i numer:");
+                                    table.Cell().Text($"{_selectedOrder.Adres.Ulica} {_selectedOrder.Adres.NumerDomu}");
+
+                                    table.Cell().Text("Kod pocztowy i miasto:");
+                                    table.Cell().Text($"{_selectedOrder.Adres.KodPocztowy}, {_selectedOrder.Adres.Miasto}");
+
+                                    table.Cell().Text("Kraj:");
+                                    table.Cell().Text(_selectedOrder.Adres.Kraj);
+                                });
+                            }
+
+                            if (_selectedOrder.Serwisant != null && _selectedOrder.Serwisant.Uzytkownik != null)
+                            {
+                                column.Item().PaddingTop(15).Text("Serwisant").FontSize(14).Bold();
+                                column.Item().PaddingVertical(5).Table(table =>
+                                {
+                                    table.ColumnsDefinition(columns =>
+                                    {
+                                        columns.ConstantColumn(150);
+                                        columns.RelativeColumn();
+                                    });
+
+                                    table.Cell().Text("Imię i nazwisko:");
+                                    table.Cell().Text(GetTechnicianFullName());
+
+                                    if (_selectedOrder.Serwisant.Uzytkownik.NumerTelefonu != null)
+                                    {
+                                        table.Cell().Text("Numer telefonu:");
+                                        table.Cell().Text(_selectedOrder.Serwisant.Uzytkownik.NumerTelefonu.Numer);
+                                    }
+
+                                    if (_selectedOrder.Serwisant.Uzytkownik.AdresEmail != null)
+                                    {
+                                        table.Cell().Text("Adres email:");
+                                        table.Cell().Text(_selectedOrder.Serwisant.Uzytkownik.AdresEmail.Email);
+                                    }
+                                });
+                            }
+
+                            if (_selectedOrder.Komentarze != null && _selectedOrder.Komentarze.Any())
+                            {
+                                column.Item().PaddingTop(15).Text("Komentarze").FontSize(14).Bold();
+
+                                foreach (var komentarz in _selectedOrder.Komentarze)
+                                {
+                                    column.Item().PaddingTop(5)
+                                        .Background(Colors.Grey.Lighten5)
+                                        .Border(1)
+                                        .BorderColor(Colors.Grey.Lighten2)
+                                        .Padding(5)
+                                        .Text(komentarz.Tresc);
+                                }
+                            }
+                        });
+                    });
+
+                    page.Footer().Element(footer =>
+                    {
+                        footer.BorderTop(1).BorderColor(Colors.Black).PaddingTop(5)
+                            .Row(row =>
+                            {
+                                row.RelativeItem().Column(column =>
+                                {
+                                    column.Item().Text("© Serwis IT").FontSize(10);
+                                    column.Item().Text("Dokument wygenerowany automatycznie").FontSize(8);
+                                });
+
+                                row.RelativeItem().AlignRight().Text(text =>
+                                {
+                                    text.Span("Strona ").FontSize(10);
+                                    text.CurrentPageNumber().FontSize(10);
+                                    text.Span(" z ").FontSize(10);
+                                    text.TotalPages().FontSize(10);
+                                });
+                            });
+                    });
+                });
+            });
+
+            byte[] pdfBytes = pdfDocument.GeneratePdf();
+
+            string base64String = Convert.ToBase64String(pdfBytes);
+
+            string fileName = $"zamowienie_{_selectedOrder.ZamowienieId}.pdf";
+            await JsRuntime.InvokeVoidAsync("downloadFileFromBase64", fileName, base64String, "application/pdf");
+
+            Snackbar.Add("PDF został wygenerowany pomyślnie", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd przy generowaniu PDF: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _generatingPdf = false;
+            StateHasChanged();
+        }
+    }
+    
+    private static string PluralizeDay(int days)
+    {
+        if (days == 1) return "dzień";
+        return "dni";
+    }
 }
