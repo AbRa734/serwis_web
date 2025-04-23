@@ -9,6 +9,9 @@
 @rendermode InteractiveServer
 
 <style>
+    .mud-cal-clickable{
+        cursor: pointer!important;    
+    }
     .container {
         margin: 0;
         padding: 0;
@@ -129,7 +132,7 @@
         </MudCardHeader>
     </MudCard>
     
-    <div class="legend">
+    @*<div class="legend">
         <div class="legend-item">
             <div class="legend-available"></div>
             <span>Dostępny</span>
@@ -138,7 +141,7 @@
             <div class="legend-unavailable"></div>
             <span>Niedostępny</span>
         </div>
-    </div>
+    </div>*@
     
     <div class="technician-filter">
         <MudChip 
@@ -208,7 +211,8 @@
                 {
                     Start = d.DataOd,
                     End = d.DataDo,
-                    Text = $"{imieNazwisko} ({(d.CzyDostepny ? "Dostępny" : "Niedostępny")})",
+                    //Text = $"{imieNazwisko} ({(d.CzyDostepny ? "Dostępny" : "Niedostępny")})",
+                    Text = $"{imieNazwisko}",
                 };
                 _events.Add(item);
                 _eventToDostepnosc[item] = d;
@@ -371,7 +375,29 @@
             }
             else if (action == "edit")
             {
-                Snackbar.Add("Funkcja edycji nie jest jeszcze dostępna", Severity.Info);
+                var editParameters = new DialogParameters
+                {
+                    ["Dostepnosc"] = dostepnosc,
+                    ["TechnicianDict"] = _technicians
+                };
+
+                var editDialog = await DialogService.ShowAsync<EditAvailabilityDialog>("Edytuj dostępność", editParameters, options);
+                var editResult = await editDialog.Result;
+
+                if (!editResult.Canceled && editResult.Data is DostepnoscSerwisantaDto updatedAvailability)
+                {
+                    var apiResult = await ApiService.DostepnosciSerwisantaRepo.DostepnoscSerwisantaPut(dostepnosc.DostepnoscSerwisantaId, updatedAvailability);
+
+                    if (apiResult.Data != null)
+                    {
+                        Snackbar.Add("Dostępność została zaktualizowana pomyślnie", Severity.Success);
+                        await LoadAvailabilities(); 
+                    }
+                    else
+                    {
+                        Snackbar.Add($"Błąd: {apiResult.Error}", Severity.Error);
+                    }
+                }
             }
         }
     }

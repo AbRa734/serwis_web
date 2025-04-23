@@ -4,8 +4,6 @@
 
 <MudDialog>
     <DialogContent>
-        <MudText Typo="Typo.h6" Class="mb-4">Dostępności na @Date.ToString("dd.MM.yyyy HH:mm")</MudText>
-
         @if (AvailableTechnicians.Any())
         {
             <MudText Typo="Typo.subtitle1" Color="Color.Success" Class="mt-3">Dostępni serwisanci:</MudText>
@@ -20,7 +18,7 @@
         }
         else
         {
-            <MudText Color="Color.Warning" Class="mt-3">Brak dostępnych serwisantów o tej godzinie</MudText>
+            <MudText Color="Color.Warning" Class="mt-3">Brak dostępnych serwisantów.</MudText>
         }
 
         @if (UnavailableTechnicians.Any())
