@@ -11,50 +11,194 @@
 
 <PageTitle>Typy oceny</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudCard Elevation="3" Class="mb-4">
-        <MudCardHeader>
-            <MudText Typo="Typo.h5">Typy oceny</MudText>
-            <MudSpacer />
-            <MudButton Variant="Variant.Filled" Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="@(() => OpenDialog(new DicTypOcenyDto()))">Dodaj typ oceny</MudButton>
-        </MudCardHeader>
-    </MudCard>
+<style>
+    .order-container {
+        margin: 0;
+        padding: 0;
+        min-width: 100%;
+        border: none;
+    }
+
+    .order-header {
+        margin: 0 0 10px 0;
+        padding: 0;
+    }
+
+    .order-header-tittle {
+        font-size: 30px;
+        font-weight: 600
+    }
+
+    .order-header-search-button {
+        margin: 0 0 25px 0;
+        padding: 0 40px 0 0;
+        width: 100%;
+        justify-content: space-between
+    }
+
+    .order-search {
+        max-width: 300px;
+    }
+
+    .new-button {
+        background-color: #4880FF;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 50px;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+    }
+
+    .new-button:hover {
+        background-color: #336ff5;
+    }
+
+    .order-grid {
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .order-category {
+        font-size: 16px;
+        font-weight: 500;
+        /* text-align: center;  */
+        background-color: #FCFDFD !important;
+        border-top-left-radius: 15px !important;
+        border-top-right-radius: 15px !important;
+        border-bottom: solid 2px #efefef !important;
+    }
+
+    .order-category-left {
+        padding-left: 50px;
+        font-size: 16px;
+        font-weight: 500;
+        /* text-align: center;  */
+        background-color: #FCFDFD !important;
+        border-top-left-radius: 15px !important;
+        border-top-right-radius: 15px !important;
+        border-bottom: solid 2px #efefef !important;
+    }
+
+    .status-default {
+        font-size: 16px;
+        font-weight: 500;
+        /* text-align: center; */
+    }
+
+    .status-default-left {
+        padding-left: 50px;
+        font-size: 16px;
+        font-weight: 500;
+        /* text-align: center; */
+    }
+
+    .edit {
+        color: #4880FF;
+        border: none;
+    }
+
+    .delete {
+        color: #979797;
+        border: none;
+    }
+
+    @@media (max-width: 1024px) {
+        .order-header-search-button {
+            padding: 0;
+            margin: 0;
+        }
+
+        .order-header {
+            margin: 0;
+        }
+
+        .order-search {
+            display: none;
+        }
+
+        .new-button {
+            width: 100%;
+            padding: 12px 0;
+            margin: 10px 0 20px 0;
+        }
+
+        .order-category-left {
+            padding-left: 20px;
+        }
+
+        .status-default-left {
+            padding-left: 20px;
+        }
+    }
+
+    @@media (max-width: 600) {
+
+        .order-category {
+            text-align: start;
+        }
+
+        .status-default {
+            text-align: start;
+        }
+    }
+
+</style>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
+
+    <MudCardHeader Class="order-header">
+        <MudText Class="order-header-tittle">Typy oceny</MudText>
+    </MudCardHeader>
+
+    <MudCardHeader Class="order-header-search-button">
+        <MudItem>
+            <MudTextField @bind-Value="_searchString"
+                          Placeholder="Szukaj"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium"
+                          Immediate="true"
+                          DebounceInterval="500"
+                          OnDebounceIntervalElapsed="StateHasChanged"
+                          Class="order-search"></MudTextField>
+        </MudItem>
+        <MudButton Class="new-button" OnClick="@(() => OpenDialog(new DicTypOcenyDto()))">
+            Dodaj typ oceny
+        </MudButton>
+    </MudCardHeader>
+
+
 
     <MudTable Items="@_typyOceny" Hover="true" Loading="@_loading"
               LoadingProgressColor="@MudBlazor.Color.Info" Style="@($"--mud-palette-primary: {Colors.Primary}")"
-              Filter="new Func<DicTypOceny,bool>(FilterFunc)">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Lista typów oceny</MudText>
-            <MudSpacer />
-            <MudTextField @bind-Value="_searchString" Placeholder="Szukaj" Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"
-                          Immediate="true" OnDebounceIntervalElapsed="StateHasChanged"></MudTextField>
-        </ToolBarContent>
+              RowsPerPage="7" Filter="new Func<DicTypOceny,bool>(FilterFunc)" Bordered="false" Class="order-grid">
+
         <HeaderContent>
-            <MudTh><MudTableSortLabel SortBy="new Func<DicTypOceny, object>(x => x.TypOcenyId)">ID</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<DicTypOceny, object>(x => x.Ocena)">Ocena</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<DicTypOceny, object>(x => x.Nazwa)">Nazwa</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<DicTypOceny, object?>(x => x.Opis)">Opis</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<DicTypOceny, object>(x => x.DataDodania)">Data utworzenia</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<DicTypOceny, object?>(x => x.DataAktualizacji)">Aktualizacja</MudTableSortLabel></MudTh>
-            <MudTh>Akcje</MudTh>
+            <MudTh Class="order-category-left"><MudTableSortLabel SortBy="new Func<DicTypOceny, object>(x => x.TypOcenyId)">ID</MudTableSortLabel></MudTh>
+            <MudTh Class="order-category"><MudTableSortLabel SortBy="new Func<DicTypOceny, object>(x => x.Ocena)">Ocena</MudTableSortLabel></MudTh>
+            <MudTh Class="order-category"><MudTableSortLabel SortBy="new Func<DicTypOceny, object>(x => x.Nazwa)">Nazwa</MudTableSortLabel></MudTh>
+            <MudTh Class="order-category"><MudTableSortLabel SortBy="new Func<DicTypOceny, object?>(x => x.Opis)">Opis</MudTableSortLabel></MudTh>
+            <MudTh Class="order-category"><MudTableSortLabel SortBy="new Func<DicTypOceny, object>(x => x.DataDodania)">Data utworzenia</MudTableSortLabel></MudTh>
+            <MudTh Class="order-category"><MudTableSortLabel SortBy="new Func<DicTypOceny, object?>(x => x.DataAktualizacji)">Aktualizacja</MudTableSortLabel></MudTh>
+            <MudTh Class="order-category">Akcje</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="ID">@context.TypOcenyId</MudTd>
-            <MudTd DataLabel="Ocena">@context.Ocena</MudTd>
-            <MudTd DataLabel="Nazwa">@context.Nazwa</MudTd>
-            <MudTd DataLabel="Opis">@context.Opis</MudTd>
-            <MudTd DataLabel="Data utworzenia">@context.DataDodania.ToString("dd/MM/yyyy")</MudTd>
-            <MudTd DataLabel="Aktualizacja">@(context.DataAktualizacji?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
-            <MudTd>
-                <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Style="@($"color: {Colors.Primary}")"
-                                   OnClick="@(() => OpenDialog(MapToDto(context)))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Style="@($"color: {Colors.DarkGray}")"
-                                   OnClick="@(() => DeleteConfirm(context.TypOcenyId))" />
-                </MudButtonGroup>
+            <MudTd DataLabel="ID" Class="status-default-left">@context.TypOcenyId</MudTd>
+            <MudTd DataLabel="Ocena" Class="status-default">@context.Ocena</MudTd>
+            <MudTd DataLabel="Nazwa" Class="status-default">@context.Nazwa</MudTd>
+            <MudTd DataLabel="Opis" Class="status-default">@context.Opis</MudTd>
+            <MudTd DataLabel="Data utworzenia" Class="status-default">@context.DataDodania.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Aktualizacja" Class="status-default">@(context.DataAktualizacji?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
+            <MudTd Class="status-default">
+
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Class="edit"
+                                OnClick="@(() => OpenDialog(MapToDto(context)))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Class="delete"
+                                OnClick="@(() => DeleteConfirm(context.TypOcenyId))" />
+
             </MudTd>
         </RowTemplate>
         <PagerContent>

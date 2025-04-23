@@ -2,16 +2,63 @@
 @using DialogResult = MudBlazor.DialogResult
 @rendermode InteractiveServer
 
-<MudDialog>
+<style>
+    .container {
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        padding: 7px 16px 14px 7px;
+    }
+
+    .tittle {
+        font-size: 24px;
+        font-weight: 600
+    }
+
+    .cancel {
+        background-color: #979797;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .cancel:hover {
+        background-color: #858383
+    }
+
+    .delete {
+        background-color: #f14c3c;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .delete:hover {
+        background-color: #d12413;
+    }
+
+</style>
+
+
+<MudDialog Class="container">
     <TitleContent>
-        <MudText Typo="Typo.h6">@Title</MudText>
+        <MudText Class="tittle">@Title</MudText>
     </TitleContent>
     <DialogContent>
         <MudText>@ContentText</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Style="@($"color: {Colors.DarkGray}")">Anuluj</MudButton>
-        <MudButton Style="@($"background-color: {Colors.DarkGray}; color: {Colors.White}")" OnClick="Submit">Usuń</MudButton>
+        <MudButton OnClick="Cancel" Class="cancel">Anuluj</MudButton>
+        <MudButton OnClick="Submit" Class="delete">Usuń</MudButton>
     </DialogActions>
 </MudDialog>
 
