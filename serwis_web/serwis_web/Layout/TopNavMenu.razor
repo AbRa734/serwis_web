@@ -113,10 +113,10 @@
 
     private string GetUserRole()
     {
-        if (_uzytkownik?.RoleUzytkownika == null || !_uzytkownik.RoleUzytkownika.Any())
+        if (_uzytkownik?.RolaUzytkownika == null)
             return "Brak roli";
 
-        return _uzytkownik.RoleUzytkownika.FirstOrDefault()?.Nazwa ?? "Brak roli";
+        return _uzytkownik.RolaUzytkownika.Nazwa;
     }
 
     private void NavigateToSearch()

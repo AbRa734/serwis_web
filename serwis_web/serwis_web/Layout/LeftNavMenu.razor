@@ -23,8 +23,8 @@
                     continue;
                 }
 
-                @if (menuItem.ShowForRoles != null && (_uzytkownik?.RoleUzytkownika == null || 
-                     !menuItem.ShowForRoles.Contains(_uzytkownik.RoleUzytkownika.FirstOrDefault()?.Nazwa)))
+                @if (menuItem.ShowForRoles != null && (_uzytkownik?.RolaUzytkownika == null || 
+                     !menuItem.ShowForRoles.Contains(_uzytkownik.RolaUzytkownika.Nazwa)))
                 {
                     continue;
                 }
@@ -98,10 +98,10 @@
 
     private string GetUserRole()
     {
-        if (_uzytkownik?.RoleUzytkownika == null || !_uzytkownik.RoleUzytkownika.Any())
+        if (_uzytkownik?.RolaUzytkownika == null)
             return "Użytkownik";
 
-        return _uzytkownik.RoleUzytkownika.FirstOrDefault()?.Nazwa ?? "Administrator"; //FIXME: zmienić
+        return _uzytkownik.RolaUzytkownika.Nazwa;
     }
 
     private List<MenuItem> GetMenuItems()
@@ -138,12 +138,6 @@
                 IconClass = "fa-solid fa-calendar-days", 
                 Label = "Dostępność",
                 ShowForRoles = new[] { "Administrator", "Serwisant" }
-            },
-            
-            new MenuItem {
-                Path = "/avability",
-                IconClass = "fa-solid fa-calendar",
-                Label = "Harmonogram"
             },
             
             new MenuItem { IsDivider = true },

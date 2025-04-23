@@ -49,20 +49,14 @@
                         </div>
                     </div>
 
-                    @if (order.Serwisy?.Any() == true)
-                    {
-                        <h4>Usługi</h4>
-                        <div class="services-list">
-                            @foreach (var serwis in order.Serwisy)
-                            {
-                                <div class="service-item">
-                                    <p class="service-name">@serwis.Nazwa</p>
-                                    <p class="service-desc">@serwis.Opis</p>
-                                    <p class="service-type">Typ: @serwis.TypSerwisu?.Nazwa</p>
-                                </div>
-                            }
+                    <h4>Usługi</h4>
+                    <div class="services-list">
+                        <div class="service-item">
+                            <p class="service-name">@order.Serwis.Nazwa</p>
+                            <p class="service-desc">@order.Serwis.Opis</p>
+                            <p class="service-type">Typ: @order.Serwis.TypSerwisu?.Nazwa</p>
                         </div>
-                    }
+                    </div>
 
                     <div class="order-row">
                         <div class="single-col">
@@ -403,7 +397,7 @@
             {
                 SerwisantId = order.SerwisantId,
                 KlientId = order.KlientId,
-                SerwisyIds = order.Serwisy?.Select(s => s.SerwisId).ToList() ?? new List<int>(),
+                SerwisId = order.Serwis.SerwisId,
                 StatusId = order.StatusId,
                 PriorytetId = order.PriorytetId,
                 MetodaPlatnosciId = order.MetodaPlatnosciId,
@@ -510,4 +504,5 @@
             }
         }
     }
+
 }

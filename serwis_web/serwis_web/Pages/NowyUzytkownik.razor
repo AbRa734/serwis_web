@@ -335,8 +335,8 @@
 
 			_newUser.AdresEmailId = emailResult.Data.AdresEmailId;
 			_newUser.NumerTelefonuId = phoneId;
-			_newUser.AdresyIds = addressIds;
-			_newUser.RoleUzytkownikaIds = new List<int> { _selectedRoleId };
+			_newUser.AdresId = addressIds.First();
+			_newUser.RolaUzytkownikaId = _selectedRoleId;
 
 			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPost(_newUser);
 

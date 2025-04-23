@@ -317,9 +317,9 @@
 				_currentPhone = phoneResult.Data;
 			}
 
-			if (_currentUser.Adresy != null && _currentUser.Adresy.Any())
+			if (_currentUser.Adres != null)
 			{
-				_currentAddress = _currentUser.Adresy.FirstOrDefault();
+				_currentAddress = _currentUser.Adres;
 			}
 
 			_userDataModel.Imie = _currentUser.Imie;

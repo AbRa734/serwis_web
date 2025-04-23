@@ -315,9 +315,9 @@
 			_currentPhone = phoneResult.Data;
 		}
 
-		if (_currentUser.Adresy != null && _currentUser.Adresy.Any())
+		if (_currentUser.Adres != null)
 		{
-			_currentAddress = _currentUser.Adresy.FirstOrDefault();
+			_currentAddress = _currentUser.Adres;
 		}
 
 		_userDataModel.Imie = _currentUser.Imie;
@@ -415,8 +415,8 @@
 				Nazwisko = _userDataModel.Nazwisko,
 				AdresEmailId = adresEmailId,
 				NumerTelefonuId = numerTelefonuId,
-				AdresyIds = adresyIds,
-				RoleUzytkownikaIds = _currentUser?.RoleUzytkownika?.Select(r => r.RolaUzytkownikaId)?.ToList() ?? new List<int>()
+				AdresId = adresyIds.FirstOrDefault(),
+				RolaUzytkownikaId = _currentUser?.RolaUzytkownika.RolaUzytkownikaId ?? 2,
 			};
 
 			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_userId, uzytkownikDto);

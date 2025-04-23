@@ -7,7 +7,7 @@ public class Zamowienie
     public Serwisant? Serwisant { get; set; }
     public int KlientId { get; set; }
     public Klient Klient { get; set; } = null!;
-    public ICollection<Serwis> Serwisy { get; set; } = null!;
+    public Serwis Serwis { get; set; } = null!;
     public int StatusId { get; set; }
     public DicStatus Status { get; set; } = null!;
     public int PriorytetId { get; set; }
@@ -21,6 +21,8 @@ public class Zamowienie
     public AdresEmail? AdresEmail { get; set; }
     public int? AdresId { get; set; }
     public Adres? Adres { get; set; }
+    public int Koszt100 { get; set; }
+    public String Opis { get; set; } = "";
     public DateTime? PlanowanaDataRealizacjiOd { get; set; }
     public DateTime? PlanowanaDataRealizacjiDo { get; set; }
     public DateTime? ZrealizowanaDataRealizacjiOd { get; set; }
@@ -33,7 +35,7 @@ public class ZamowienieDto
 {
     public int? SerwisantId { get; set; }
     public int KlientId { get; set; }
-    public List<int> SerwisyIds { get; set; } = new List<int>();
+    public int SerwisId { get; set; }
     public int StatusId { get; set; }
     public int PriorytetId { get; set; }
     public int MetodaPlatnosciId { get; set; }
@@ -41,6 +43,8 @@ public class ZamowienieDto
     public int? NumerTelefonuId { get; set; }
     public int? AdresEmailId { get; set; }
     public int? AdresId { get; set; }
+    public int Koszt100 { get; set; }
+    public String Opis { get; set; } = "";
     public DateTime? PlanowanaDataRealizacjiOd { get; set; }
     public DateTime? PlanowanaDataRealizacjiDo { get; set; }
     public DateTime? ZrealizowanaDataRealizacjiOd { get; set; }

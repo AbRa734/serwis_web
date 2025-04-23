@@ -3,27 +3,29 @@ namespace ApiService.Models;
 public class Uzytkownik
 {
     public int UzytkownikId { get; set; }
-    public ICollection<DicRolaUzytkownika> RoleUzytkownika { get; set; } = new List<DicRolaUzytkownika>();
+    public DicRolaUzytkownika RolaUzytkownika { get; set; } 
     public string? Imie { get; set; }
     public string? Nazwisko { get; set; }
     public int AdresEmailId { get; set; }
     public AdresEmail AdresEmail { get; set; } = null!;
     public int? NumerTelefonuId { get; set; }
     public NumerTelefonu? NumerTelefonu { get; set; }
-    public ICollection<Adres>? Adresy { get; set; }
+    public Adres? Adres { get; set; }
     Autoryzacja? Autoryzacja { get; set; }
+    public bool CzyAktywny { get; set; } = true;
     public DateTime? DataAktualizacji { get; set; }
     public DateTime DataDodania { get; init; }
 }
 
 public class UzytkownikDto
 {
-    public List<int> RoleUzytkownikaIds { get; set; } = new List<int>();
+    public int RolaUzytkownikaId { get; set; }
     public string? Imie { get; set; }
     public string? Nazwisko { get; set; }
     public int AdresEmailId { get; set; }
     public int? NumerTelefonuId { get; set; }
-    public List<int>? AdresyIds { get; set; } = new List<int>();
+    public bool CzyAktywny { get; set; }
+    public int? AdresId { get; set; }
 }
 
 public class Autoryzacja
