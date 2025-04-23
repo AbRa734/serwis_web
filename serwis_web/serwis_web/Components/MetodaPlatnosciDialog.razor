@@ -3,9 +3,55 @@
 @using DialogResult = MudBlazor.DialogResult
 @rendermode InteractiveServer
 
-<MudDialog>
+
+<style>
+    .container{
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        padding: 10px 10px 15px 10px; 
+    }
+
+    .tittle {
+        font-size: 24px;
+        font-weight: 600
+    }
+
+    .cancel{
+        background-color: #979797;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+    .cancel:hover{
+         background-color: #858383
+    }
+
+    .save{
+        background-color: #4880FF;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+    .save:hover{
+        background-color: #336ff5;
+    }
+
+</style>
+
+
+<MudDialog Class="container">
     <TitleContent>
-        <MudText Typo="Typo.h6">@DialogTitle</MudText>
+        <MudText Class="tittle">@DialogTitle</MudText>
     </TitleContent>
     <DialogContent>
         <MudForm @ref="_form" Model="@Metoda">
@@ -15,14 +61,14 @@
                                   RequiredError="Nazwa jest wymagana" />
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="Metoda.Opis" Label="Opis" Lines="3" />
+                    <MudTextField @bind-Value="Metoda.Opis" Label="Opis" Lines="1" />
                 </MudItem>
             </MudGrid>
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Style="@($"color: {Colors.DarkGray}")">Anuluj</MudButton>
-        <MudButton OnClick="Submit" Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")">Zapisz</MudButton>
+        <MudButton OnClick="Cancel" Class="cancel">Anuluj</MudButton>
+        <MudButton OnClick="Submit" Class="save">Zapisz</MudButton>
     </DialogActions>
 </MudDialog>
 

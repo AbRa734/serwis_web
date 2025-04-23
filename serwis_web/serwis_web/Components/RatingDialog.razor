@@ -4,12 +4,55 @@
 @using DialogResult = MudBlazor.DialogResult
 @using Size = MudBlazor.Size
 
-<MudDialog>
+<style>
+    .container {
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        padding: 10px 10px 15px 10px;
+    }
+
+    .tittle {
+        font-size: 24px;
+        font-weight: 600
+    }
+
+    .cancel {
+        background-color: #979797;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .cancel:hover {
+        background-color: #858383
+    }
+
+    .save {
+        background-color: #4880FF;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .save:hover {
+        background-color: #336ff5;
+    }
+
+</style>
+
+<MudDialog Class="container">
     <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Star" Class="mr-3" Color="Color.Warning" />
-            Oceń wykonaną usługę
-        </MudText>
+        <MudText Class="tittle">Oceń wykonaną usługę</MudText>
     </TitleContent>
     <DialogContent>
         <MudContainer>
@@ -28,17 +71,13 @@
                 </div>
 
                 <MudTextField T="string" Label="Dodatkowy komentarz (opcjonalnie)" @bind-Value="RatingComment"
-                            Counter="300" MaxLength="300" Immediate="true"
-                            Lines="3" Class="mt-2" />
+                            Counter="300" MaxLength="300" Immediate="true" Lines="2"/>
             </MudForm>
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Outlined" Color="Color.Default">Anuluj</MudButton>
-        <MudButton Color="Color.Primary" 
-                   Style="@($"background-color: {Colors.Primary}; color: {Colors.White}")" 
-                   OnClick="Submit"
-                   Disabled="@(!IsFormValid())">Zapisz ocenę</MudButton>
+        <MudButton OnClick="Cancel" Class="cancel">Anuluj</MudButton>
+        <MudButton OnClick="Submit" Disabled="@(!IsFormValid())" Class="save">Zapisz ocenę</MudButton>
     </DialogActions>
 </MudDialog>
 
