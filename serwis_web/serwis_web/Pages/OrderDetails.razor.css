@@ -1,4 +1,4 @@
-﻿.order-container {
+﻿/*.order-container {
     display: flex;
     flex-direction: column;
     gap: 23px;
@@ -88,7 +88,7 @@ textarea, input {
 }
 
 textarea {
-    height: 178px;
+    height: 145px;
     margin-top: 5px;
     margin-bottom: 12px;
 }
@@ -429,3 +429,4 @@ span {
         font-size: 14px;
     }
 }
+*/

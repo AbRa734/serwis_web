@@ -1,7 +1,240 @@
-﻿@page "/users/{OrderId}"
+﻿@page "/users/{UserId:int}"
+@inject ApiService ApiService
 @rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using ApiService
+@using ApiService.Models
+@using ApiService.Repositories
+@inject IDialogService DialogService
+@using DialogService = MudBlazor.DialogService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
 <PageTitle>Dane Użytkownika</PageTitle>
+
+<style>
+	.services-container {
+		display: flex;
+		flex-direction: column;
+		gap: 23px;
+		padding: 0;
+		margin: 0;
+		padding-left: 5px;
+		padding-right: 20px;
+	}
+
+	.title-changes {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0;
+		margin: 0;
+		padding-right: 40px;
+	}
+
+	.title-changes h2 {
+		font-size: 30px;
+		font-weight: 600;
+		margin: 0;
+		padding: 0;
+	}
+
+	.service-back {
+		display: flex;
+		flex-direction: column;
+		gap: 25px;
+		width: 100%;
+		padding: 30px;
+		background-color: #FFFFFF;
+		border-radius: 10px;
+		box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+		margin: 0;
+	}
+
+	.service-tab {
+		display: flex;
+		width: 100%;
+		gap: 100px;
+		padding: 0;
+		margin: 0;
+	}
+
+	.service-col {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.service-col h4 {
+		font-size: 16px;
+		font-weight: 500;
+		padding: 0;
+		margin: 0;
+		color: #606060;
+	}
+
+	.service-row {
+		display: flex;
+		align-items: center;
+		gap: 40px;
+		width: 100%;
+	}
+
+	.single-col {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		width: 100%;
+	}
+
+	textarea, .form-input, select, option {
+		background-color: #F5F6FA;
+		border: solid 1px #D5D5D5;
+		width: 100%;
+		padding: 15px;
+		border-radius: 5px;
+		color: #A6A6A6;
+		font-size: 14px;
+		margin-bottom: 10px;
+	}
+
+	.textarea {
+		height: 287px;
+	}
+
+	.form-input, select {
+		height: 50px;
+	}
+
+	button {
+		background-color: #4880FF;
+		border: none;
+		border-radius: 10px;
+		padding: 15px;
+		color: #FFFFFF;
+		font-size: 16px;
+		transition: all 0.3s ease-in-out;
+		cursor: pointer;
+	}
+
+	button:hover {
+		background-color: #336ff5;
+	}
+
+	.btn-changes {
+		padding: 12px 50px;
+		margin: 0;
+		background-color: #4880FF;
+		border: none;
+		border-radius: 10px;
+		color: #FFFFFF;
+		font-size: 16px;
+		transition: all 0.3s ease-in-out;
+		cursor: pointer;
+	}
+
+	.reset-password {
+		background-color: #ccf0eb;
+		color: #00b69b;
+		font-weight: 500;
+		margin-top: 10px;
+	}
+
+	.reset-password:hover {
+		background-color: #85d4c8;
+	}
+
+	.delete-account {
+		background-color: #f14c3c;
+		font-weight: 500;
+		margin-top: 15px;
+	}
+
+	.delete-account:hover {
+		background-color: #d12413;
+	}
+
+	@@media (max-width: 1366px) {
+		.service-tab
+		{
+			gap: 80px;
+		}
+
+	}
+
+
+	@@media (max-width: 1280px) {
+	.services-container
+		{
+			gap: 30px;
+			padding-right: 15px;
+		}
+
+		.service-row {
+			gap: 40px;
+		}
+
+		.service-tab {
+			flex-direction: column;
+			gap: 25px;
+		}
+
+		textarea, .form-input, select {
+			margin-bottom: 15px;
+		}
+
+		.single-col {
+			gap: 8px;
+		}
+
+	}
+
+	@@media (max-width: 1024px) {
+		.title-changes
+		{
+			padding-right: 0;
+		}
+
+		.btn-changes {
+			padding: 12px 35px;
+		}
+
+	}
+
+	@@media (max-width: 768px) {
+		.services-container
+		{
+			padding-right: 5px;
+			padding-top: 10px;
+		}
+
+		.service-row {
+			flex-direction: column;
+			gap: 5px;
+		}
+
+		.btn-changes {
+			padding: 12px 50px;
+		}
+
+	}
+
+	@@media (max-width: 640px) {
+		.title-changes
+		{
+			flex-direction: column;
+			gap: 20px;
+			align-items: flex-start;
+		}
+
+		.btn-changes {
+			padding: 12px 35px;
+			width: 100%;
+		}
+
+	}
+</style>
 
 <div class="services-container">
 
@@ -10,93 +243,348 @@
 		<a href="/new-user" class="btn-changes">Nowy użytkownik</a>
 	</div>
 
-	<div class="service-back">
+	@if (!string.IsNullOrEmpty(_message))
+	{
+		<div class="@_messageClass">@_message</div>
+	}
+
+	<EditForm Model="@_userDataModel" OnValidSubmit="SaveUserData" class="service-back">
+		<DataAnnotationsValidator />
+		<ValidationSummary />
+
 		<div class="service-tab">
+			<div class="service-col">
 
-			@if (OrderId == null)
-			{
-				<h5>Nie znaleziono uzytkownika o numerze @OrderId</h5>
-			}
-			else
-			{
-				<div class="service-col">
+				<h4>Imię</h4>
+				<InputText @bind-Value="_userDataModel.Imie" placeholder="Imię użytkownika" class="form-input" />
 
-					<h4>Imię</h4>
-					<input type="text" placeholder="Anna" />
+				<h4>Nazwisko</h4>
+				<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nazwisko użytkownika" class="form-input" />
 
-					<h4>Nazwisko</h4>
-					<input type="text" placeholder="Nowak" />
-
-					<div class="service-row">
-						<div class="single-col">
-							<h4>Numer Telefonu</h4>
-							<input type="number" placeholder="536937321" />
-						</div>
-						<div class="single-col">
-							<h4>Adres Email</h4>
-							<input type="email" placeholder="anowak@gmail.com" />
-						</div>
+				<div class="service-row">
+					<div class="single-col">
+						<h4>Numer Telefonu</h4>
+						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="form-input" />
+						<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)" />
 					</div>
-
-					<h4>Państwo</h4>
-					<input type="text" placeholder="Polska" />
-
-					<div class="service-row">
-						<div class="single-col">
-							<h4>Ulica</h4>
-							<input type="text" placeholder="Radwańska" />
-						</div>
-						<div class="single-col">
-							<h4>Numer Domu</h4>
-							<input type="number" placeholder="42" />
-						</div>
+					<div class="single-col">
+						<h4>Adres Email</h4>
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input" />
+						<ValidationMessage For="@(() => _userDataModel.Email)" />
 					</div>
-
-					<div class="service-row">
-						<div class="single-col">
-							<h4>Miasto</h4>
-							<input type="text" placeholder="Łódź" />
-						</div>
-						<div class="single-col">
-							<h4>Kod pocztowy</h4>
-							<input type="number" placeholder="90-012" />
-						</div>
-					</div>
-					<button>Zapisz zmiany</button>
-
 				</div>
 
-				<div class="service-col">
+				<h4>Państwo</h4>
+				<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" class="form-input" />
 
-					<h4>Id Użytkownika</h4>
-					<input type="number" placeholder="@OrderId" />
-
-					<h4>Rola Użytkownika</h4>
-					<select>
-						<option>Klient</option>
-						<option>Serwisant</option>
-						<option>Administrator</option>
-					</select>
-
-					<h4>Data Utworzenia Konta</h4>
-					<input type="date" placeholder="26-04-2025" />
-
-					<h4>Ostatnia Data Aktualizacji</h4>
-					<input type="date" placeholder="30-04-2025" />
-
-					<button class="reset-password">Zresetuj hasło użytkownika</button>
-
-					<button class="delete-account">Usuń konto</button>
-
+				<div class="service-row">
+					<div class="single-col">
+						<h4>Ulica</h4>
+						<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" class="form-input" />
+					</div>
+					<div class="single-col">
+						<h4>Numer Domu</h4>
+						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="form-input" />
+					</div>
 				</div>
-			}
+
+				<div class="service-row">
+					<div class="single-col">
+						<h4>Miasto</h4>
+						<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" class="form-input" />
+					</div>
+					<div class="single-col">
+						<h4>Kod pocztowy</h4>
+						<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" />
+					</div>
+				</div>
+
+				<button type="submit">Zapisz zmiany</button>
+			</div>
+
+			<div class="service-col">
+
+				<h4>Id Użytkownika</h4>
+				<InputNumber @bind-Value="_userDataModel.UzytkownikId" placeholder="Id użytkownika" class="form-input" readonly />
+
+				<h4>Rola użytkownika</h4>
+				<select @bind="_userDataModel.RoleId">
+					@foreach (var role in _roles)
+					{
+						<option value="@role.RolaUzytkownikaId">@role.Nazwa</option>
+					}
+				</select>
+
+				<h4>Data Utworzenia Konta</h4>
+				<InputDate @bind-Value="_userDataModel.DataDodania" placeholder="Data" class="form-input" readonly />
+
+				<h4>Ostatnia Data Aktualizacji</h4>
+				<InputDate @bind-Value="_userDataModel.DataAktualizacji" placeholder="Data" class="form-input" readonly />
+
+				<button class="reset-password">Zresetuj hasło użytkownika</button>
+
+				<button @onclick="DeleteUser" class="delete-account">Usuń konto</button>
+			</div>
 
 		</div>
-	</div>
+
+	</EditForm>
+
 </div>
 
 @code {
 	[Parameter]
-	public String OrderId { get; set; }
+	public int UserId { get; set; }
+
+	private UserDataModel _userDataModel = new();
+	private List<DicRolaUzytkownika> _roles = new();
+	private Uzytkownik? _currentUser;
+	private AdresEmail? _currentEmail;
+	private NumerTelefonu? _currentPhone;
+	private Adres? _currentAddress;
+
+	private string? _message;
+	private string _messageClass = "success-message";
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadUserData();
+	}
+
+	private async Task LoadUserData()
+	{
+		var userResult = await ApiService.UzytkownicyRepo.UzytkownikGet(UserId);
+
+		if (userResult.Error != null)
+		{
+			ShowError("Błąd podczas ładowania danych użytkownika: " + userResult.Error);
+			return;
+		}
+
+		_currentUser = userResult.Data;
+
+		if (_currentUser == null)
+		{
+			ShowError("Nie znaleziono danych użytkownika");
+			return;
+		}
+
+		if (_currentUser.AdresEmailId > 0)
+		{
+			var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_currentUser.AdresEmailId);
+			_currentEmail = emailResult.Data;
+		}
+
+		if (_currentUser.NumerTelefonuId.HasValue && _currentUser.NumerTelefonuId.Value > 0)
+		{
+			var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_currentUser.NumerTelefonuId.Value);
+			_currentPhone = phoneResult.Data;
+		}
+
+		if (_currentUser.Adres != null )
+		{
+			_currentAddress = _currentUser.Adres;
+		}
+
+		_userDataModel.UzytkownikId = _currentUser.UzytkownikId;
+		_userDataModel.RoleId = _currentUser.RolaUzytkownika.RolaUzytkownikaId;
+		_userDataModel.CzyAktywny = _currentUser.CzyAktywny;
+		_userDataModel.AdresEmailId = _currentUser.AdresEmailId;
+		_userDataModel.NumerTelefonuId = _currentUser.NumerTelefonuId;
+		_userDataModel.AdresId = _currentUser.Adres?.AdresId;
+
+		_userDataModel.Imie = _currentUser.Imie;
+		_userDataModel.Nazwisko = _currentUser.Nazwisko;
+		_userDataModel.DataDodania = _currentUser.DataDodania;
+		_userDataModel.DataAktualizacji = _currentUser.DataAktualizacji;
+		_userDataModel.DataAktualizacji = _currentUser.DataAktualizacji;
+
+		_userDataModel.Email = _currentEmail?.Email;
+		_userDataModel.NumerTelefonu = _currentPhone?.Numer;
+
+		_userDataModel.Ulica = _currentUser.Adres?.Ulica;
+		_userDataModel.NumerDomu = _currentUser.Adres?.NumerDomu ?? 0;
+		_userDataModel.NumerMieszkania = _currentUser.Adres?.NumerMieszkania ?? 0;
+		_userDataModel.KodPocztowy = _currentUser.Adres?.KodPocztowy;
+		_userDataModel.Miasto = _currentUser.Adres?.Miasto;
+		_userDataModel.Kraj = _currentUser.Adres?.Kraj;
+
+		var rolesResult = await ApiService.RoleUzytkownikaRepo.RoleUzytkownikaGet();
+		if (rolesResult.Data != null)
+		{
+			_roles = rolesResult.Data;
+		}
+
+	}
+
+	private async Task SaveUserData()
+	{
+		try
+		{
+			int adresEmailId = _currentUser?.AdresEmailId ?? 0;
+
+			if (!string.IsNullOrWhiteSpace(_userDataModel.Email))
+			{
+				var emailDto = new AdresEmailDto { Email = _userDataModel.Email };
+
+				var emailResult = adresEmailId > 0
+					? await ApiService.AdresyEmailRepo.AdresEmailPut(adresEmailId, emailDto)
+					: await ApiService.AdresyEmailRepo.AdresEmailPost(emailDto);
+
+				if (emailResult.Error != null)
+				{
+					ShowError("Błąd podczas zapisywania adresu email: " + emailResult.Error);
+					return;
+				}
+
+				adresEmailId = emailResult.Data?.AdresEmailId ?? 0;
+			}
+
+			int? numerTelefonuId = _currentUser?.NumerTelefonuId;
+
+			if (!string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu))
+			{
+				var phoneDto = new NumerTelefonuDto { Numer = _userDataModel.NumerTelefonu };
+
+				var phoneResult = numerTelefonuId.HasValue && numerTelefonuId.Value > 0
+					? await ApiService.NumeryTelefonuRepo.NumerTelefonuPut(numerTelefonuId.Value, phoneDto)
+					: await ApiService.NumeryTelefonuRepo.NumerTelefonuPost(phoneDto);
+
+				if (phoneResult.Error != null)
+				{
+					ShowError("Błąd podczas zapisywania numeru telefonu: " + phoneResult.Error);
+					return;
+				}
+
+				numerTelefonuId = phoneResult.Data?.NumerTelefonuId;
+			}
+
+			List<int> addressIds = new();
+
+			if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
+			{
+				var adresDto = new AdresDto
+				{
+					Ulica = _userDataModel.Ulica,
+					NumerDomu = _userDataModel.NumerDomu,
+					NumerMieszkania = _userDataModel.NumerMieszkania,
+					KodPocztowy = _userDataModel.KodPocztowy,
+					Miasto = _userDataModel.Miasto,
+					Kraj = _userDataModel.Kraj
+				};
+
+				var adresResult = await ApiService.AdresyRepo.AdresPost(adresDto);
+
+				if (adresResult.Error != null || adresResult.Data == null)
+				{
+					ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
+					return;
+				}
+				addressIds.Add(adresResult.Data.AdresId);
+			}
+
+			var uzytkownikDto = new UzytkownikDto
+			{
+				Imie = _userDataModel.Imie,
+				Nazwisko = _userDataModel.Nazwisko,
+				AdresEmailId = adresEmailId,
+				NumerTelefonuId = numerTelefonuId,
+				AdresId = addressIds.First(),
+				RolaUzytkownikaId = _userDataModel.RoleId,
+				CzyAktywny = true,
+			};
+
+			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(UserId, uzytkownikDto);
+
+			if (userResult.Error != null)
+			{
+				Snackbar.Add("Błąd podczas zapisywania danych użytkownika: " + userResult.Error);
+				return;
+			}
+
+			Snackbar.Add("Dane zostały zaktualizowane pomyślnie", Severity.Success);
+
+			await LoadUserData();
+		}
+		catch (Exception ex)
+		{
+			ShowError("Wystąpił nieoczekiwany błąd: " + ex.Message);
+		}
+	}
+
+	private void ShowSuccess(string message)
+	{
+		_message = message;
+		_messageClass = "success-message";
+	}
+
+	private void ShowError(string error)
+	{
+		_message = error;
+		_messageClass = "error-message";
+	}
+
+
+	public class UserDataModel
+	{
+		public int UzytkownikId { get; set; }
+		public string? Imie { get; set; }
+		public string? Nazwisko { get; set; }
+
+		[EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
+		public string? Email { get; set; }
+
+		[RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
+		public string? NumerTelefonu { get; set; }
+
+		public string? Ulica { get; set; }
+		public int NumerDomu { get; set; }
+		public int? NumerMieszkania { get; set; }
+		public string? KodPocztowy { get; set; }
+		public string? Miasto { get; set; }
+		public string? Kraj { get; set; }
+		public DateTime? DataAktualizacji { get; set; }
+		public DateTime DataDodania { get; set; }
+		public int RoleId { get; set; }
+		public Boolean CzyAktywny { get; set; }
+		public int AdresEmailId { get; set; }
+		public int? NumerTelefonuId { get; set; }
+		public int? AdresId { get; set; }
+	}
+
+	private async Task DeleteUser()
+	{
+		bool confirmed = await DialogService.ShowMessageBox(
+			"Potwierdzenie",
+			"Czy na pewno chcesz usunąć użytkownika?",
+			yesText: "Tak",
+			noText: "Nie") ?? false;
+
+		if (confirmed)
+		{
+			var uzytkownikDto = new UzytkownikDto
+			{
+				RolaUzytkownikaId = _userDataModel.RoleId,
+				Imie = _userDataModel.Imie,
+				Nazwisko = _userDataModel.Nazwisko,
+				AdresEmailId = _userDataModel.AdresEmailId,
+				NumerTelefonuId = _userDataModel.NumerTelefonuId,
+				CzyAktywny = false, 
+				AdresId = _userDataModel.AdresId,
+			};
+
+			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(UserId, uzytkownikDto);
+
+			if (userResult.Error == null)
+			{
+				Snackbar.Add("Użytkownik został usunięty", Severity.Success);
+				NavigationManager.NavigateTo("/users");
+			}
+			else
+			{
+				Snackbar.Add($"Błąd podczas usuwania: {userResult.Error}", Severity.Error);
+			}
+		}
+	}
 
 }

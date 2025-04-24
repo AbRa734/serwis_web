@@ -173,7 +173,7 @@
 
 				<div class="service-tab">
 					<div class="service-col">
-						<Textarea PlaceHolder="Opisz swój problem" class="form-textarea" />
+						<Textarea @bind-Value="_newOrder.Opis" PlaceHolder="Opisz swój problem" class="form-textarea" />
 
 						<h4>Priorytet</h4>
 						<select @bind="_selectedPriorytetId">
@@ -447,6 +447,8 @@
 				AdresId = addressId,
 				PriorytetId = _selectedPriorytetId,
 				SerwisantId = _selectedSerwisantId,
+				SerwisId = ServiceId,
+				Opis = _newOrder.Opis,
 			});
 
 			if (createResult.Error != null)
