@@ -7,6 +7,7 @@ namespace ApiService.Repositories;
 public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService tokenService)
 {
     private const string RejestracjaPrefix = "/rejestracja";
+    private const string RejestracjaIdentityPrefix = "/rejestracja-identity";
     private const string LoginPrefix = "/logowanie";
     private const string RestartHaslaPrefix = "/restart-hasla";
     private const string ZmianaHaslaPrefix = "/zmien-haslo";
@@ -14,6 +15,18 @@ public class AdministracjaRepo(HttpClient httpClient, TokenService.TokenService 
     public async Task<Result<bool>> RejestracjaPost(RegisterRequest autoryzacja)
     {
         var response = await httpClient.PostAsJsonAsync(RejestracjaPrefix, autoryzacja);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return new Result<bool> { Data = true};
+        }
+        
+        return new Result<bool> { Error = response.ToString() };
+    }
+    
+    public async Task<Result<bool>> RejestracjaUzytkownikaWIdentity(RegisterRequestIdentity registerRequestIdentity)
+    {
+        var response = await httpClient.PostAsJsonAsync(RejestracjaIdentityPrefix, registerRequestIdentity);
 
         if (response.IsSuccessStatusCode)
         {

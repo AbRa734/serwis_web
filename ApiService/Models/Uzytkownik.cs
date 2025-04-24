@@ -49,6 +49,12 @@ public class RegisterRequest
     public string? Nazwisko { get; set; }
 }
 
+public class RegisterRequestIdentity
+{
+    public string Email { get; set; } = null!;
+    public string Haslo { get; set; } = null!;
+}
+
 public class Token
 {
     public string TokenType { get; set; } = null!;

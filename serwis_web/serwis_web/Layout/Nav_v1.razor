@@ -1,81 +1,52 @@
-﻿@using ApiService
+@using ApiService
 @using ApiService.Models
-@using Color = MudBlazor.Color
 @inject NavigationManager Navigation
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 @rendermode InteractiveServer
 
-<style>
-    .mud-drawer.mud-drawer-mini {
-        height: auto!important;
-        transition: none!important;
-    }
+<div class="navbar-container">
+    <div class="mobile-navbar" @onclick="ToggleMobileMenu">
+        <span class="mobile-line"></span>
+        <span class="mobile-line"></span>
+        <span class="mobile-line"></span>
+    </div>
 
-    .mud-overlay .mud-overlay-scrim.mud-overlay-dark {
-        border-color: transparent!important;
-        background-color: transparent!important;
-    }
-    
-    .mud-drawer-mini .mud-nav-link-text {
-        display: none !important;
-    }
-
-    .mud-drawer-mini.mud-drawer-open .mud-nav-link-text {
-        display: block !important;
-    }
-
-    .mud-drawer-mini .mud-nav-link {
-        justify-content: center;
-        padding: 8px 16px;
-    }
-
-    .mud-drawer-mini.mud-drawer-open .mud-nav-link {
-        justify-content: center;
-    }
-</style>
-
-<MudDrawer @bind-Open="_isDrawerOpen" Variant="DrawerVariant.Mini" Elevation="0"
-           Class="@(_isDrawerOpen ? "mud-drawer-mini mud-drawer-open" : "mud-drawer-mini")">
-    <MudNavMenu>
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" OnClick="@ToggleDrawer"/>
-
-        @foreach (var menuItem in GetMenuItems())
-        {
-            @if (menuItem.IsDivider)
+    @if (_isMobileMenuOpen)
+    {
+        <nav class="nav-links">
+            @foreach (var menuItem in GetMenuItems())
             {
-                <MudDivider/>
-                continue;
-            }
+                @if (menuItem.IsDivider)
+                {
+                    <span class="nav-line"></span>
+                    continue;
+                }
 
-            @if (menuItem.ShowForRoles != null && (_uzytkownik?.RolaUzytkownika == null ||
-                                                   !menuItem.ShowForRoles.Contains(_uzytkownik.RolaUzytkownika.Nazwa)))
-            {
-                continue;
-            }
+                @if (menuItem.ShowForRoles != null && (_uzytkownik?.RolaUzytkownika == null || 
+                     !menuItem.ShowForRoles.Contains(_uzytkownik.RolaUzytkownika.Nazwa)))
+                {
+                    continue;
+                }
 
-            <MudNavLink Href="@menuItem.Path" Match="NavLinkMatch.Prefix" Icon="@menuItem.IconClass"
-                        Class="@IsActive(menuItem.Path)">
-                <span class="mud-nav-link-text">@menuItem.Label</span>
-            </MudNavLink>
-        }
-        <MudDivider/>
-        <MudNavLink @onclick="@LogoutUser" Icon="fa-solid fa-power-off" Class="nav-link">
-            <span class="mud-nav-link-text">Wyloguj się</span>
-        </MudNavLink>
-    </MudNavMenu>
-</MudDrawer>
+                <div class="@IsActive(menuItem.Path)">
+                    <i class="@menuItem.IconClass" style="color: @(IsCurrentPage(menuItem.Path) ? "#FFFFFF" : "#202224")"></i>
+                    <a class="@(IsCurrentPage(menuItem.Path) ? "nav-link-active" : "nav-link")" href="@menuItem.Path">@menuItem.Label</a>
+                </div>
+            }
+            <div class="nav-item">
+                <i class="fa-solid fa-power-off" style='color: #202224'></i>
+                <a class="nav-link" href="">Wyloguj się</a>
+            </div>
+        </nav>
+    }
+</div>
 
 @code {
-    private bool _isDrawerOpen = true;
+    private bool _isMobileMenuOpen = true;
     private string? _currentUrl;
     private Uzytkownik? _uzytkownik;
 
-    private void LogoutUser()
-    {
-        Navigation.NavigateTo("/", true);
-    }
-    
     protected override async Task OnInitializedAsync()
     {
         _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
@@ -85,7 +56,7 @@
         }
 
         Navigation.LocationChanged += LocationChanged!;
-
+        
         try
         {
             _uzytkownik = await ApiService.GetUzytkownik();
@@ -109,13 +80,12 @@
         {
             _currentUrl = "/" + _currentUrl;
         }
-
         StateHasChanged();
     }
 
-    private void ToggleDrawer()
+    private void ToggleMobileMenu()
     {
-        _isDrawerOpen = !_isDrawerOpen;
+        _isMobileMenuOpen = !_isMobileMenuOpen;
     }
 
     private bool IsCurrentPage(string path)
@@ -137,85 +107,75 @@
     private List<MenuItem> GetMenuItems()
     {
         var userRole = GetUserRole();
-
+        
         var allMenuItems = new List<MenuItem>
         {
-            new MenuItem
-            {
-                Path = "/index",
+            new MenuItem { 
+                Path = "/index", 
                 IconClass = userRole == "Klient" ? "fa-solid fa-house" : "fa-solid fa-gauge",
-                Label = userRole == "Klient" ? "Strona Główna" : "Panel Kontrolny"
+                Label = userRole == "Klient" ? "Strona Główna" : "Panel Kontrolny" 
             },
-
+            
             new MenuItem { Path = "/orders", IconClass = "fa-solid fa-list-check", Label = "Lista Zleceń" },
             new MenuItem { Path = "/services", IconClass = "fa-solid fa-database", Label = "Usługi" },
-
-            new MenuItem
-            {
-                Path = "/users",
-                IconClass = "fa-solid fa-user-group",
+            
+            new MenuItem { 
+                Path = "/users", 
+                IconClass = "fa-solid fa-user-group", 
                 Label = "Użytkownicy",
                 // ShowForRoles = new[] { "Administrator" }
             },
 
-            new MenuItem
-            {
+            new MenuItem {
                 Path = "/new-user",
                 IconClass = "fa-solid fa-user-group",
                 Label = "Nowy Użytkownik",
                 // ShowForRoles = new[] { "Administrator" }
             },
-
-            new MenuItem
-            {
-                Path = "/avability",
-                IconClass = "fa-solid fa-calendar-days",
+            
+            new MenuItem { 
+                Path = "/avability", 
+                IconClass = "fa-solid fa-calendar-days", 
                 Label = "Dostępność",
                 ShowForRoles = new[] { "Administrator", "Serwisant" }
             },
-
+            
             new MenuItem { IsDivider = true },
-
+            
             new MenuItem { Path = "/report", IconClass = "fa-solid fa-file", Label = "Raport" },
-
-            new MenuItem
-            {
-                Path = "/statistics",
-                IconClass = "fa-solid fa-chart-simple",
+            
+            new MenuItem { 
+                Path = "/statistics", 
+                IconClass = "fa-solid fa-chart-simple", 
                 Label = "Statystyki",
                 //ShowForRoles = new[] { "Administrator", "Serwisant" }
             },
-
+            
             new MenuItem { Path = "/contact", IconClass = "fa-solid fa-user-group", Label = "Kontakt" },
             new MenuItem { Path = "/settings", IconClass = "fa-solid fa-gear", Label = "Ustawienia" },
             new MenuItem { Path = "/bank/metody-platnosci", IconClass = "fa-solid fa-money-bill", Label = "Metody płatności" },
             new MenuItem { Path = "/bank/priorytety", IconClass = "fa-solid fa-flag", Label = "Priorytety" },
-            new MenuItem
-            {
-                Path = "/bank/role-uzytkownika",
-                IconClass = "fa-solid fa-user-tag",
-                Label = "Role użytkownika"
+            new MenuItem { 
+                Path = "/bank/role-uzytkownika", 
+                IconClass = "fa-solid fa-user-tag", 
+                Label = "Role użytkownika" 
             },
-            new MenuItem
-            {
-                Path = "/bank/statusy",
-                IconClass = "fa-solid fa-tag",
-                Label = "Statusy"
+            new MenuItem { 
+                Path = "/bank/statusy", 
+                IconClass = "fa-solid fa-tag", 
+                Label = "Statusy" 
             },
-            new MenuItem
-            {
-                Path = "/bank/typy-klienta",
-                IconClass = "fa-solid fa-users",
-                Label = "Typy klienta"
+            new MenuItem { 
+                Path = "/bank/typy-klienta", 
+                IconClass = "fa-solid fa-users", 
+                Label = "Typy klienta" 
             },
-            new MenuItem
-            {
-                Path = "/bank/typy-oceny",
-                IconClass = "fa-solid fa-star",
-                Label = "Typy oceny"
+            new MenuItem { 
+                Path = "/bank/typy-oceny", 
+                IconClass = "fa-solid fa-star", 
+                Label = "Typy oceny" 
             },
-            new MenuItem
-            {
+            new MenuItem {
                 Path = "/bank/typy-serwisu",
                 IconClass = "fa-solid fa-screwdriver-wrench",
                 Label = "Typy serwisu"
@@ -233,5 +193,4 @@
         public string[] ShowForRoles { get; set; } = null!;
         public bool IsDivider { get; set; }
     }
-
 }

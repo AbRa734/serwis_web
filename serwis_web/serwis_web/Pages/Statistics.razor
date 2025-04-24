@@ -1,73 +1,107 @@
 ﻿@page "/statistics"
 @rendermode InteractiveServer
 @inject ApiService.ApiService ApiService
-@using ApiService.Models
 @using System.Linq
-@using System.Collections.Generic
 @using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
 
 <PageTitle>Statystyki</PageTitle>
 
-<div class="services-container">
-    <h2>Statystyki</h2>
+<h2>Statystyki serwisu</h2>
 
-    <div class="service-back">
-        @if (_isLoading)
-        {
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            <p>Ładowanie danych...</p>
-        }
-        else
-        {
-            <div class="charts-section">
-                <div class="chart-container">
-                    <h3>Zamówienia według statusu</h3>
-                    <MudPaper Elevation="0" Class="pa-4 chart-paper">
-                        <MudChart ChartType="ChartType.Pie"
-                                  Width="300px"
-                                  Height="300px"
-                                  InputData="@_orderStatusData"
-                                  InputLabels="@_orderStatusLabels" />
-                    </MudPaper>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-4">
+    <MudCard Elevation="3" Class="mb-6">
+        <MudCardContent>
+            @if (_isLoading)
+            {
+                <div class="d-flex justify-center flex-column align-center py-12">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                    <MudText Typo="Typo.body1" Class="mt-4">Ładowanie danych statystycznych...</MudText>
                 </div>
+            }
+            else
+            {
+                <MudGrid>
+                    @foreach (var card in _statusCards)
+                    {
+                        <MudItem xs="12" sm="6" md="4" lg="2">
+                            <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
+                                <MudText Typo="Typo.h3">@card.Count</MudText>
+                                <MudText Typo="Typo.subtitle1">@card.Label</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    }
+                </MudGrid>
 
-                <div class="chart-container">
-                    <h3>Obciążenie serwisantów</h3>
-                    <MudPaper Elevation="0" Class="pa-4 chart-paper">
-                        <MudChart ChartType="ChartType.Bar"
-                                  Width="500px"
-                                  Height="300px"
-                                  ChartSeries="@_technicianWorkloadSeries"
-                                  XAxisLabels="@_technicianNames"/>
-                    </MudPaper>
-                </div>
-            </div>
+                <MudDivider Class="my-6" />
 
-            <div class="chart-full-width">
-                <h3>Zamówienia w czasie</h3>
-                <MudPaper Elevation="0" Class="pa-4 chart-paper">
-                    <MudChart ChartType="ChartType.Line"
-                              ChartSeries="@_monthlySeries"
-                              XAxisLabels="@_monthLabels"
-                              Width="100%"
-                              Height="350px"/>
-                </MudPaper>
-            </div>
+                <MudExpansionPanels Elevation="0" Multiple="true" DisableBorders="true" Class="mt-4">
+                    <MudExpansionPanel IsExpanded="true" 
+                                       Icon="@Icons.Material.Filled.PieChart" 
+                                       Text="Zamówienia według statusu">
+                        <MudPaper Elevation="0" Class="pa-4 d-flex justify-center">
+                            <MudChart ChartType="ChartType.Pie" 
+                                     Width="400px" 
+                                     Height="300px" 
+                                     InputData="@_orderStatusData" 
+                                     InputLabels="@_orderStatusLabels" 
+                                     LegendPosition="Position.Bottom" />
+                        </MudPaper>
+                    </MudExpansionPanel>
 
-            <div class="stats-cards">
-                @foreach (var card in _statusCards)
-                {
-                    <MudCard Elevation="2" Class="@($"stat-card {card.CssClass}")">
-                        <MudCardContent>
-                            <div class="stat-value">@card.Count</div>
-                            <div class="stat-label">@card.Label</div>
-                        </MudCardContent>
-                    </MudCard>
-                }
-            </div>
-        }
-    </div>
-</div>
+                    <MudExpansionPanel 
+                        Icon="@Icons.Material.Filled.BarChart" 
+                        Text="Obciążenie serwisantów">
+                        <MudPaper Elevation="0" Class="pa-4 d-flex justify-center">
+                            <MudChart ChartType="ChartType.Bar" 
+                                     Width="100%" 
+                                     Height="300px" 
+                                     ChartSeries="@_technicianWorkloadSeries" 
+                                     XAxisLabels="@_technicianNames" />
+                        </MudPaper>
+                    </MudExpansionPanel>
+
+                    <MudExpansionPanel 
+                        Icon="@Icons.Material.Filled.Timeline" 
+                        Text="Zamówienia w czasie">
+                        <MudPaper Elevation="0" Class="pa-4">
+                            <MudChart ChartType="ChartType.Line" 
+                                     ChartSeries="@_monthlySeries" 
+                                     XAxisLabels="@_monthLabels" 
+                                     Width="100%" 
+                                     Height="350px" />
+                        </MudPaper>
+                    </MudExpansionPanel>
+
+                    <MudExpansionPanel 
+                        Icon="@Icons.Material.Filled.AccessTime" 
+                        Text="Średni czas realizacji zamówień">
+                        <MudPaper Elevation="0" Class="pa-4 d-flex justify-center">
+                            <MudChart ChartType="ChartType.Donut" 
+                                     Width="350px" 
+                                     Height="350px" 
+                                     InputData="@_avgTimeData" 
+                                     InputLabels="@_avgTimeLabels" 
+                                     LegendPosition="Position.Right" />
+                        </MudPaper>
+                    </MudExpansionPanel>
+
+                    <MudExpansionPanel 
+                        Icon="@Icons.Material.Filled.DateRange" 
+                        Text="Porównanie rok do roku">
+                        <MudPaper Elevation="0" Class="pa-4">
+                            <MudChart ChartType="ChartType.Line" 
+                                     ChartSeries="@_yearlyComparisonSeries" 
+                                     XAxisLabels="@_monthLabels" 
+                                     Width="100%" 
+                                     Height="300px" />
+                        </MudPaper>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
 
 @code {
     private double[] _orderStatusData = Array.Empty<double>();
@@ -78,10 +112,33 @@
     private string[] _monthLabels = { "Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru" };
     private List<StatusCard> _statusCards = new();
     private bool _isLoading = true;
+    
+    private double[] _avgTimeData = { 3.5, 5.2, 7.1, 12.4 };
+    private string[] _avgTimeLabels = { "Naprawa sprzętu", "Konserwacja", "Instalacja", "Diagnostyka" };
+    
+    private List<ChartSeries> _yearlyComparisonSeries = new();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
+        InitializeAdditionalCharts();
+    }
+
+    private void InitializeAdditionalCharts()
+    {
+        _yearlyComparisonSeries = new List<ChartSeries>
+        {
+            new ChartSeries() { 
+                Name = "2024", 
+                Data = new double[] { 42, 38, 55, 67, 73, 80, 95, 92, 85, 77, 63, 58 }, 
+                ShowDataMarkers = false
+            },
+            new ChartSeries() { 
+                Name = "2023", 
+                Data = new double[] { 35, 32, 48, 55, 65, 70, 82, 78, 70, 65, 52, 48 }, 
+                ShowDataMarkers = false
+            }
+        };
     }
 
     private async Task LoadData()
@@ -131,11 +188,11 @@
                 
                 string cssClass = status.Nazwa switch
                 {
-                    "Nowe" => "status-new",
-                    "W trakcie realizacji" => "status-realization",
-                    "Oczekujące" => "status-waiting",
-                    "Zakończone" => "status-finished",
-                    "Anulowane" => "status-canceled",
+                    "Nowe" => "status-new mud-primary-lighten-1",
+                    "W trakcie realizacji" => "status-realization mud-info-lighten-1",
+                    "Oczekujące" => "status-waiting mud-warning-lighten-1",
+                    "Zakończone" => "status-finished mud-success-lighten-1",
+                    "Anulowane" => "status-canceled mud-error-lighten-1",
                     _ => "status-default"
                 };
 
@@ -198,7 +255,7 @@
             {
                 if (order.DataDodania.Year == currentYear)
                 {
-                    int month = order.DataDodania.Month - 1; // 0-based index for array
+                    int month = order.DataDodania.Month - 1;
                     monthlyNewOrders[month]++;
                 }
 
