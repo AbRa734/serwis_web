@@ -1,194 +1,281 @@
 ﻿@page "/orders/{OrderId:int}"
 @using serwis_web.Components
+@inject ApiService ApiService
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using ApiService
 @using ApiService.Models
-@using ApiService.Helpers
-@using Color = MudBlazor.Color
-@using DialogService = MudBlazor.DialogService
-@using Size = MudBlazor.Size
+@using ApiService.Repositories
 @inject IDialogService DialogService
-@inject ApiService.ApiService ApiService
+@using DialogService = MudBlazor.DialogService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
-@rendermode InteractiveServer
+
 
 <PageTitle>Szczegóły zlecenia</PageTitle>
 
-<div class="order-container">
-    <div class="title-changes">
-        <h2>Szczegóły zlecenia</h2>
-        <div class="header-buttons">
-            <button class="btn-changes" @onclick="OpenHistoryDialog">Historia zmian</button>
-            @if (isAdmin)
-            {
-                <button class="btn-delete" @onclick="DeleteOrder">Usuń zlecenie</button>
-            }
-        </div>
-    </div>
-
-    <div class="order-back">
-        @if (isLoading)
-        {
-            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
-        }
-        else if (order == null)
-        {
-            <h5>Nie znaleziono zlecenia o numerze @OrderId</h5>
-        }
-        else
-        {
-            <div class="order-tab">
-                <div class="order-col">
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Numer Zlecenia</h4>
-                            <input type="number" value="@order.ZamowienieId" readonly/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Status zlecenia</h4>
-                            <span class="@GetStatusClass(order.Status?.Nazwa)">@order.Status?.Nazwa</span>
-                        </div>
-                    </div>
-
-                    <h4>Usługi</h4>
-                    <div class="services-list">
-                        <div class="service-item">
-                            <p class="service-name">@order.Serwis.Nazwa</p>
-                            <p class="service-desc">@order.Serwis.Opis</p>
-                            <p class="service-type">Typ: @order.Serwis.TypSerwisu?.Nazwa</p>
-                        </div>
-                    </div>
-
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Klient</h4>
-                            <input type="text" value="@GetClientName()" readonly/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Adres Email Klienta</h4>
-                            <input type="email" value="@order.AdresEmail?.Email" readonly/>
-                        </div>
-                    </div>
-
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Numer Telefonu Klienta</h4>
-                            <input type="text" value="@order.NumerTelefonu?.Numer" readonly/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Państwo</h4>
-                            <input type="text" value="@order.Adres?.Kraj" readonly/>
-                        </div>
-                    </div>
-
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Ulica</h4>
-                            <input type="text" value="@order.Adres?.Ulica" readonly/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Numer Domu</h4>
-                            <input type="text" value="@order.Adres?.NumerDomu" readonly/>
-                        </div>
-                    </div>
-
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Miasto</h4>
-                            <input type="text" value="@order.Adres?.Miasto" readonly/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Kod pocztowy</h4>
-                            <input type="text" value="@order.Adres?.KodPocztowy" readonly/>
-                        </div>
-                    </div>
-
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Planowana Data Realizacji Od</h4>
-                            <input type="text" value="@FormatDate(order.PlanowanaDataRealizacjiOd)" readonly/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Planowana Data Realizacji Do</h4>
-                            <input type="text" value="@FormatDate(order.PlanowanaDataRealizacjiDo)" readonly/>
-                        </div>
-                    </div>
-
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Data Rozpoczęcia Realizacji</h4>
-                            <input type="text" value="@FormatDate(order.ZrealizowanaDataRealizacjiOd)" readonly
-                                   style="font-weight: bold"/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Data Zakończenia Realizacji</h4>
-                            <input type="text" value="@FormatDate(order.ZrealizowanaDataRealizacjiDo)" readonly
-                                   style="font-weight: bold"/>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="order-col">
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Data utworzenia zlecenia</h4>
-                            <input type="text" value="@FormatDate(order.DataDodania)" readonly/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Data aktualizacji</h4>
-                            <input type="text" value="@FormatDate(order.DataAktualizacji)" readonly/>
-                        </div>
-                    </div>
-
-                    <div class="order-row">
-                        <div class="single-col">
-                            <h4>Serwisant</h4>
-                            <input type="text" value="@GetServiceTechnicianName()" readonly/>
-                        </div>
-                        <div class="single-col">
-                            <h4>Priorytet</h4>
-                            <input type="text" value="@order.Priorytet?.Nazwa" readonly/>
-                        </div>
-                    </div>
-
-                    <h4>Metoda Płatności</h4>
-                    <input type="text" value="@order.MetodaPlatnosci?.Nazwa" readonly/>
-
-                    @if (order.Komentarze?.Any() == true)
-                    {
-                        <h4>Komentarze</h4>
-                        <div class="comments-section">
-                            @foreach (var comment in order.Komentarze)
-                            {
-                                <div class="comment">
-                                    <div class="comment-content">
-                                        <p>@comment.Tresc</p>
-                                        <div class="comment-meta">
-                                            <span class="comment-date">@FormatDate(comment.DataDodania)</span>
-                                            <span
-                                                class="comment-user">@comment.Uzytkownik?.Imie @comment.Uzytkownik?.Nazwisko</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-
-                    @if (isAdmin)
-                    {
-                        <button @onclick="SaveChanges">Zapisz zmiany</button>
-                    }
-                    else
-                    {
-                        <button @onclick="AddComment">Dodaj komentarz</button>
-                    }
-                </div>
-
-            </div>
-        }
-    </div>
-</div>
-
 <style>
+    .order-container {
+        display: flex;
+        flex-direction: column;
+        gap: 23px;
+        padding: 0;
+        margin: 0;
+        padding-left: 5px;
+        padding-right: 20px;
+    }
+
+    .title-changes {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0;
+        margin: 0;
+        padding-right: 40px;
+    }
+
+    .title-changes h2 {
+        font-size: 30px;
+        font-weight: 600;
+        margin: 0;
+        padding: 0;
+    }
+
+    .header-buttons {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .order-back {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        width: 100%;
+        padding: 30px;
+        background-color: #FFFFFF;
+        border-radius: 10px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        margin: 0;
+    }
+
+    .order-tab {
+        display: flex;
+        width: 100%;
+        gap: 100px;
+        padding: 0;
+        margin: 0;
+    }
+
+    .order-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .order-col h4 {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 0;
+        margin: 0;
+        color: #606060;
+    }
+
+    .order-row {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        width: 100%;
+    }
+
+    .single-col {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .textarea, .form-input, select, option {
+        background-color: #F5F6FA;
+        border: solid 1px #D5D5D5;
+        width: 100%;
+        padding: 15px;
+        border-radius: 5px;
+        color: #A6A6A6;
+        font-size: 14px;
+    }
+
+    .textarea {
+        height: 145px;
+        margin-top: 5px;
+        margin-bottom: 12px;
+    }
+
+    .form-input, select, option {
+        height: 50px;
+        margin-bottom: 10px;
+    }
+
+    button {
+        background-color: #4880FF;
+        border: none;
+        border-radius: 10px;
+        padding: 15px;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        margin-top: 25px;
+    }
+
+    button:hover {
+        background-color: #336ff5;
+    }
+
+    .btn-changes, .btn-delete {
+        padding: 15px 50px;
+        margin: 0;
+    }
+
+    .btn-delete {
+        background-color: #f14c3c;
+    }
+
+    .btn-delete:hover {
+        background-color: #d12413;
+    }
+
+    .order-rate {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        height: 52px;
+    }
+
+    i {
+        font-size: 30px;
+        cursor: pointer;
+    }
+
+    .status-finished {
+        background-color: #ccf0eb;
+        color: #00b69b;
+        border: none;
+    }
+
+    .status-realization {
+        background-color: #e0d4fc;
+        color: #6226ef;
+        border: none;
+    }
+
+    .status-canceled {
+        background-color: #fcd7d4;
+        color: #ef3826;
+        border: none;
+    }
+
+    .status-waiting {
+        background-color: #ffeddd;
+        color: #ffa756;
+        border: none;
+    }
+
+    .status-new {
+        background-color: #f1d4ff;
+        color: #ba29ff;
+        border: none;
+    }
+
+
+    @@media (max-width: 1536px) {
+    .order-container {
+        gap: 30px;
+        padding-right: 15px;
+    }
+
+    .order-row {
+        gap: 40px;
+    }
+
+    .order-back {
+        padding: 30px;
+    }
+
+    .order-tab {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .textarea, .form-input, select {
+        margin-bottom: 25px;
+    }
+
+    .order-rate {
+        height: 60px;
+    }
+
+    button {
+        padding: 15px;
+        margin-top: 10px;
+    }
+
+    i {
+        font-size: 34px;
+    }
+
+    .textarea {
+        height: 220px;
+        margin-top: 5px;
+    }
+    }
+
+    @@media (max-width: 1280px) {
+        .title-changes {
+            flex-direction: column;
+            gap: 20px;
+            align-items: flex-start;
+            padding-right: 0;
+        }
+
+        .header-buttons 
+        {
+            flex-direction: column;
+            gap: 20px;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .btn-changes, .btn-delete 
+        {
+            padding: 12px 50px;
+            width: 100%;
+        }
+    }
+
+
+    @@media (max-width: 1024px) {
+        .order-row {
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
+
+
+    @@media (max-width: 768px) {
+        .order-container {
+            padding-right: 5px;
+            padding-top: 10px;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .order-rate {
+            gap: 14px;
+        }
+    }
+
     .comments-section {
         max-height: 300px;
         overflow-y: auto;
@@ -252,46 +339,383 @@
     }
 </style>
 
+<div class="order-container">
+    <div class="title-changes">
+        <h2>Szczegóły zlecenia</h2>
+        <div class="header-buttons">
+            <button @onclick="OpenHistoryDialog" class="btn-changes">Historia zmian</button>
+            @if (isAdmin)
+            {
+                <button @onclick="DeleteOrder" class="btn-delete">Usuń zlecenie</button>
+            }
+        </div>
+    </div>
+
+    <EditForm Model="@_orderDataModel" OnValidSubmit="SaveUserData" class="order-back">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="order-tab">
+            <div class="order-col">
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Numer zlecenia</h4>
+                        <InputNumber @bind-Value="_orderDataModel.ZamowienieId" placeholder="Id zamówienia" class="form-input" readonly />
+                    </div>
+                    <div class="single-col">
+                        <h4>Rodzaj zlecenia</h4>
+                        <select @bind="_orderDataModel.SerwisId">
+                            @foreach (var serwis in _serwisy)
+                            {
+                                <option value="@serwis.TypSerwisuId">@serwis.Nazwa</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Data utworzenia zlecenia</h4>
+                        <InputDate @bind-Value="_orderDataModel.DataDodania" placeholder="Data utworzenia zlecenia" class="form-input" readonly />
+                    </div>
+                    <div class="single-col">
+                        <h4>Data aktualizacji</h4>
+                        <InputDate @bind-Value="_orderDataModel.DataAktualizacji" placeholder="Data aktualizacji" class="form-input" readonly />
+                    </div>
+                </div>
+
+                <h4>Opis zlecenia</h4>
+                <Textarea @bind-Value="_orderDataModel.Opis" placeholder="Opis zlecenia" class="textarea" required/>
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Imie klienta</h4>
+                        <InputText @bind-Value="_orderDataModel.ImieKlienta" placeholder="Imie" class="form-input" required />
+                    </div>
+                    <div class="single-col">
+                        <h4>Nazwisko klienta</h4>
+                        <InputText @bind-Value="_orderDataModel.NazwiskoKlienta" placeholder="Nazwisko" class="form-input" required />
+                    </div>
+                </div>
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Numer telefonu klienta</h4>
+                        <InputText @bind-Value="_orderDataModel.NumerTelefonuKlienta" placeholder="NumerTelefonu" class="form-input" required />
+                    </div>
+                    <div class="single-col">
+                        <h4>Adres email klienta</h4>
+                        <InputText @bind-Value="_orderDataModel.EmailKlienta" placeholder="Email" class="form-input" required />
+                    </div>
+                </div>
+
+                <h4>Państwo</h4>
+                <InputText @bind-Value="_orderDataModel.Kraj" placeholder="Państwo" class="form-input" required />
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Ulica</h4>
+                        <InputText @bind-Value="_orderDataModel.Ulica" placeholder="Ulica" class="form-input" required />
+
+                    </div>
+                    <div class="single-col">
+                        <h4>Numer domu</h4>
+                        <InputNumber @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="form-input" required />
+                    </div>
+                </div>
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Miasto</h4>
+                        <InputText @bind-Value="_orderDataModel.Miasto" placeholder="Miasto" class="form-input" required />
+                    </div>
+                    <div class="single-col">
+                        <h4>Kod pocztowy</h4>
+                        <InputText @bind-Value="_orderDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" required />
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-col">
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Planowana Data Realizacji Od</h4>
+                        <InputDate @bind-Value="_orderDataModel.PlanowanaDataRealizacjiOd" placeholder="Data" class="form-input" readonly />
+                    </div>
+                    <div class="single-col">
+                        <h4>Planowana Data Realizacji Do</h4>
+                        <InputDate @bind-Value="_orderDataModel.PlanowanaDataRealizacjiDo" placeholder="Data" class="form-input" readonly />
+                    </div>
+                </div>
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Data Rozpoczęcia Realizacji</h4>
+                        <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiOd" placeholder="Data" class="form-input" style="font-weight: bold" />
+
+                    </div>
+                    <div class="single-col">
+                        <h4>Data Zakończenia Realizacji</h4>
+                        <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiDo" placeholder="Data" class="form-input" style="font-weight: bold" />
+                    </div>
+                </div>
+
+                <h4>Serwisant</h4>
+                <select @bind="_orderDataModel.SerwisantId">
+                    @foreach (var serwisant in _serwisanci)
+                    {
+                        <option value="@serwisant.SerwisantId">@serwisant.Uzytkownik.Imie @serwisant.Uzytkownik.Nazwisko</option>
+                    }
+                </select>
+
+
+                <div class="order-row"> 
+                    <div class="single-col"> 
+                        <h4>Adres Email Serwisanta</h4>
+                        <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="form-input" required />
+                    </div> 
+                    <div class="single-col">
+                        <h4>Numer Telefonu Serwisanta</h4>
+                        <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="form-input" required />
+                    </div>
+                </div>
+
+                <h4>Priorytet</h4>
+                <select @bind="_orderDataModel.PriorytetId">
+                    @foreach (var priorytet in _priorytety)
+                    {
+                        <option value="@priorytet.PriorytetId">@priorytet.Nazwa</option>
+                    }
+                </select>
+
+                <h4>Metoda Płatności</h4>
+                <select @bind="_orderDataModel.PriorytetId">
+                    @foreach (var platnosc in _platnosci)
+                    {
+                        <option value="@platnosc.MetodaPlatnosciId">@platnosc.Nazwa</option>
+                    }
+                </select>
+
+                <h4>Status zlecenia</h4>
+                <select @bind="_orderDataModel.StatusId" class="@GetStatusClass(GetSelectedStatusName())">
+                    @foreach (var status in _statusy)
+                    {
+                        <option value="@status.StatusId">@status.Nazwa</option>
+                    }
+                </select>
+
+                <h4>Kwota do zapłaty</h4>
+                <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" />
+
+                @if (_komentarze?.Any() == true)
+                {
+                    <h4>Komentarze</h4>
+                    <div class="comments-section">
+                        @foreach (var comment in _komentarze)
+                        {
+                            <div class="comment">
+                                <div class="comment-content">
+                                    <p>@comment.Tresc</p>
+                                    <div class="comment-meta">
+                                        <span class="comment-date">@FormatDate(comment.DataDodania)</span>
+                                        <span class="comment-user">@comment.Uzytkownik?.Imie @comment.Uzytkownik?.Nazwisko</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+
+                @if (isAdmin)
+                {
+                    <button type="submit">Zapisz zmiany</button>
+                }
+                else
+                {
+                    <button>Dodaj komentarz</button>
+                }
+
+            </div>
+
+        </div>
+
+
+    </EditForm>
+
+
+</div>
+
+
 @code {
     [Parameter] public int OrderId { get; set; }
-
-    private Zamowienie order;
-    private bool isLoading = true;
     private bool isAdmin = true;
+
+    private OrderDataModel _orderDataModel = new();
+    private Zamowienie? _order;
+    private List<DicTypSerwisu> _serwisy = new();
+    private List<Serwisant> _serwisanci = new();
+    private bool isLoading = true;
     private List<Log> orderLogs = new List<Log>();
+    private DicTypSerwisu _typSerwisu = new();
+    public Serwisant? _serwisant;
+    public Klient _klient;
+    public Serwis _serwis;
+    public DicStatus _status;
+    public DicPriorytet _priorytet;
+    public DicMetodaPlatnosci _metodaPlatnosci;
+    private List<DicPriorytet> _priorytety = new();
+    private List<DicMetodaPlatnosci> _platnosci = new();
+    private List<DicStatus> _statusy = new();
+    private ICollection<Komentarz> _komentarze;
+
+    public NumerTelefonu? _currentPhoneKlient;
+    public AdresEmail? _currentEmailKlient;
+
+    public NumerTelefonu? _currentPhoneSerwisant;
+    public AdresEmail? _currentEmailSerwisantt;
+
+
+    public Adres? _currentAddress;
+
+    private string? _message;
+    private string _messageClass = "success-message";
 
     protected override async Task OnInitializedAsync()
     {
         await LoadOrderData();
+        await LoadOrderLogs();
     }
 
     private async Task LoadOrderData()
     {
-        isLoading = true;
+        var orderResult = await ApiService.ZamowieniaRepo.ZamowienieGet(OrderId);
 
-        try
+        if (orderResult.Error != null)
         {
-            var orderResult = await ApiService.ZamowieniaRepo.ZamowienieGet(OrderId);
+            ShowError("Błąd podczas ładowania danych użytkownika: " + orderResult.Error);
+            return;
+        }
 
-            if (orderResult.Data != null)
-            {
-                order = orderResult.Data;
+        _order = orderResult.Data;
 
-                await LoadOrderLogs();
-            }
-            else
-            {
-                Snackbar.Add($"Błąd: {orderResult.Error}", Severity.Error);
-            }
-        }
-        catch (Exception ex)
+        if (_order == null)
         {
-            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            ShowError("Nie znaleziono danych użytkownika");
+            return;
         }
-        finally
+
+        if (_order.AdresEmailId > 0)
         {
-            isLoading = false;
+            var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_order.AdresEmail.AdresEmailId);
+            _currentEmailKlient = emailResult.Data;
         }
+
+        if (_order.NumerTelefonuId.HasValue && _order.NumerTelefonuId.Value > 0)
+        {
+            var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_order.NumerTelefonuId.Value);
+            _currentPhoneKlient = phoneResult.Data;
+        }
+
+        if (_order.Serwisant.Uzytkownik.AdresEmailId > 0)
+        {
+            var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_order.Serwisant.Uzytkownik.AdresEmailId);
+            _currentEmailSerwisantt = emailResult.Data;
+        }
+
+        if (_order.Serwisant.Uzytkownik.NumerTelefonuId.HasValue && _order.Serwisant.Uzytkownik.NumerTelefonuId.Value > 0)
+        {
+            var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_order.Serwisant.Uzytkownik.NumerTelefonuId.Value);
+            _currentPhoneSerwisant = phoneResult.Data;
+        }
+
+        if (_order.Adres != null)
+        {
+            _currentAddress = _order.Adres;
+        }
+
+        if (_order.Serwis != null)
+        {
+            _serwis = _order.Serwis;
+        }
+        if (_order.Serwis != null)
+        {
+            _klient = _order.Klient;
+        }
+
+
+
+        _orderDataModel.ZamowienieId = _order.ZamowienieId;
+        _orderDataModel.SerwisantId = _order.SerwisantId;
+        _orderDataModel.Opis = _order.Opis;
+
+
+        _orderDataModel.AdresEmailId = _order.AdresEmailId;
+        _orderDataModel.NumerTelefonuId = _order.NumerTelefonuId;
+        _orderDataModel.AdresId = _order.Adres?.AdresId;
+        _orderDataModel.SerwisId = _order.Serwis.SerwisId;
+
+        _orderDataModel.DataDodania = _order.DataDodania;
+        _orderDataModel.DataAktualizacji = _order.DataAktualizacji;
+        _orderDataModel.PlanowanaDataRealizacjiOd = _order.PlanowanaDataRealizacjiOd;
+        _orderDataModel.PlanowanaDataRealizacjiDo = _order.PlanowanaDataRealizacjiDo;
+        _orderDataModel.ZrealizowanaDataRealizacjiOd = _order.ZrealizowanaDataRealizacjiOd;
+        _orderDataModel.ZrealizowanaDataRealizacjiDo = _order.ZrealizowanaDataRealizacjiDo;
+
+
+        _orderDataModel.EmailKlienta = _currentEmailKlient?.Email;
+        _orderDataModel.NumerTelefonuKlienta = _currentPhoneKlient?.Numer;
+
+        _orderDataModel.EmailSerwisanta = _currentEmailSerwisantt?.Email;
+        _orderDataModel.NumerTelefonuSerwisanta = _currentPhoneSerwisant?.Numer;
+
+
+        _orderDataModel.Ulica = _order.Adres?.Ulica;
+        _orderDataModel.NumerDomu = _order.Adres?.NumerDomu ?? 0;
+        _orderDataModel.NumerMieszkania = _order.Adres?.NumerMieszkania ?? 0;
+        _orderDataModel.KodPocztowy = _order.Adres?.KodPocztowy;
+        _orderDataModel.Miasto = _order.Adres?.Miasto;
+        _orderDataModel.Kraj = _order.Adres?.Kraj;
+
+        _orderDataModel.ImieKlienta = _order.Klient.Uzytkownik.Imie;
+        _orderDataModel.NazwiskoKlienta = _order.Klient.Uzytkownik.Nazwisko;
+
+
+        var serviceResult = await ApiService.TypySerwisuRepo.TypySerwisuGet();
+        if (serviceResult.Data != null)
+        {
+            _serwisy = serviceResult.Data;
+        }
+
+        var serwisantResult = await ApiService.SerwisanciRepo.SerwisanciGet();
+        if (serwisantResult.Data != null)
+        {
+            _serwisanci = serwisantResult.Data;
+        }
+
+        var priorytetsResult = await ApiService.PriotytetyRepo.PriotytetyGet();
+        if (priorytetsResult.Data != null)
+        {
+            _priorytety = priorytetsResult.Data;
+        }
+
+        var paymentsResult = await ApiService.MetodyPlatnosciRepo.MetodyPlatnosciGet();
+        if (paymentsResult.Data != null)
+        {
+            _platnosci = paymentsResult.Data;
+        }
+
+        var statusResult = await ApiService.StatusyRepo.StatusyGet();
+        if (statusResult.Data != null)
+        {
+            _statusy = statusResult.Data;
+        }
+
+        _komentarze = _order.Komentarze;
+        _orderDataModel.Status = _order.Status;
+
+
     }
 
     private async Task LoadOrderLogs()
@@ -317,69 +741,34 @@
             Snackbar.Add($"Błąd podczas pobierania historii: {ex.Message}", Severity.Warning);
         }
     }
-
-    private string GetClientName()
-    {
-        if (order?.Klient?.Uzytkownik == null)
-            return "Nie określono";
-
-        return $"{order.Klient.Uzytkownik.Imie} {order.Klient.Uzytkownik.Nazwisko}";
-    }
-
-    private string GetServiceTechnicianName()
-    {
-        if (order?.Serwisant?.Uzytkownik == null)
-            return "Nie przypisano";
-
-        return $"{order.Serwisant.Uzytkownik.Imie} {order.Serwisant.Uzytkownik.Nazwisko}";
-    }
-
-    private string FormatDate(DateTime? date)
-    {
-        return date?.ToString("dd.MM.yyyy HH:mm") ?? "Nie określono";
-    }
-
-    private string GetStatusClass(string status)
-    {
-        return status switch
-        {
-            "Zakończony" => "status-finished",
-            "W realizacji" => "status-realization",
-            "Anulowany" => "status-canceled",
-            "Oczekujący" => "status-waiting",
-            "Nowy" => "status-new",
-            _ => "status-default"
-        };
-    }
-
     private async Task OpenHistoryDialog()
     {
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
 
         var convertedChanges = orderLogs.Select(log => new HistoryDialog.DefaultChangeHistory
-        {
-            Date = log.DataDodania,
-            User = GetUserFromLog(log),
-            Status = log.Status?.Nazwa ?? "Aktualizacja",
-            Note = log.Komentarz ?? "Zmieniono status zlecenia"
-        }).ToList<HistoryDialog.IChangeHistory>();
+            {
+                Date = log.DataDodania,
+                User = GetUserFromLog(log),
+                Status = log.Status?.Nazwa ?? "Aktualizacja",
+                Note = log.Komentarz ?? "Zmieniono status zlecenia"
+            }).ToList<HistoryDialog.IChangeHistory>();
 
         if (!convertedChanges.Any())
         {
             convertedChanges.Add(new HistoryDialog.DefaultChangeHistory
             {
-                Date = order.DataDodania,
+                Date = _orderDataModel.DataDodania,
                 User = "System",
-                Status = order.Status?.Nazwa ?? "Nowe",
+                Status = _orderDataModel.Status?.Nazwa ?? "Nowe",
                 Note = "Utworzono zlecenie"
             });
         }
 
         var dialog = await DialogService.ShowAsync<HistoryDialog>("Historia zmian", new DialogParameters
-        {
-            ["OrderChanges"] = convertedChanges,
-            ["IsAdmin"] = isAdmin
-        }, options);
+            {
+                ["OrderChanges"] = convertedChanges,
+                ["IsAdmin"] = isAdmin
+            }, options);
         var result = await dialog.Result;
     }
 
@@ -388,63 +777,12 @@
         return "Administrator systemu";
     }
 
-
-    private async Task SaveChanges()
-    {
-        try
-        {
-            var zamowienieDto = new ZamowienieDto
-            {
-                SerwisantId = order.SerwisantId,
-                KlientId = order.KlientId,
-                SerwisId = order.Serwis.SerwisId,
-                StatusId = order.StatusId,
-                PriorytetId = order.PriorytetId,
-                MetodaPlatnosciId = order.MetodaPlatnosciId,
-                KomentarzeIds = order.Komentarze?.Select(k => k.KomentarzId).ToList(),
-                NumerTelefonuId = order.NumerTelefonuId,
-                AdresEmailId = order.AdresEmailId,
-                AdresId = order.AdresId,
-                PlanowanaDataRealizacjiOd = order.PlanowanaDataRealizacjiOd,
-                PlanowanaDataRealizacjiDo = order.PlanowanaDataRealizacjiDo,
-                ZrealizowanaDataRealizacjiOd = order.ZrealizowanaDataRealizacjiOd,
-                ZrealizowanaDataRealizacjiDo = order.ZrealizowanaDataRealizacjiDo
-            };
-
-            var result = await ApiService.ZamowieniaRepo.ZamowieniePut(OrderId, zamowienieDto);
-
-            if (result.Data != null)
-            {
-                var logDto = new LogDto
-                {
-                    ZamowienieId = OrderId,
-                    StatusId = order.StatusId,
-                    Komentarz = "Aktualizacja danych zlecenia"
-                };
-
-                await ApiService.LogiRepo.LogPost(logDto);
-
-                Snackbar.Add("Zapisano zmiany", Severity.Success);
-                order = result.Data; // Update the order with latest data
-                //await GenerateOrderHistory(); // Refresh history
-            }
-            else
-            {
-                Snackbar.Add($"Błąd: {result.Error}", Severity.Error);
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
-        }
-    }
-
     private async Task AddComment()
     {
         var parameters = new DialogParameters
-        {
-            ["Title"] = "Dodaj komentarz do zlecenia"
-        };
+            {
+                ["Title"] = "Dodaj komentarz do zlecenia"
+            };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
         var dialog = await DialogService.ShowAsync<CommentDialog>("Dodaj komentarz", parameters, options);
@@ -457,7 +795,7 @@
                 var logDto = new LogDto
                 {
                     ZamowienieId = OrderId,
-                    StatusId = order.StatusId, // Maintain current status
+                    StatusId = _orderDataModel.StatusId, // Maintain current status
                     Komentarz = commentText
                 };
 
@@ -503,6 +841,139 @@
                 Snackbar.Add($"Błąd podczas usuwania: {result.Error}", Severity.Error);
             }
         }
+    }
+
+
+    private async Task SaveUserData()
+    {
+        // try
+        // {
+        //     var zamowienieDto = new ZamowienieDto
+        //         {
+        //             SerwisantId = order.SerwisantId,
+        //             KlientId = order.KlientId,
+        //             SerwisId = order.Serwis.SerwisId,
+        //             StatusId = order.StatusId,
+        //             PriorytetId = order.PriorytetId,
+        //             MetodaPlatnosciId = order.MetodaPlatnosciId,
+        //             KomentarzeIds = order.Komentarze?.Select(k => k.KomentarzId).ToList(),
+        //             NumerTelefonuId = order.NumerTelefonuId,
+        //             AdresEmailId = order.AdresEmailId,
+        //             AdresId = order.AdresId,
+        //             PlanowanaDataRealizacjiOd = order.PlanowanaDataRealizacjiOd,
+        //             PlanowanaDataRealizacjiDo = order.PlanowanaDataRealizacjiDo,
+        //             ZrealizowanaDataRealizacjiOd = order.ZrealizowanaDataRealizacjiOd,
+        //             ZrealizowanaDataRealizacjiDo = order.ZrealizowanaDataRealizacjiDo
+        //         };
+
+        //     var result = await ApiService.ZamowieniaRepo.ZamowieniePut(OrderId, zamowienieDto);
+
+        //     if (result.Data != null)
+        //     {
+        //         var logDto = new LogDto
+        //             {
+        //                 ZamowienieId = OrderId,
+        //                 StatusId = order.StatusId,
+        //                 Komentarz = "Aktualizacja danych zlecenia"
+        //             };
+
+        //         await ApiService.LogiRepo.LogPost(logDto);
+
+        //         Snackbar.Add("Zapisano zmiany", Severity.Success);
+        //         order = result.Data; Update the order with latest data
+        //         await GenerateOrderHistory(); Refresh history
+        //     }
+        //     else
+        //     {
+        //         Snackbar.Add($"Błąd: {result.Error}", Severity.Error);
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        // }
+    }
+
+    private void ShowSuccess(string message)
+    {
+        _message = message;
+        _messageClass = "success-message";
+    }
+
+    private void ShowError(string error)
+    {
+        _message = error;
+        _messageClass = "error-message";
+    }
+
+    private string FormatDate(DateTime? date)
+    {
+        return date?.ToString("dd.MM.yyyy HH:mm") ?? "Nie określono";
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Zakończony" => "status-finished",
+            "W realizacji" => "status-realization",
+            "Anulowany" => "status-canceled",
+            "Oczekujący" => "status-waiting",
+            "Nowy" => "status-new",
+            _ => "status-default"
+        };
+    }
+    private string GetSelectedStatusName()
+    {
+        return _statusy.FirstOrDefault(s => s.StatusId == _orderDataModel.StatusId)?.Nazwa ?? "";
+    }
+
+
+    public class OrderDataModel
+    {
+        public int ZamowienieId { get; set; }
+        public int? SerwisantId { get; set; }
+        public int KlientId { get; set; }
+        public int SerwisId { get; set; }
+        public int StatusId { get; set; }
+        public int PriorytetId { get; set; }
+        public int MetodaPlatnosciId { get; set; }
+        public List<int>? KomentarzeIds { get; set; }
+        public int? NumerTelefonuId { get; set; }
+        public int? AdresEmailId { get; set; }
+        public int? AdresId { get; set; }
+        public int Koszt100 { get; set; }
+        public String Opis { get; set; }
+        public DateTime? DataAktualizacji { get; set; }
+        public DateTime DataDodania { get; set; }
+        public DateTime? PlanowanaDataRealizacjiOd { get; set; }
+        public DateTime? PlanowanaDataRealizacjiDo { get; set; }
+        public DateTime? ZrealizowanaDataRealizacjiOd { get; set; }
+        public DateTime? ZrealizowanaDataRealizacjiDo { get; set; }
+        public DicStatus Status { get; set; }
+
+
+        [EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
+        public string? EmailKlienta { get; set; }
+
+        [RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
+        public string? NumerTelefonuKlienta { get; set; }
+
+        [EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
+        public string? EmailSerwisanta { get; set; }
+
+        [RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
+        public string? NumerTelefonuSerwisanta { get; set; }
+
+        public string? ImieKlienta { get; set; }
+        public string? NazwiskoKlienta { get; set; }
+
+        public string? Ulica { get; set; }
+        public int NumerDomu { get; set; }
+        public int? NumerMieszkania { get; set; }
+        public string? KodPocztowy { get; set; }
+        public string? Miasto { get; set; }
+        public string? Kraj { get; set; }
     }
 
 }

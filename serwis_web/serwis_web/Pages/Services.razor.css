@@ -25,6 +25,7 @@
 
 .tab-container {
     width: 31.5%;
+    margin-bottom: 32px;
 }
 
 .tab-container:nth-child(-n+6) {

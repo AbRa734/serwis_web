@@ -54,9 +54,9 @@
         text-transform: none;
     }
 
-    .new-button:hover {
-        background-color: #336ff5;
-    }
+        .new-button:hover {
+            background-color: #336ff5;
+        }
 
     .order-grid {
         border-radius: 15px;
@@ -176,6 +176,10 @@
     }
 
     @@media (max-width: 1024px) {
+        .order-header-search-button {
+            padding: 0;
+        }
+
         .order-search {
             display: none;
         }
@@ -188,15 +192,15 @@
 </style>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
-    
+
     <MudCardHeader Class="order-header">
-        <MudText Class="order-header-tittle">Użytkownicy</MudText>
+        <MudText Class="order-header-tittle">Lista zleceń</MudText>
     </MudCardHeader>
 
     <MudCardHeader Class="order-header-search-button">
         <MudItem>
             <MudTextField @bind-Value="_searchString"
-                          Placeholder="Szukaj użytkownika"
+                          Placeholder="Szukaj zlecenia"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium"
@@ -205,8 +209,11 @@
                           OnDebounceIntervalElapsed="ApplySearch"
                           Class="order-search"></MudTextField>
         </MudItem>
-        <MudButton Class="new-button" OnClick="@(() => NavigateToNewUser())">Dodaj użytkownika</MudButton>
+        <MudButton Href="/services" Class="new-button">
+            Nowe zlecenie
+        </MudButton>
     </MudCardHeader>
+
 
     <MudDataGrid T="Uzytkownik" Items="@_filteredUzytkownicy" Hover="true" Loading="@_loading"
                  LoadingProgressColor="Color.Info" Filterable="true"
@@ -217,9 +224,9 @@
                  Bordered="false" Dense="false" Class="order-grid">
 
         <Columns>
-            <PropertyColumn T="Uzytkownik" TProperty="int" Property="x => x.UzytkownikId" Title="ID" HeaderClass="order-category-left">
+            <PropertyColumn T="Uzytkownik" TProperty="int" Property="x => x.UzytkownikId" Title="Id Użytkownika" HeaderClass="order-category-left">
                 <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="status-default">
+                    <MudChip Size="Size.Medium" Class="@GetRoleStyle("")">
                         <MudLink Href="@($"/users/{context.Item.UzytkownikId}")" Class="order-category-single-item-id">@context.Item.UzytkownikId.ToString("D5")</MudLink>
                     </MudChip>
                 </CellTemplate>
@@ -227,56 +234,50 @@
 
             <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.Imie" Title="Imię" HeaderClass="order-category">
                 <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="status-default">
+                    <MudChip Size="Size.Medium" Class="@GetRoleStyle("")">
                         <MudText Class="order-category-single-item">@(context.Item.Imie ?? "Nie określono")</MudText>
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
 
-            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.Nazwisko" Title="Nazwisko" HeaderClass="order-category">
+            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.AdresEmail.Email" Title="Nazwisko" HeaderClass="order-category">
                 <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="status-default">
+                    <MudChip Size="Size.Medium" Class="@GetRoleStyle("")">
                         <MudText Class="order-category-single-item">@(context.Item.Nazwisko ?? "Nie określono")</MudText>
-                    </MudChip>
-                </CellTemplate>
-            </PropertyColumn>
-
-            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.AdresEmail.Email" Title="Email" HeaderClass="order-category">
-                <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="status-default">
-                        <MudText Class="order-category-single-item">@context.Item.AdresEmail.Email</MudText>
-                    </MudChip>
-                </CellTemplate>
-            </PropertyColumn>
-
-            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.NumerTelefonu.Numer" Title="Telefon" HeaderClass="order-category">
-                <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="status-default">
-                        <MudText Class="order-category-single-item">@(context.Item.NumerTelefonu?.Numer ?? "Nie określono")</MudText>
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
 
             <PropertyColumn T="Uzytkownik" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" HeaderClass="order-category">
                 <CellTemplate>
-                    <MudChip Size="Size.Medium" Class="status-default">
+                    <MudChip Size="Size.Medium" Class="@GetRoleStyle("")">
                         <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
 
-            <TemplateColumn HeaderClass="order-category" Title="Akcje">
+            <PropertyColumn T="Uzytkownik" TProperty="DateTime?" Property="x => x.DataAktualizacji" Title="Data Aktualizacji" HeaderClass="order-category">
                 <CellTemplate>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditUser(context.Item.UzytkownikId))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteUser(context.Item.UzytkownikId))" />
+                    <MudChip Size="Size.Medium" Class="@GetRoleStyle("")">
+                        <MudText Class="order-category-single-item">@(context.Item.DataAktualizacji?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
+                    </MudChip>
                 </CellTemplate>
-            </TemplateColumn>
+            </PropertyColumn>
+
+            <PropertyColumn T="Uzytkownik" TProperty="int" Property="x => x.RolaUzytkownika.RolaUzytkownikaId" Title="Rola użytkownika" HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="@GetRoleStyle(context.Item.RolaUzytkownika.Nazwa)">
+                        <MudText Class="order-category-single-item">@(context.Item.RolaUzytkownika.Nazwa)</MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
         </Columns>
         <PagerContent>
             <MudDataGridPager T="Uzytkownik" RowsPerPageString="Wierszy na stronę" InfoFormat="{first_item}-{last_item} z {all_items}" />
         </PagerContent>
         <NoRecordsContent>
-            <MudText>Nie znaleziono użytkowników</MudText>
+            <MudText>Nie znaleziono zleceń</MudText>
         </NoRecordsContent>
     </MudDataGrid>
 </MudContainer>
@@ -374,5 +375,16 @@
         if (result != null && !result.Canceled)
         {
         }
+    }
+
+    private string GetRoleStyle(string status)
+    {
+        return status switch
+        {
+            "Klient" => "status-finished",
+            "Serwisant" => "status-realization",
+            "Administrator" => "status-canceled",
+            _ => "status-default"
+        };
     }
 }

@@ -173,7 +173,7 @@
 
 				<div class="service-tab">
 					<div class="service-col">
-						<Textarea PlaceHolder="Opisz swój problem" class="form-textarea" />
+						<Textarea @bind-Value="_newOrder.Opis" PlaceHolder="Opisz swój problem" class="form-textarea" required/>
 
 						<h4>Priorytet</h4>
 						<select @bind="_selectedPriorytetId">
@@ -184,11 +184,11 @@
 						</select>
 
 						<h4>Planowana Data Realizacji</h4>
-						<InputDate @bind-Value="_newOrder.PlanowanaDataRealizacjiOd" placeholder="" class="form-input" />
+						<InputDate @bind-Value="_newOrder.PlanowanaDataRealizacjiOd" placeholder="" class="form-input" required />
 						<ValidationMessage For="@(() => _newOrder.PlanowanaDataRealizacjiOd)" />
 
 						<h4>Planowana Data Zakończenia</h4>
-						<InputDate @bind-Value="_newOrder.PlanowanaDataRealizacjiDo" placeholder="" class="form-input" />
+						<InputDate @bind-Value="_newOrder.PlanowanaDataRealizacjiDo" placeholder="" class="form-input" required />
 						<ValidationMessage For="@(() => _newOrder.PlanowanaDataRealizacjiDo)" />
 					</div>
 
@@ -202,35 +202,35 @@
 						</select>
 
 						<h4>Numer Telefonu</h4>
-						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="form-input" />
+						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="form-input" required />
 						<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)" />
 
 						<h4>Adres Email</h4>
-						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input" type="email" />
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input" type="email" required />
 						<ValidationMessage For="@(() => _userDataModel.Email)" />
 
 						<h4>Państwo</h4>
-						<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" class="form-input" />
+						<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" class="form-input" required />
 
 						<div class="service-row">
 							<div class="single-col">
 								<h4>Ulica</h4>
-								<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" class="form-input" />
+								<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" class="form-input" required />
 							</div>
 							<div class="single-col">
 								<h4>Numer Domu</h4>
-								<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="form-input" />
+								<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="form-input" required />
 							</div>
 						</div>
 
 						<div class="service-row">
 							<div class="single-col">
 								<h4>Miasto</h4>
-								<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" class="form-input" />
+								<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" class="form-input" required />
 							</div>
 							<div class="single-col">
 								<h4>Kod pocztowy</h4>
-								<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" />
+								<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" required />
 							</div>
 						</div>
 					</div>
@@ -447,6 +447,8 @@
 				AdresId = addressId,
 				PriorytetId = _selectedPriorytetId,
 				SerwisantId = _selectedSerwisantId,
+				SerwisId = ServiceId,
+				Opis = _newOrder.Opis,
 			});
 
 			if (createResult.Error != null)

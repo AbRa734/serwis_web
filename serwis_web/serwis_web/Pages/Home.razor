@@ -221,41 +221,28 @@
                         </CellTemplate>
                     </PropertyColumn>
 
-                    <PropertyColumn T="Zamowienie" TProperty="DateTime" Property="x => x.DataDodania"
-                                    Title="Data Utworzenia" HeaderClass="order-category">
+                    <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.DataDodania"
+                                    Title="Data utworzenia" HeaderClass="order-category">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                                <MudText
-                                    Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
+                                <MudText Class="order-category-single-item">@(context.Item.DataDodania.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
                             </MudChip>
                         </CellTemplate>
                     </PropertyColumn>
 
-                    <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.PlanowanaDataRealizacjiOd"
-                                    Title="Planowana realizacja" HeaderClass="order-category">
+
+                    <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                                <MudText
-                                    Class="order-category-single-item">@(context.Item.PlanowanaDataRealizacjiOd?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
+                                <MudText Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
                             </MudChip>
                         </CellTemplate>
                     </PropertyColumn>
 
-                    <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo"
-                                    Title="Data Wykonania" HeaderClass="order-category">
+                    <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.Koszt100" Title="Koszt" HeaderClass="order-category">
                         <CellTemplate>
                             <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                                <MudText
-                                    Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
-                            </MudChip>
-                        </CellTemplate>
-                    </PropertyColumn>
-
-                    <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status"
-                                    HeaderClass="order-category">
-                        <CellTemplate>
-                            <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
-                                <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
+                                <MudLink Class="order-category-single-item-id">@context.Item.Koszt100 zł</MudLink>
                             </MudChip>
                         </CellTemplate>
                     </PropertyColumn>
@@ -323,6 +310,23 @@
         {
             _loading = false;
         }
+    }
+
+
+    private string GetServiceName(Zamowienie zamowienie)
+    {
+        if (zamowienie.Serwis == null)
+            return "Nie przypisano";
+
+        if (zamowienie.Serwis.TypSerwisu == null)
+            return "Nie przypisano";
+
+        string nazwaSerwisu = zamowienie.Serwis.TypSerwisu.Nazwa ?? "";
+
+        if (string.IsNullOrWhiteSpace(nazwaSerwisu))
+            return "Nie przypisano";
+
+        return nazwaSerwisu;
     }
 
     private string GetStatusStyle(string status)

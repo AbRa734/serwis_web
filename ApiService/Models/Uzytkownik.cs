@@ -12,7 +12,7 @@ public class Uzytkownik
     public NumerTelefonu? NumerTelefonu { get; set; }
     public Adres? Adres { get; set; }
     Autoryzacja? Autoryzacja { get; set; }
-    public bool CzyAktywny { get; set; } = true;
+    public bool CzyAktywny { get; set; }
     public DateTime? DataAktualizacji { get; set; }
     public DateTime DataDodania { get; init; }
 }
