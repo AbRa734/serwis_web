@@ -508,6 +508,8 @@
                 <h4>Kwota do zapłaty</h4>
                 <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" />
 
+                <StripePay />
+
                 @if (_komentarze?.Any() == true)
                 {
                     <h4>Komentarze</h4>
