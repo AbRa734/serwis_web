@@ -8,6 +8,7 @@
 @using serwis_web.Layout
 @using ButtonType = MudBlazor.ButtonType
 @using Size = MudBlazor.Size
+@using serwis_web.Components
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
@@ -86,6 +87,7 @@
                 <i class="fab fa-facebook" style="margin-right: 16px;"></i> Zaloguj się przez Facebook
             </MudButton>
         </div>
+        <StripePay/>
     </section>
 </main>
 

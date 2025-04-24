@@ -1,0 +1,17 @@
+@using System.Text.Json
+@inject IJSRuntime Js
+@inject NavigationManager Navigation
+
+<button @onclick="Pay">Test płatności</button>
+
+@code {
+    private async Task Pay()
+    {
+        var baseUrl = Navigation.BaseUri.TrimEnd('/');
+        var http = new HttpClient();
+        var response = await http.PostAsJsonAsync($"{baseUrl}/platnosc", new { });
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var sessionId = json.GetProperty("id").GetString();
+        await Js.InvokeVoidAsync("redirectToCheckout", sessionId);
+    }
+}

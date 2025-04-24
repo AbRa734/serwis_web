@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using MudBlazor.Services;
 using QuestPDF.Infrastructure;
 using serwis_web;
+using serwis_web.Services;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +15,8 @@ builder.Services.AddHttpClient("ApiWithAuth",
     (sp, client) => { client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("SERWIS_API_URL") ?? ""); });
 builder.Services.AddScoped<TokenService.TokenService>();
 builder.Services.AddScoped<ApiService.ApiService>();
-
+builder.Services.AddScoped<CheckoutSessionService>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
 
 builder.Services.AddBootstrapBlazor();
@@ -43,5 +46,12 @@ app.MapRazorComponents<App>()
 app.UseStatusCodePagesWithRedirects("/Error");
 
 QuestPDF.Settings.License = LicenseType.Community;
+StripeConfiguration.ApiKey = "sk_test_51RHTepH8Eh2h5xHth0gIqcvTUQINF5t2pEPF6J8ghuJUYJ7SheubGn1FdUMISm09sPhVvYWse0d0wWuOiwAHFLNI00ph5Q9zsZ";
+
+app.MapPost("/platnosc", async (CheckoutSessionService checkoutService) =>
+{
+    var session = await checkoutService.CreateCheckoutSessionAsync();
+    return Results.Ok(new { id = session.Id });
+});
 
 app.Run();
