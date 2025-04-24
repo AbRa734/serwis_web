@@ -16,322 +16,326 @@
 
 <style>
     .order-container {
-    display: flex;
-    flex-direction: column;
-    gap: 23px;
-    padding: 0;
-    margin: 0;
-    padding-left: 5px;
-    padding-right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 23px;
+        padding: 0;
+        margin: 0;
+        padding-left: 5px;
+        padding-right: 20px;
     }
 
     .title-changes {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0;
-    margin: 0;
-    padding-right: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0;
+        margin: 0;
+        padding-right: 40px;
     }
 
     .title-changes h2 {
-    font-size: 30px;
-    font-weight: 600;
-    margin: 0;
-    padding: 0;
+        font-size: 30px;
+        font-weight: 600;
+        margin: 0;
+        padding: 0;
     }
 
     .header-buttons {
-    display: flex;
-    align-items: center;
-    gap: 25px;
+        display: flex;
+        align-items: center;
+        gap: 25px;
     }
 
     .order-back {
-    display: flex;
-    width: 100%;
-    padding: 23px 30px 20px 30px;
-    background-color: #FFFFFF;
-    border-radius: 10px;
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
-    margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        width: 100%;
+        padding: 30px;
+        background-color: #FFFFFF;
+        border-radius: 10px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        margin: 0;
     }
 
     .order-tab {
-    display: flex;
-    width: 100%;
-    gap: 100px;
-    padding: 0;
-    margin: 0;
+        display: flex;
+        width: 100%;
+        gap: 100px;
+        padding: 0;
+        margin: 0;
     }
 
     .order-col {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .order-col h4 {
-    font-size: 16px;
-    font-weight: 500;
-    padding: 0;
-    margin: 0;
-    color: #606060;
+        font-size: 16px;
+        font-weight: 500;
+        padding: 0;
+        margin: 0;
+        color: #606060;
     }
 
     .order-row {
-    display: flex;
-    align-items: center;
-    gap: 40px;
-    width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        width: 100%;
     }
 
     .single-col {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
     }
 
     .textarea, .form-input, select, option {
-    background-color: #F5F6FA;
-    border: solid 1px #D5D5D5;
-    width: 100%;
-    padding: 15px;
-    border-radius: 5px;
-    color: #A6A6A6;
-    font-size: 14px;
+        background-color: #F5F6FA;
+        border: solid 1px #D5D5D5;
+        width: 100%;
+        padding: 15px;
+        border-radius: 5px;
+        color: #A6A6A6;
+        font-size: 14px;
     }
 
     .textarea {
-    height: 145px;
-    margin-top: 5px;
-    margin-bottom: 12px;
+        height: 145px;
+        margin-top: 5px;
+        margin-bottom: 12px;
     }
 
     .form-input, select, option {
-    height: 50px;
-    margin-bottom: 10px;
+        height: 50px;
+        margin-bottom: 10px;
     }
 
     button {
-    background-color: #4880FF;
-    border: none;
-    border-radius: 10px;
-    padding: 15px;
-    color: #FFFFFF;
-    font-size: 16px;
-    transition: all 0.3s ease-in-out;
-    cursor: pointer;
-    margin-top: 25px;
+        background-color: #4880FF;
+        border: none;
+        border-radius: 10px;
+        padding: 15px;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        margin-top: 25px;
     }
 
     button:hover {
-    background-color: #336ff5;
+        background-color: #336ff5;
     }
 
     .btn-changes, .btn-delete {
-    padding: 15px 50px;
-    margin: 0;
+        padding: 15px 50px;
+        margin: 0;
     }
 
     .btn-delete {
-    background-color: #f14c3c;
+        background-color: #f14c3c;
     }
 
     .btn-delete:hover {
-    background-color: #d12413;
+        background-color: #d12413;
     }
 
     .order-rate {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    height: 52px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        height: 52px;
     }
 
     i {
-    font-size: 30px;
-    cursor: pointer;
+        font-size: 30px;
+        cursor: pointer;
     }
 
     .status-finished {
-    background-color: #ccf0eb;
-    color: #00b69b;
-    border: none;
+        background-color: #ccf0eb;
+        color: #00b69b;
+        border: none;
     }
 
     .status-realization {
-    background-color: #e0d4fc;
-    color: #6226ef;
-    border: none;
+        background-color: #e0d4fc;
+        color: #6226ef;
+        border: none;
     }
 
     .status-canceled {
-    background-color: #fcd7d4;
-    color: #ef3826;
-    border: none;
+        background-color: #fcd7d4;
+        color: #ef3826;
+        border: none;
     }
 
     .status-waiting {
-    background-color: #ffeddd;
-    color: #ffa756;
-    border: none;
+        background-color: #ffeddd;
+        color: #ffa756;
+        border: none;
     }
 
     .status-new {
-    background-color: #f1d4ff;
-    color: #ba29ff;
-    border: none;
+        background-color: #f1d4ff;
+        color: #ba29ff;
+        border: none;
     }
 
 
     @@media (max-width: 1536px) {
     .order-container {
-    gap: 30px;
-    padding-right: 15px;
+        gap: 30px;
+        padding-right: 15px;
     }
 
     .order-row {
-    gap: 40px;
+        gap: 40px;
     }
 
     .order-back {
-    padding: 30px;
+        padding: 30px;
     }
 
     .order-tab {
-    flex-direction: column;
-    gap: 10px;
+        flex-direction: column;
+        gap: 10px;
     }
 
     .textarea, .form-input, select {
-    margin-bottom: 25px;
+        margin-bottom: 25px;
     }
 
     .order-rate {
-    height: 60px;
+        height: 60px;
     }
 
     button {
-    padding: 15px;
-    margin-top: 10px;
+        padding: 15px;
+        margin-top: 10px;
     }
 
     i {
-    font-size: 34px;
+        font-size: 34px;
     }
 
     .textarea {
-    height: 220px;
-    margin-top: 5px;
+        height: 220px;
+        margin-top: 5px;
     }
     }
 
     @@media (max-width: 1280px) {
-    .title-changes {
-    flex-direction: column;
-    gap: 20px;
-    align-items: flex-start;
-    padding-right: 0;
-    }
+        .title-changes {
+            flex-direction: column;
+            gap: 20px;
+            align-items: flex-start;
+            padding-right: 0;
+        }
 
-    .header-buttons {
-    flex-direction: column;
-    gap: 20px;
-    align-items: flex-start;
-    width: 100%;
-    }
+        .header-buttons 
+        {
+            flex-direction: column;
+            gap: 20px;
+            align-items: flex-start;
+            width: 100%;
+        }
 
-    .btn-changes, .btn-delete {
-    padding: 12px 50px;
-    width: 100%;
-    }
+        .btn-changes, .btn-delete 
+        {
+            padding: 12px 50px;
+            width: 100%;
+        }
     }
 
 
     @@media (max-width: 1024px) {
-    .order-row {
-    flex-direction: column;
-    gap: 5px;
-    }
+        .order-row {
+            flex-direction: column;
+            gap: 5px;
+        }
     }
 
 
     @@media (max-width: 768px) {
-    .order-container {
-    padding-right: 5px;
-    padding-top: 10px;
-    }
+        .order-container {
+            padding-right: 5px;
+            padding-top: 10px;
+        }
     }
 
     @@media (max-width: 640px) {
-    .order-rate {
-    gap: 14px;
-    }
+        .order-rate {
+            gap: 14px;
+        }
     }
 
     .comments-section {
-    max-height: 300px;
-    overflow-y: auto;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    padding: 10px;
-    margin-bottom: 20px;
+        max-height: 300px;
+        overflow-y: auto;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        padding: 10px;
+        margin-bottom: 20px;
     }
 
     .comment {
-    background-color: white;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        background-color: white;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .comment-content p {
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-size: 14px;
-    line-height: 1.4;
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-size: 14px;
+        line-height: 1.4;
     }
 
     .comment-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #777;
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #777;
     }
 
     .services-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
 
     .service-item {
-    background-color: #f0f7ff;
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        background-color: #f0f7ff;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .service-name {
-    font-weight: bold;
-    font-size: 16px;
-    margin: 0 0 5px 0;
+        font-weight: bold;
+        font-size: 16px;
+        margin: 0 0 5px 0;
     }
 
     .service-desc {
-    color: #555;
-    font-size: 14px;
-    margin: 0 0 5px 0;
+        color: #555;
+        font-size: 14px;
+        margin: 0 0 5px 0;
     }
 
     .service-type {
-    color: #777;
-    font-size: 13px;
-    margin: 0;
+        color: #777;
+        font-size: 13px;
+        margin: 0;
     }
 </style>
 
@@ -381,53 +385,53 @@
                 </div>
 
                 <h4>Opis zlecenia</h4>
-                <Textarea @bind-Value="_orderDataModel.Opis" placeholder="Opis zlecenia" class="textarea" />
+                <Textarea @bind-Value="_orderDataModel.Opis" placeholder="Opis zlecenia" class="textarea" required/>
 
                 <div class="order-row">
                     <div class="single-col">
                         <h4>Imie klienta</h4>
-                        <InputText @bind-Value="_orderDataModel.ImieKlienta" placeholder="Imie" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.ImieKlienta" placeholder="Imie" class="form-input" required />
                     </div>
                     <div class="single-col">
                         <h4>Nazwisko klienta</h4>
-                        <InputText @bind-Value="_orderDataModel.NazwiskoKlienta" placeholder="Nazwisko" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.NazwiskoKlienta" placeholder="Nazwisko" class="form-input" required />
                     </div>
                 </div>
 
                 <div class="order-row">
                     <div class="single-col">
                         <h4>Numer telefonu klienta</h4>
-                        <InputText @bind-Value="_orderDataModel.NumerTelefonuKlienta" placeholder="NumerTelefonu" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.NumerTelefonuKlienta" placeholder="NumerTelefonu" class="form-input" required />
                     </div>
                     <div class="single-col">
                         <h4>Adres email klienta</h4>
-                        <InputText @bind-Value="_orderDataModel.EmailKlienta" placeholder="Email" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.EmailKlienta" placeholder="Email" class="form-input" required />
                     </div>
                 </div>
 
                 <h4>Państwo</h4>
-                <InputText @bind-Value="_orderDataModel.Kraj" placeholder="Państwo" class="form-input" />
+                <InputText @bind-Value="_orderDataModel.Kraj" placeholder="Państwo" class="form-input" required />
 
                 <div class="order-row">
                     <div class="single-col">
                         <h4>Ulica</h4>
-                        <InputText @bind-Value="_orderDataModel.Ulica" placeholder="Ulica" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.Ulica" placeholder="Ulica" class="form-input" required />
 
                     </div>
                     <div class="single-col">
                         <h4>Numer domu</h4>
-                        <InputNumber @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="form-input" />
+                        <InputNumber @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="form-input" required />
                     </div>
                 </div>
 
                 <div class="order-row">
                     <div class="single-col">
                         <h4>Miasto</h4>
-                        <InputText @bind-Value="_orderDataModel.Miasto" placeholder="Miasto" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.Miasto" placeholder="Miasto" class="form-input" required />
                     </div>
                     <div class="single-col">
                         <h4>Kod pocztowy</h4>
-                        <InputText @bind-Value="_orderDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" required />
                     </div>
                 </div>
             </div>
@@ -469,11 +473,11 @@
                 <div class="order-row"> 
                     <div class="single-col"> 
                         <h4>Adres Email Serwisanta</h4>
-                        <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="form-input" required />
                     </div> 
                     <div class="single-col">
                         <h4>Numer Telefonu Serwisanta</h4>
-                        <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="form-input" />
+                        <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="form-input" required />
                     </div>
                 </div>
 
@@ -581,6 +585,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadOrderData();
+        await LoadOrderLogs();
     }
 
     private async Task LoadOrderData()
@@ -613,7 +618,17 @@
             _currentPhoneKlient = phoneResult.Data;
         }
 
+        if (_order.Serwisant.Uzytkownik.AdresEmailId > 0)
+        {
+            var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_order.Serwisant.Uzytkownik.AdresEmailId);
+            _currentEmailSerwisantt = emailResult.Data;
+        }
 
+        if (_order.Serwisant.Uzytkownik.NumerTelefonuId.HasValue && _order.Serwisant.Uzytkownik.NumerTelefonuId.Value > 0)
+        {
+            var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_order.Serwisant.Uzytkownik.NumerTelefonuId.Value);
+            _currentPhoneSerwisant = phoneResult.Data;
+        }
 
         if (_order.Adres != null)
         {
@@ -639,7 +654,7 @@
         _orderDataModel.AdresEmailId = _order.AdresEmailId;
         _orderDataModel.NumerTelefonuId = _order.NumerTelefonuId;
         _orderDataModel.AdresId = _order.Adres?.AdresId;
-        _orderDataModel.SerwisId = _serwis.TypSerwisu.TypSerwisuId;
+        _orderDataModel.SerwisId = _order.Serwis.SerwisId;
 
         _orderDataModel.DataDodania = _order.DataDodania;
         _orderDataModel.DataAktualizacji = _order.DataAktualizacji;
@@ -652,6 +667,8 @@
         _orderDataModel.EmailKlienta = _currentEmailKlient?.Email;
         _orderDataModel.NumerTelefonuKlienta = _currentPhoneKlient?.Numer;
 
+        _orderDataModel.EmailSerwisanta = _currentEmailSerwisantt?.Email;
+        _orderDataModel.NumerTelefonuSerwisanta = _currentPhoneSerwisant?.Numer;
 
 
         _orderDataModel.Ulica = _order.Adres?.Ulica;
@@ -829,7 +846,52 @@
 
     private async Task SaveUserData()
     {
+        // try
+        // {
+        //     var zamowienieDto = new ZamowienieDto
+        //         {
+        //             SerwisantId = order.SerwisantId,
+        //             KlientId = order.KlientId,
+        //             SerwisId = order.Serwis.SerwisId,
+        //             StatusId = order.StatusId,
+        //             PriorytetId = order.PriorytetId,
+        //             MetodaPlatnosciId = order.MetodaPlatnosciId,
+        //             KomentarzeIds = order.Komentarze?.Select(k => k.KomentarzId).ToList(),
+        //             NumerTelefonuId = order.NumerTelefonuId,
+        //             AdresEmailId = order.AdresEmailId,
+        //             AdresId = order.AdresId,
+        //             PlanowanaDataRealizacjiOd = order.PlanowanaDataRealizacjiOd,
+        //             PlanowanaDataRealizacjiDo = order.PlanowanaDataRealizacjiDo,
+        //             ZrealizowanaDataRealizacjiOd = order.ZrealizowanaDataRealizacjiOd,
+        //             ZrealizowanaDataRealizacjiDo = order.ZrealizowanaDataRealizacjiDo
+        //         };
 
+        //     var result = await ApiService.ZamowieniaRepo.ZamowieniePut(OrderId, zamowienieDto);
+
+        //     if (result.Data != null)
+        //     {
+        //         var logDto = new LogDto
+        //             {
+        //                 ZamowienieId = OrderId,
+        //                 StatusId = order.StatusId,
+        //                 Komentarz = "Aktualizacja danych zlecenia"
+        //             };
+
+        //         await ApiService.LogiRepo.LogPost(logDto);
+
+        //         Snackbar.Add("Zapisano zmiany", Severity.Success);
+        //         order = result.Data; Update the order with latest data
+        //         await GenerateOrderHistory(); Refresh history
+        //     }
+        //     else
+        //     {
+        //         Snackbar.Add($"Błąd: {result.Error}", Severity.Error);
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        // }
     }
 
     private void ShowSuccess(string message)

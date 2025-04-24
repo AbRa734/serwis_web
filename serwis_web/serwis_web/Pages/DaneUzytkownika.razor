@@ -165,7 +165,7 @@
 
 
 	@@media (max-width: 1280px) {
-	.services-container
+		.services-container
 		{
 			gap: 30px;
 			padding-right: 15px;
@@ -321,9 +321,14 @@
 				<h4>Ostatnia Data Aktualizacji</h4>
 				<InputDate @bind-Value="_userDataModel.DataAktualizacji" placeholder="Data" class="form-input" readonly />
 
+				<h4>Aktywnosc konta</h4>
+				<InputSelect @bind-Value="_userDataModel.CzyAktywny" class="form-input" style="background-color:#f14c3c; color: #ffffff; border: none; font-size: 16px; text-align: center">
+					<option value="true">Tak</option>
+					<option value="false">Nie</option>
+				</InputSelect>
+
 				<button class="reset-password">Zresetuj hasło użytkownika</button>
 
-				<button @onclick="DeleteUser" class="delete-account">Usuń konto</button>
 			</div>
 
 		</div>
@@ -389,6 +394,7 @@
 		_userDataModel.UzytkownikId = _currentUser.UzytkownikId;
 		_userDataModel.RoleId = _currentUser.RolaUzytkownika.RolaUzytkownikaId;
 		_userDataModel.CzyAktywny = _currentUser.CzyAktywny;
+		_userDataModel.CzyAktywnyText = _currentUser.CzyAktywny ? "Tak" : "Nie";
 		_userDataModel.AdresEmailId = _currentUser.AdresEmailId;
 		_userDataModel.NumerTelefonuId = _currentUser.NumerTelefonuId;
 		_userDataModel.AdresId = _currentUser.Adres?.AdresId;
@@ -491,7 +497,7 @@
 				NumerTelefonuId = numerTelefonuId,
 				AdresId = addressIds.First(),
 				RolaUzytkownikaId = _userDataModel.RoleId,
-				CzyAktywny = true,
+				CzyAktywny = _userDataModel.CzyAktywny,
 			};
 
 			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(UserId, uzytkownikDto);
@@ -546,45 +552,11 @@
 		public DateTime? DataAktualizacji { get; set; }
 		public DateTime DataDodania { get; set; }
 		public int RoleId { get; set; }
-		public Boolean CzyAktywny { get; set; }
+		public bool CzyAktywny { get; set; }
+		public string CzyAktywnyText { get; set; }
 		public int AdresEmailId { get; set; }
 		public int? NumerTelefonuId { get; set; }
 		public int? AdresId { get; set; }
-	}
-
-	private async Task DeleteUser()
-	{
-		bool confirmed = await DialogService.ShowMessageBox(
-			"Potwierdzenie",
-			"Czy na pewno chcesz usunąć użytkownika?",
-			yesText: "Tak",
-			noText: "Nie") ?? false;
-
-		if (confirmed)
-		{
-			var uzytkownikDto = new UzytkownikDto
-			{
-				RolaUzytkownikaId = _userDataModel.RoleId,
-				Imie = _userDataModel.Imie,
-				Nazwisko = _userDataModel.Nazwisko,
-				AdresEmailId = _userDataModel.AdresEmailId,
-				NumerTelefonuId = _userDataModel.NumerTelefonuId,
-				CzyAktywny = false, 
-				AdresId = _userDataModel.AdresId,
-			};
-
-			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(UserId, uzytkownikDto);
-
-			if (userResult.Error == null)
-			{
-				Snackbar.Add("Użytkownik został usunięty", Severity.Success);
-				NavigationManager.NavigateTo("/users");
-			}
-			else
-			{
-				Snackbar.Add($"Błąd podczas usuwania: {userResult.Error}", Severity.Error);
-			}
-		}
 	}
 
 }
