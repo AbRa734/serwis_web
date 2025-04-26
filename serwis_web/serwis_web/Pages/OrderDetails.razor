@@ -6,11 +6,13 @@
 @using ApiService
 @using ApiService.Models
 @using ApiService.Repositories
+@using Console = System.Console
 @inject IDialogService DialogService
 @using DialogService = MudBlazor.DialogService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
-
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
 
 <PageTitle>Szczegóły zlecenia</PageTitle>
 
@@ -351,202 +353,209 @@
         </div>
     </div>
 
-    <EditForm Model="@_orderDataModel" OnValidSubmit="SaveUserData" class="order-back">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+
+    <EditForm Model="@_orderDataModel" OnValidSubmit="SaveOrderData" class="order-back">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Style="align-items: center; justify-content: center; display: flex; margin: 0 auto;"/>
+    }
+    else
+    {
         <div class="order-tab">
-            <div class="order-col">
+        <div class="order-col">
 
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Numer zlecenia</h4>
-                        <InputNumber @bind-Value="_orderDataModel.ZamowienieId" placeholder="Id zamówienia" class="form-input" readonly />
-                    </div>
-                    <div class="single-col">
-                        <h4>Rodzaj zlecenia</h4>
-                        <select @bind="_orderDataModel.SerwisId">
-                            @foreach (var serwis in _serwisy)
-                            {
-                                <option value="@serwis.TypSerwisuId">@serwis.Nazwa</option>
-                            }
-                        </select>
-                    </div>
+            <div class="order-row">
+                <div class="single-col">
+                    <h4>Numer zlecenia</h4>
+                    <InputNumber @bind-Value="_orderDataModel.ZamowienieId" placeholder="Id zamówienia" class="form-input" readonly />
                 </div>
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Data utworzenia zlecenia</h4>
-                        <InputDate @bind-Value="_orderDataModel.DataDodania" placeholder="Data utworzenia zlecenia" class="form-input" readonly />
-                    </div>
-                    <div class="single-col">
-                        <h4>Data aktualizacji</h4>
-                        <InputDate @bind-Value="_orderDataModel.DataAktualizacji" placeholder="Data aktualizacji" class="form-input" readonly />
-                    </div>
-                </div>
-
-                <h4>Opis zlecenia</h4>
-                <Textarea @bind-Value="_orderDataModel.Opis" placeholder="Opis zlecenia" class="textarea" required/>
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Imie klienta</h4>
-                        <InputText @bind-Value="_orderDataModel.ImieKlienta" placeholder="Imie" class="form-input" required />
-                    </div>
-                    <div class="single-col">
-                        <h4>Nazwisko klienta</h4>
-                        <InputText @bind-Value="_orderDataModel.NazwiskoKlienta" placeholder="Nazwisko" class="form-input" required />
-                    </div>
-                </div>
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Numer telefonu klienta</h4>
-                        <InputText @bind-Value="_orderDataModel.NumerTelefonuKlienta" placeholder="NumerTelefonu" class="form-input" required />
-                    </div>
-                    <div class="single-col">
-                        <h4>Adres email klienta</h4>
-                        <InputText @bind-Value="_orderDataModel.EmailKlienta" placeholder="Email" class="form-input" required />
-                    </div>
-                </div>
-
-                <h4>Państwo</h4>
-                <InputText @bind-Value="_orderDataModel.Kraj" placeholder="Państwo" class="form-input" required />
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Ulica</h4>
-                        <InputText @bind-Value="_orderDataModel.Ulica" placeholder="Ulica" class="form-input" required />
-
-                    </div>
-                    <div class="single-col">
-                        <h4>Numer domu</h4>
-                        <InputNumber @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="form-input" required />
-                    </div>
-                </div>
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Miasto</h4>
-                        <InputText @bind-Value="_orderDataModel.Miasto" placeholder="Miasto" class="form-input" required />
-                    </div>
-                    <div class="single-col">
-                        <h4>Kod pocztowy</h4>
-                        <InputText @bind-Value="_orderDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" required />
-                    </div>
+                <div class="single-col">
+                    <h4>Rodzaj zlecenia</h4>
+                    <select @bind="_orderDataModel.SerwisId">
+                        @foreach (var serwis in _serwisy)
+                        {
+                            <option value="@serwis.TypSerwisuId">@serwis.Nazwa</option>
+                        }
+                    </select>
                 </div>
             </div>
 
-            <div class="order-col">
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Planowana Data Realizacji Od</h4>
-                        <InputDate @bind-Value="_orderDataModel.PlanowanaDataRealizacjiOd" placeholder="Data" class="form-input" readonly />
-                    </div>
-                    <div class="single-col">
-                        <h4>Planowana Data Realizacji Do</h4>
-                        <InputDate @bind-Value="_orderDataModel.PlanowanaDataRealizacjiDo" placeholder="Data" class="form-input" readonly />
-                    </div>
+            <div class="order-row">
+                <div class="single-col">
+                    <h4>Data utworzenia zlecenia</h4>
+                    <InputDate @bind-Value="_orderDataModel.DataDodania" placeholder="Data utworzenia zlecenia" class="form-input" readonly />
                 </div>
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Data Rozpoczęcia Realizacji</h4>
-                        <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiOd" placeholder="Data" class="form-input" style="font-weight: bold" />
-
-                    </div>
-                    <div class="single-col">
-                        <h4>Data Zakończenia Realizacji</h4>
-                        <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiDo" placeholder="Data" class="form-input" style="font-weight: bold" />
-                    </div>
+                <div class="single-col">
+                    <h4>Data aktualizacji</h4>
+                    <InputDate @bind-Value="_orderDataModel.DataAktualizacji" placeholder="Data aktualizacji" class="form-input" readonly />
                 </div>
+            </div>
 
-                <h4>Serwisant</h4>
-                <select @bind="_orderDataModel.SerwisantId">
-                    @foreach (var serwisant in _serwisanci)
-                    {
-                        <option value="@serwisant.SerwisantId">@serwisant.Uzytkownik.Imie @serwisant.Uzytkownik.Nazwisko</option>
-                    }
-                </select>
+            <h4>Opis zlecenia</h4>
+            <Textarea @bind-Value="_orderDataModel.Opis" placeholder="Opis zlecenia" class="textarea" required/>
 
-
-                <div class="order-row"> 
-                    <div class="single-col"> 
-                        <h4>Adres Email Serwisanta</h4>
-                        <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="form-input" required />
-                    </div> 
-                    <div class="single-col">
-                        <h4>Numer Telefonu Serwisanta</h4>
-                        <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="form-input" required />
-                    </div>
+            <div class="order-row">
+                <div class="single-col">
+                    <h4>Imie klienta</h4>
+                    <InputText @bind-Value="_orderDataModel.ImieKlienta" placeholder="Imie" class="form-input" required />
                 </div>
+                <div class="single-col">
+                    <h4>Nazwisko klienta</h4>
+                    <InputText @bind-Value="_orderDataModel.NazwiskoKlienta" placeholder="Nazwisko" class="form-input" required />
+                </div>
+            </div>
 
-                <h4>Priorytet</h4>
-                <select @bind="_orderDataModel.PriorytetId">
-                    @foreach (var priorytet in _priorytety)
-                    {
-                        <option value="@priorytet.PriorytetId">@priorytet.Nazwa</option>
-                    }
-                </select>
+            <div class="order-row">
+                <div class="single-col">
+                    <h4>Numer telefonu klienta</h4>
+                    <InputText @bind-Value="_orderDataModel.NumerTelefonuKlienta" placeholder="NumerTelefonu" class="form-input" required />
+                </div>
+                <div class="single-col">
+                    <h4>Adres email klienta</h4>
+                    <InputText @bind-Value="_orderDataModel.EmailKlienta" placeholder="Email" class="form-input" required />
+                </div>
+            </div>
 
-                <h4>Metoda Płatności</h4>
-                <select @bind="_orderDataModel.PriorytetId">
-                    @foreach (var platnosc in _platnosci)
-                    {
-                        <option value="@platnosc.MetodaPlatnosciId">@platnosc.Nazwa</option>
-                    }
-                </select>
+            <h4>Państwo</h4>
+            <InputText @bind-Value="_orderDataModel.Kraj" placeholder="Państwo" class="form-input" required />
 
-                <h4>Status zlecenia</h4>
-                <select @bind="_orderDataModel.StatusId" class="@GetStatusClass(GetSelectedStatusName())">
-                    @foreach (var status in _statusy)
-                    {
-                        <option value="@status.StatusId">@status.Nazwa</option>
-                    }
-                </select>
+            <div class="order-row">
+                <div class="single-col">
+                    <h4>Ulica</h4>
+                    <InputText @bind-Value="_orderDataModel.Ulica" placeholder="Ulica" class="form-input" required />
 
-                <h4>Kwota do zapłaty</h4>
-                <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" />
+                </div>
+                <div class="single-col">
+                    <h4>Numer domu</h4>
+                    <InputNumber @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="form-input" required />
+                </div>
+            </div>
 
-                <StripePay />
+            <div class="order-row">
+                <div class="single-col">
+                    <h4>Miasto</h4>
+                    <InputText @bind-Value="_orderDataModel.Miasto" placeholder="Miasto" class="form-input" required />
+                </div>
+                <div class="single-col">
+                    <h4>Kod pocztowy</h4>
+                    <InputText @bind-Value="_orderDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" required />
+                </div>
+            </div>
+        </div>
 
-                @if (_komentarze?.Any() == true)
+        <div class="order-col">
+
+            <div class="order-row">
+                <div class="single-col">
+                    <h4>Planowana Data Realizacji Od</h4>
+                    <InputDate @bind-Value="_orderDataModel.PlanowanaDataRealizacjiOd" placeholder="Data" class="form-input" readonly />
+                </div>
+                <div class="single-col">
+                    <h4>Planowana Data Realizacji Do</h4>
+                    <InputDate @bind-Value="_orderDataModel.PlanowanaDataRealizacjiDo" placeholder="Data" class="form-input" readonly />
+                </div>
+            </div>
+
+            <div class="order-row">
+                <div class="single-col">
+                    <h4>Data Rozpoczęcia Realizacji</h4>
+                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiOd" placeholder="Data" class="form-input" style="font-weight: bold" />
+
+                </div>
+                <div class="single-col">
+                    <h4>Data Zakończenia Realizacji</h4>
+                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiDo" placeholder="Data" class="form-input" style="font-weight: bold" />
+                </div>
+            </div>
+
+            <h4>Serwisant</h4>
+            <select value="@_orderDataModel.SerwisantId" @onchange="HandleSerwisantChange">
+                @foreach (var serwisant in _serwisanci)
                 {
-                    <h4>Komentarze</h4>
-                    <div class="comments-section">
-                        @foreach (var comment in _komentarze)
-                        {
-                            <div class="comment">
-                                <div class="comment-content">
-                                    <p>@comment.Tresc</p>
-                                    <div class="comment-meta">
-                                        <span class="comment-date">@FormatDate(comment.DataDodania)</span>
-                                        <span class="comment-user">@comment.Uzytkownik?.Imie @comment.Uzytkownik?.Nazwisko</span>
-                                    </div>
+                    <option value="@serwisant.SerwisantId">@serwisant.Uzytkownik.Imie @serwisant.Uzytkownik.Nazwisko</option>
+                }
+            </select>
+
+
+            <div class="order-row"> 
+                <div class="single-col"> 
+                    <h4>Adres Email Serwisanta</h4>
+                    <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="form-input" required />
+                </div> 
+                <div class="single-col">
+                    <h4>Numer Telefonu Serwisanta</h4>
+                    <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="form-input" required />
+                </div>
+            </div>
+
+            <h4>Priorytet</h4>
+            <select @bind="_orderDataModel.PriorytetId">
+                @foreach (var priorytet in _priorytety)
+                {
+                    <option value="@priorytet.PriorytetId">@priorytet.Nazwa</option>
+                }
+            </select>
+
+            <h4>Metoda Płatności</h4>
+            <select @bind="_orderDataModel.MetodaPlatnosciId">
+                @foreach (var platnosc in _platnosci)
+                {
+                    <option value="@platnosc.MetodaPlatnosciId">@platnosc.Nazwa</option>
+                }
+            </select>
+
+            <h4>Status zlecenia</h4>
+            <select @bind="_orderDataModel.StatusId" class="@GetStatusClass(GetSelectedStatusName())">
+                @foreach (var status in _statusy)
+                {
+                    <option value="@status.StatusId">@status.Nazwa</option>
+                }
+            </select>
+
+            <h4>Kwota do zapłaty</h4>
+            <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" />
+
+            @if (_komentarze?.Any() == true)
+            {
+                <h4>Komentarze</h4>
+                <div class="comments-section">
+                    @foreach (var comment in _komentarze)
+                    {
+                        <div class="comment">
+                            <div class="comment-content">
+                                <p>@comment.Tresc</p>
+                                <div class="comment-meta">
+                                    <span class="comment-date">@FormatDate(comment.DataDodania)</span>
+                                    <span class="comment-user">@comment.Uzytkownik?.Imie @comment.Uzytkownik?.Nazwisko</span>
                                 </div>
                             </div>
-                        }
-                    </div>
-                }
+                        </div>
+                    }
+                </div>
+            }
 
 
-                @if (isAdmin)
-                {
-                    <button type="submit">Zapisz zmiany</button>
-                }
-                else
-                {
-                    <button>Dodaj komentarz</button>
-                }
-
-            </div>
+            @if (isAdmin)
+            {
+                <button type="submit">Zapisz zmiany</button>
+            }
+            else
+            {
+                <button>Dodaj komentarz</button>
+            }
 
         </div>
 
+    </div>
+    }
+
 
     </EditForm>
-
-
+    
+    
 </div>
 
 
@@ -560,13 +569,7 @@
     private List<Serwisant> _serwisanci = new();
     private bool isLoading = true;
     private List<Log> orderLogs = new List<Log>();
-    private DicTypSerwisu _typSerwisu = new();
-    public Serwisant? _serwisant;
-    public Klient _klient;
-    public Serwis _serwis;
-    public DicStatus _status;
-    public DicPriorytet _priorytet;
-    public DicMetodaPlatnosci _metodaPlatnosci;
+    public Uzytkownik? _uzytkownikKlient;
     private List<DicPriorytet> _priorytety = new();
     private List<DicMetodaPlatnosci> _platnosci = new();
     private List<DicStatus> _statusy = new();
@@ -579,145 +582,215 @@
     public AdresEmail? _currentEmailSerwisantt;
 
 
-    public Adres? _currentAddress;
 
     private string? _message;
     private string _messageClass = "success-message";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadOrderData();
-        await LoadOrderLogs();
+        isLoading = true;
+        try
+        {
+            await LoadOrderData();
+            await LoadOrderLogs();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+        
     }
 
     private async Task LoadOrderData()
     {
-        var orderResult = await ApiService.ZamowieniaRepo.ZamowienieGet(OrderId);
-
-        if (orderResult.Error != null)
+        try
         {
-            ShowError("Błąd podczas ładowania danych użytkownika: " + orderResult.Error);
-            return;
+            var orderResult = await ApiService.ZamowieniaRepo.ZamowienieGet(OrderId);
+
+            if (orderResult.Error != null)
+            {
+                ShowError("Błąd podczas ładowania danych użytkownika: " + orderResult.Error);
+                return;
+            }
+
+            _order = orderResult.Data;
+
+            if (_order == null)
+            {
+                ShowError("Nie znaleziono danych użytkownika");
+                return;
+            }
+
+            if (_order.AdresEmailId > 0)
+            {
+                var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_order.AdresEmail.AdresEmailId);
+                _currentEmailKlient = emailResult.Data;
+            }
+
+            if (_order.NumerTelefonuId.HasValue && _order.NumerTelefonuId.Value > 0)
+            {
+                var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_order.NumerTelefonuId.Value);
+                _currentPhoneKlient = phoneResult.Data;
+            }
+
+            if (_order.Serwisant.Uzytkownik.AdresEmailId > 0)
+            {
+                var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_order.Serwisant.Uzytkownik.AdresEmailId);
+                _currentEmailSerwisantt = emailResult.Data;
+            }
+
+            if (_order.Serwisant.Uzytkownik.NumerTelefonuId.HasValue && _order.Serwisant.Uzytkownik.NumerTelefonuId.Value > 0)
+            {
+                var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_order.Serwisant.Uzytkownik.NumerTelefonuId.Value);
+                _currentPhoneSerwisant = phoneResult.Data;
+            }
+            
+            if (_order?.Klient?.Uzytkownik?.UzytkownikId > 0)
+            {
+                var userResult = await ApiService.UzytkownicyRepo.UzytkownikGet(_order.Klient.Uzytkownik.UzytkownikId);
+                _uzytkownikKlient = userResult.Data;
+            }
+            
+            _orderDataModel.ZamowienieId = _order.ZamowienieId;
+            _orderDataModel.SerwisantId = _order.SerwisantId;
+            
+            if (_orderDataModel.SerwisantId.HasValue)
+            {
+                await UpdateSerwisantContactInfo(_orderDataModel.SerwisantId.Value);
+            }
+            
+            _orderDataModel.Opis = _order.Opis;
+
+            _orderDataModel.KlientId = _order.KlientId;
+            _orderDataModel.AdresEmailId = _order.AdresEmailId;
+            _orderDataModel.NumerTelefonuId = _order.NumerTelefonuId;
+            _orderDataModel.AdresId = _order.AdresId;
+            _orderDataModel.SerwisId = _order.Serwis.SerwisId;
+            _orderDataModel.PriorytetId = _order.PriorytetId;
+            _orderDataModel.MetodaPlatnosciId = _order.MetodaPlatnosciId;
+            _orderDataModel.Koszt100 = _order.Koszt100;
+            _orderDataModel.StatusId = _order.StatusId;
+            
+            _orderDataModel.DataDodania = _order.DataDodania;
+            _orderDataModel.DataAktualizacji = _order.DataAktualizacji;
+            _orderDataModel.PlanowanaDataRealizacjiOd = _order.PlanowanaDataRealizacjiOd;
+            _orderDataModel.PlanowanaDataRealizacjiDo = _order.PlanowanaDataRealizacjiDo;
+            _orderDataModel.ZrealizowanaDataRealizacjiOd = _order.ZrealizowanaDataRealizacjiOd;
+            _orderDataModel.ZrealizowanaDataRealizacjiDo = _order.ZrealizowanaDataRealizacjiDo;
+
+
+            _orderDataModel.EmailKlienta = _currentEmailKlient?.Email;
+            _orderDataModel.NumerTelefonuKlienta = _currentPhoneKlient?.Numer;
+
+            _orderDataModel.EmailSerwisanta = _currentEmailSerwisantt?.Email;
+            _orderDataModel.NumerTelefonuSerwisanta = _currentPhoneSerwisant?.Numer;
+
+
+            _orderDataModel.Ulica = _order.Adres?.Ulica;
+            _orderDataModel.NumerDomu = _order.Adres?.NumerDomu ?? 0;
+            _orderDataModel.NumerMieszkania = _order.Adres?.NumerMieszkania ?? 0;
+            _orderDataModel.KodPocztowy = _order.Adres?.KodPocztowy;
+            _orderDataModel.Miasto = _order.Adres?.Miasto;
+            _orderDataModel.Kraj = _order.Adres?.Kraj;
+
+            _orderDataModel.ImieKlienta = _order.Klient.Uzytkownik.Imie;
+            _orderDataModel.NazwiskoKlienta = _order.Klient.Uzytkownik.Nazwisko;
+
+
+            var serviceResult = await ApiService.TypySerwisuRepo.TypySerwisuGet();
+            if (serviceResult.Data != null)
+            {
+                _serwisy = serviceResult.Data;
+            }
+
+            var serwisantResult = await ApiService.SerwisanciRepo.SerwisanciGet();
+            if (serwisantResult.Data != null)
+            {
+                _serwisanci = serwisantResult.Data;
+            }
+
+            var priorytetsResult = await ApiService.PriotytetyRepo.PriotytetyGet();
+            if (priorytetsResult.Data != null)
+            {
+                _priorytety = priorytetsResult.Data;
+            }
+
+            var paymentsResult = await ApiService.MetodyPlatnosciRepo.MetodyPlatnosciGet();
+            if (paymentsResult.Data != null)
+            {
+                _platnosci = paymentsResult.Data;
+            }
+
+            var statusResult = await ApiService.StatusyRepo.StatusyGet();
+            if (statusResult.Data != null)
+            {
+                _statusy = statusResult.Data;
+            }
+
+            _komentarze = _order.Komentarze;
+            _orderDataModel.Status = _order.Status;
         }
-
-        _order = orderResult.Data;
-
-        if (_order == null)
+        catch (Exception ex)
         {
-            ShowError("Nie znaleziono danych użytkownika");
-            return;
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
         }
-
-        if (_order.AdresEmailId > 0)
+    }
+    
+    private async Task HandleSerwisantChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int serwisantId))
         {
-            var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_order.AdresEmail.AdresEmailId);
-            _currentEmailKlient = emailResult.Data;
+            _orderDataModel.SerwisantId = serwisantId;
+        
+            await UpdateSerwisantContactInfo(serwisantId);
         }
+    }
 
-        if (_order.NumerTelefonuId.HasValue && _order.NumerTelefonuId.Value > 0)
+    private async Task UpdateSerwisantContactInfo(int serwisantId)
+    {
+        try
         {
-            var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_order.NumerTelefonuId.Value);
-            _currentPhoneKlient = phoneResult.Data;
+            var selectedSerwisant = _serwisanci.FirstOrDefault(s => s.SerwisantId == serwisantId);
+        
+            if (selectedSerwisant != null)
+            {
+                var userResult = await ApiService.UzytkownicyRepo.UzytkownikGet(selectedSerwisant.Uzytkownik.UzytkownikId);
+            
+                if (userResult.Data != null)
+                {
+                    var user = userResult.Data;
+                
+                    if (user.AdresEmailId > 0)
+                    {
+                        var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(user.AdresEmailId);
+                        if (emailResult.Data != null)
+                        {
+                            _orderDataModel.EmailSerwisanta = emailResult.Data.Email;
+                        }
+                    }
+                
+                    if (user.NumerTelefonuId.HasValue && user.NumerTelefonuId.Value > 0)
+                    {
+                        var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(user.NumerTelefonuId.Value);
+                        if (phoneResult.Data != null)
+                        {
+                            _orderDataModel.NumerTelefonuSerwisanta = phoneResult.Data.Numer;
+                        }
+                    }
+                
+                    StateHasChanged(); 
+                }
+            }
         }
-
-        if (_order.Serwisant.Uzytkownik.AdresEmailId > 0)
+        catch (Exception ex)
         {
-            var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_order.Serwisant.Uzytkownik.AdresEmailId);
-            _currentEmailSerwisantt = emailResult.Data;
+            Snackbar.Add($"Błąd podczas pobierania danych serwisanta: {ex.Message}", Severity.Error);
         }
-
-        if (_order.Serwisant.Uzytkownik.NumerTelefonuId.HasValue && _order.Serwisant.Uzytkownik.NumerTelefonuId.Value > 0)
-        {
-            var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(_order.Serwisant.Uzytkownik.NumerTelefonuId.Value);
-            _currentPhoneSerwisant = phoneResult.Data;
-        }
-
-        if (_order.Adres != null)
-        {
-            _currentAddress = _order.Adres;
-        }
-
-        if (_order.Serwis != null)
-        {
-            _serwis = _order.Serwis;
-        }
-        if (_order.Serwis != null)
-        {
-            _klient = _order.Klient;
-        }
-
-
-
-        _orderDataModel.ZamowienieId = _order.ZamowienieId;
-        _orderDataModel.SerwisantId = _order.SerwisantId;
-        _orderDataModel.Opis = _order.Opis;
-
-
-        _orderDataModel.AdresEmailId = _order.AdresEmailId;
-        _orderDataModel.NumerTelefonuId = _order.NumerTelefonuId;
-        _orderDataModel.AdresId = _order.Adres?.AdresId;
-        _orderDataModel.SerwisId = _order.Serwis.SerwisId;
-
-        _orderDataModel.DataDodania = _order.DataDodania;
-        _orderDataModel.DataAktualizacji = _order.DataAktualizacji;
-        _orderDataModel.PlanowanaDataRealizacjiOd = _order.PlanowanaDataRealizacjiOd;
-        _orderDataModel.PlanowanaDataRealizacjiDo = _order.PlanowanaDataRealizacjiDo;
-        _orderDataModel.ZrealizowanaDataRealizacjiOd = _order.ZrealizowanaDataRealizacjiOd;
-        _orderDataModel.ZrealizowanaDataRealizacjiDo = _order.ZrealizowanaDataRealizacjiDo;
-
-
-        _orderDataModel.EmailKlienta = _currentEmailKlient?.Email;
-        _orderDataModel.NumerTelefonuKlienta = _currentPhoneKlient?.Numer;
-
-        _orderDataModel.EmailSerwisanta = _currentEmailSerwisantt?.Email;
-        _orderDataModel.NumerTelefonuSerwisanta = _currentPhoneSerwisant?.Numer;
-
-
-        _orderDataModel.Ulica = _order.Adres?.Ulica;
-        _orderDataModel.NumerDomu = _order.Adres?.NumerDomu ?? 0;
-        _orderDataModel.NumerMieszkania = _order.Adres?.NumerMieszkania ?? 0;
-        _orderDataModel.KodPocztowy = _order.Adres?.KodPocztowy;
-        _orderDataModel.Miasto = _order.Adres?.Miasto;
-        _orderDataModel.Kraj = _order.Adres?.Kraj;
-
-        _orderDataModel.ImieKlienta = _order.Klient.Uzytkownik.Imie;
-        _orderDataModel.NazwiskoKlienta = _order.Klient.Uzytkownik.Nazwisko;
-
-
-        var serviceResult = await ApiService.TypySerwisuRepo.TypySerwisuGet();
-        if (serviceResult.Data != null)
-        {
-            _serwisy = serviceResult.Data;
-        }
-
-        var serwisantResult = await ApiService.SerwisanciRepo.SerwisanciGet();
-        if (serwisantResult.Data != null)
-        {
-            _serwisanci = serwisantResult.Data;
-        }
-
-        var priorytetsResult = await ApiService.PriotytetyRepo.PriotytetyGet();
-        if (priorytetsResult.Data != null)
-        {
-            _priorytety = priorytetsResult.Data;
-        }
-
-        var paymentsResult = await ApiService.MetodyPlatnosciRepo.MetodyPlatnosciGet();
-        if (paymentsResult.Data != null)
-        {
-            _platnosci = paymentsResult.Data;
-        }
-
-        var statusResult = await ApiService.StatusyRepo.StatusyGet();
-        if (statusResult.Data != null)
-        {
-            _statusy = statusResult.Data;
-        }
-
-        _komentarze = _order.Komentarze;
-        _orderDataModel.Status = _order.Status;
-
-
     }
 
     private async Task LoadOrderLogs()
@@ -846,54 +919,214 @@
     }
 
 
-    private async Task SaveUserData()
+    private async Task SaveOrderData()
     {
-        // try
-        // {
-        //     var zamowienieDto = new ZamowienieDto
-        //         {
-        //             SerwisantId = order.SerwisantId,
-        //             KlientId = order.KlientId,
-        //             SerwisId = order.Serwis.SerwisId,
-        //             StatusId = order.StatusId,
-        //             PriorytetId = order.PriorytetId,
-        //             MetodaPlatnosciId = order.MetodaPlatnosciId,
-        //             KomentarzeIds = order.Komentarze?.Select(k => k.KomentarzId).ToList(),
-        //             NumerTelefonuId = order.NumerTelefonuId,
-        //             AdresEmailId = order.AdresEmailId,
-        //             AdresId = order.AdresId,
-        //             PlanowanaDataRealizacjiOd = order.PlanowanaDataRealizacjiOd,
-        //             PlanowanaDataRealizacjiDo = order.PlanowanaDataRealizacjiDo,
-        //             ZrealizowanaDataRealizacjiOd = order.ZrealizowanaDataRealizacjiOd,
-        //             ZrealizowanaDataRealizacjiDo = order.ZrealizowanaDataRealizacjiDo
-        //         };
+        try
+        {
+            int adresEmailId = _orderDataModel.AdresEmailId ?? 0;
 
-        //     var result = await ApiService.ZamowieniaRepo.ZamowieniePut(OrderId, zamowienieDto);
+            if (!string.IsNullOrWhiteSpace(_orderDataModel.EmailKlienta))
+            {
+                var emailDto = new AdresEmailDto { Email = _orderDataModel.EmailKlienta };
 
-        //     if (result.Data != null)
-        //     {
-        //         var logDto = new LogDto
-        //             {
-        //                 ZamowienieId = OrderId,
-        //                 StatusId = order.StatusId,
-        //                 Komentarz = "Aktualizacja danych zlecenia"
-        //             };
+                var emailResult = adresEmailId > 0
+                    ? await ApiService.AdresyEmailRepo.AdresEmailPut(adresEmailId, emailDto)
+                    : await ApiService.AdresyEmailRepo.AdresEmailPost(emailDto);
 
-        //         await ApiService.LogiRepo.LogPost(logDto);
+                if (emailResult.Error != null)
+                {
+                    ShowError("Błąd podczas zapisywania adresu email: " + emailResult.Error);
+                    return;
+                }
 
-        //         Snackbar.Add("Zapisano zmiany", Severity.Success);
-        //         order = result.Data; Update the order with latest data
-        //         await GenerateOrderHistory(); Refresh history
-        //     }
-        //     else
-        //     {
-        //         Snackbar.Add($"Błąd: {result.Error}", Severity.Error);
-        //     }
-        // }
-        // catch (Exception ex)
-        // {
-        //     Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
-        // }
+                adresEmailId = emailResult.Data?.AdresEmailId ?? 0;
+            }
+
+            int? numerTelefonuId = _orderDataModel.NumerTelefonuId;
+
+            if (!string.IsNullOrWhiteSpace(_orderDataModel.NumerTelefonuKlienta))
+            {
+                var phoneDto = new NumerTelefonuDto { Numer = _orderDataModel.NumerTelefonuKlienta };
+
+                var phoneResult = numerTelefonuId.HasValue && numerTelefonuId.Value > 0
+                    ? await ApiService.NumeryTelefonuRepo.NumerTelefonuPut(numerTelefonuId.Value, phoneDto)
+                    : await ApiService.NumeryTelefonuRepo.NumerTelefonuPost(phoneDto);
+
+                if (phoneResult.Error != null)
+                {
+                    ShowError("Błąd podczas zapisywania numeru telefonu: " + phoneResult.Error);
+                    return;
+                }
+
+                numerTelefonuId = phoneResult.Data?.NumerTelefonuId;
+            }
+
+            List<int> addressIds = new();
+
+            if (!string.IsNullOrWhiteSpace(_orderDataModel.Ulica) && !string.IsNullOrWhiteSpace(_orderDataModel.Miasto))
+            {
+                var adresDto = new AdresDto
+                {
+                    Ulica = _orderDataModel.Ulica,
+                    NumerDomu = _orderDataModel.NumerDomu,
+                    NumerMieszkania = _orderDataModel.NumerMieszkania,
+                    KodPocztowy = _orderDataModel.KodPocztowy,
+                    Miasto = _orderDataModel.Miasto,
+                    Kraj = _orderDataModel.Kraj
+                };
+
+                var adresResult = await ApiService.AdresyRepo.AdresPost(adresDto);
+
+                if (adresResult.Error != null || adresResult.Data == null)
+                {
+                    ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
+                    return;
+                }
+                addressIds.Add(adresResult.Data.AdresId);
+            }
+            
+            if (!string.IsNullOrWhiteSpace(_orderDataModel.ImieKlienta) && !string.IsNullOrWhiteSpace(_orderDataModel.NazwiskoKlienta))
+            {
+                var userDto = new UzytkownikDto
+                {
+                    RolaUzytkownikaId = _uzytkownikKlient.RolaUzytkownika.RolaUzytkownikaId,
+                    Imie = _orderDataModel.ImieKlienta,
+                    Nazwisko = _orderDataModel.NazwiskoKlienta,
+                    AdresEmailId = adresEmailId,
+                    NumerTelefonuId = numerTelefonuId,
+                    CzyAktywny = _uzytkownikKlient.CzyAktywny,
+                    AdresId = addressIds.First(),
+                };
+
+                var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_uzytkownikKlient.UzytkownikId, userDto);
+
+                if (userResult.Error != null || userResult.Data == null)
+                {
+                    // ShowError("Błąd podczas zapisywania uzytkownika: " + userResult.Error);
+                    Snackbar.Add("Błąd podczas zapisywania danych klienta: " + userResult.Error);
+                    return;
+                }
+            }
+          
+
+            if (_orderDataModel.SerwisantId.HasValue)
+            {
+                var selectedSerwisant = _serwisanci.FirstOrDefault(s => s.SerwisantId == _orderDataModel.SerwisantId.Value);
+                
+                if (selectedSerwisant != null)
+                {
+                    var freshUserResult = await ApiService.UzytkownicyRepo.UzytkownikGet(selectedSerwisant.Uzytkownik.UzytkownikId);
+                    var freshUserData = freshUserResult.Data;
+                    
+                    if (freshUserData != null)
+                    {
+                        int adresEmailIdSerwisanta = freshUserData.AdresEmailId;
+                        
+                        if (!string.IsNullOrWhiteSpace(_orderDataModel.EmailSerwisanta))
+                        {
+                            var emailDto = new AdresEmailDto { Email = _orderDataModel.EmailSerwisanta };
+                            
+                            var emailResult = adresEmailIdSerwisanta > 0
+                                ? await ApiService.AdresyEmailRepo.AdresEmailPut(adresEmailIdSerwisanta, emailDto)
+                                : await ApiService.AdresyEmailRepo.AdresEmailPost(emailDto);
+                            
+                            if (emailResult.Error != null)
+                            {
+                                ShowError("Błąd podczas zapisywania adresu email serwisanta: " + emailResult.Error);
+                                return;
+                            }
+                            
+                            adresEmailIdSerwisanta = emailResult.Data?.AdresEmailId ?? 0;
+                        }
+                        
+                        int? numerTelefonuIdSerwisanta = freshUserData.NumerTelefonuId;
+                        
+                        if (!string.IsNullOrWhiteSpace(_orderDataModel.NumerTelefonuSerwisanta))
+                        {
+                            var phoneDto = new NumerTelefonuDto { Numer = _orderDataModel.NumerTelefonuSerwisanta };
+                            
+                            var phoneResult = numerTelefonuIdSerwisanta.HasValue && numerTelefonuIdSerwisanta.Value > 0
+                                ? await ApiService.NumeryTelefonuRepo.NumerTelefonuPut(numerTelefonuIdSerwisanta.Value, phoneDto)
+                                : await ApiService.NumeryTelefonuRepo.NumerTelefonuPost(phoneDto);
+                            
+                            if (phoneResult.Error != null)
+                            {
+                                ShowError("Błąd podczas zapisywania numeru telefonu serwisanta: " + phoneResult.Error);
+                                return;
+                            }
+                            
+                            numerTelefonuIdSerwisanta = phoneResult.Data?.NumerTelefonuId;
+                        }
+                        
+                        var userDto = new UzytkownikDto
+                        {
+                            RolaUzytkownikaId = freshUserData.RolaUzytkownika.RolaUzytkownikaId,
+                            Imie = freshUserData.Imie,
+                            Nazwisko = freshUserData.Nazwisko,
+                            AdresEmailId = adresEmailIdSerwisanta,
+                            NumerTelefonuId = numerTelefonuIdSerwisanta,
+                            CzyAktywny = freshUserData.CzyAktywny,
+                            AdresId = freshUserData.Adres?.AdresId ?? 0
+                        };
+                        
+                        var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(freshUserData.UzytkownikId, userDto);
+                        
+                        if (userResult.Error != null || userResult.Data == null)
+                        {
+                            Snackbar.Add("Błąd podczas zapisywania danych serwisanta: " + userResult.Error, Severity.Error);
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            
+            var zamowienieDto = new ZamowienieDto
+                {
+                    SerwisantId = _orderDataModel.SerwisantId,
+                    KlientId = _orderDataModel.KlientId,
+                    SerwisId = _orderDataModel.SerwisId,
+                    StatusId = _orderDataModel.StatusId,
+                    PriorytetId = _orderDataModel.PriorytetId,
+                    MetodaPlatnosciId = _orderDataModel.MetodaPlatnosciId,
+                    KomentarzeIds = _orderDataModel.KomentarzeIds,
+                    NumerTelefonuId = numerTelefonuId,
+                    AdresEmailId = adresEmailId,
+                    Koszt100 = _orderDataModel.Koszt100,
+                    Opis = _orderDataModel.Opis,
+                    AdresId = addressIds.First(),
+                    PlanowanaDataRealizacjiOd = _orderDataModel.PlanowanaDataRealizacjiOd,
+                    PlanowanaDataRealizacjiDo = _orderDataModel.PlanowanaDataRealizacjiDo,
+                    ZrealizowanaDataRealizacjiOd = _orderDataModel.ZrealizowanaDataRealizacjiOd,
+                    ZrealizowanaDataRealizacjiDo = _orderDataModel.ZrealizowanaDataRealizacjiDo
+                };
+
+            var result = await ApiService.ZamowieniaRepo.ZamowieniePut(OrderId, zamowienieDto);
+
+            if (result.Data != null)
+            {
+                var logDto = new LogDto
+                    {
+                        ZamowienieId = OrderId,
+                        StatusId = _orderDataModel.StatusId,
+                        Komentarz = "Aktualizacja danych zlecenia"
+                    };
+
+                await ApiService.LogiRepo.LogPost(logDto);
+
+                Snackbar.Add("Zapisano zmiany", Severity.Success);
+            //     _orderDataModel = result.Data; Update the _orderDataModel with latest data
+            //     await GenerateOrderHistory(); Refresh history
+            }
+            else
+            {
+                Snackbar.Add($"Błąd: {result.Error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
     }
 
     private void ShowSuccess(string message)
