@@ -1,34 +1,66 @@
 ﻿@page "/index"
 @rendermode InteractiveServer
 @using ApiService
+@using ApiService.Models
 @using serwis_web.Components
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-@if (isClient)
+@if (GetUserRole() == "Klient")
 {
     <PageTitle>Strona Główna</PageTitle>
-    <HomeClient/>
-    <OrdersList/>
+    <div class="home-container">
+        <h2>Strona Główna</h2>
+        <HomeClient/>
+        <HomeOrdersList/>
+    </div>
+
 }
-else if (isServiceman)
+else if (GetUserRole() == "Serwisant")
 {
     <PageTitle>Panel kontrolny</PageTitle>
-    <HomeServiceman/>
-    <OrdersList/>
+    <div class="home-container">
+        <h2>Panel kontrolny</h2>
+        <HomeServiceman/>
+        <HomeOrdersList/>
+    </div>
+
 }
-else if (isAdmin)
+else if (GetUserRole() == "Administrator")
 {
     <PageTitle>Panel kontrolny</PageTitle>
-    <HomeAdmin/>
-    <OrdersList/>
+    <div class="home-container">
+        <h2>Panel kontrolny</h2>
+        <HomeAdmin/>
+        <HomeOrdersList/>
+    </div>
 }
 
 
 @code {
-    public bool isAdmin = true;
-    public bool isServiceman = true;
-    public bool isClient = false;
+
+    private Uzytkownik? _uzytkownik = null;
     
-};
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _uzytkownik = await ApiService.GetUzytkownik();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private string GetUserRole()
+    {
+        if (_uzytkownik?.RolaUzytkownika == null)
+            return "Brak roli";
+
+        return _uzytkownik.RolaUzytkownika.Nazwa;
+    }
+    
+}

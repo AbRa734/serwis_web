@@ -7,9 +7,39 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-
 <style>
     
+    .orders {
+        display: flex;
+        flex-direction: column;
+        padding: 20px 25px 5px 25px;
+        background-color: #FFFFFF;
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        width: 100%;
+    }
+
+    .orders-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .orders-header h3 {
+        font-size: 26px;
+        font-weight: 600;
+        padding: 0;
+        margin: 0;
+    }
+
+    .orders-header a {
+        padding: 8px 25px;
+        border: 2px solid #D5D5D5;
+        background-color: #FCFDFD;
+        color: #D5D5D5;
+        border-radius: 5px;
+    }
     
     .order-container {
         margin: 0;
@@ -134,9 +164,19 @@
         font-weight: 600;
         font-size: 16px;
     }
+    
+    @@media (max-width: 1280px) {
+        .orders {
+            padding: 20px 20px 0 20px;
+        }
+    }
+    @@media (max-width: 1024px) {
+        .orders {
+            display: none;
+        }
+    }
 
 </style>
-
 
 <div class="orders">
     <div class="orders-header">
@@ -221,10 +261,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadServicesAsync();
+        await LoadOrdersAsync();
     }
 
-    private async Task LoadServicesAsync()
+    private async Task LoadOrdersAsync()
     {
         _loading = true;
         try
@@ -233,11 +273,12 @@
             if (result.Data != null)
             {
                 _zamowienia = result.Data;
+                _latestZamowienia = _zamowienia;
 
-                _latestZamowienia = _zamowienia
-                    .OrderByDescending(s => s.DataDodania)
-                    .Take(5)
-                    .ToList();
+                if (_zamowienia.Count == 0)
+                {
+                    Snackbar.Add("Nie znaleziono żadnych zleceń", Severity.Info);
+                }
             }
             else
             {
@@ -251,9 +292,10 @@
         finally
         {
             _loading = false;
+            StateHasChanged();
         }
     }
-
+    
     private string GetStatusStyle(string status)
     {
         return status switch
@@ -266,6 +308,4 @@
             _ => "status-default"
         };
     }
-    
-
 }

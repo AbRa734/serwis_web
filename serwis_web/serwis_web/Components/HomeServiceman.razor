@@ -5,181 +5,46 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-
-<style>
-    .order-container {
-        margin: 0;
-        padding: 0;
-        min-width: 100%;
-        border: none;
-    }
-
-    .order-grid {
-        border: none;
-        box-shadow: none;
-    }
-
-    .order-category {
-        font-size: 16px;
-        font-weight: 500;
-        padding: 14px 10px;
-        margin: 0;
-        text-align: center;
-        background-color: #f1f4f9 !important;
-        border: none;
-    }
-
-    .order-category-left {
-        font-size: 16px;
-        font-weight: 500;
-        padding: 14px 10px;
-        margin: 0;
-        text-align: center;
-        background-color: #f1f4f9 !important;
-        border: none;
-        border-top-left-radius: 15px !important;
-        border-bottom-left-radius: 15px !important;
-    }
-
-    .order-category-right {
-        font-size: 16px;
-        font-weight: 500;
-        padding: 14px 10px;
-        margin: 0;
-        text-align: center;
-        background-color: #f1f4f9 !important;
-        border: none;
-        border-top-right-radius: 15px !important;
-        border-bottom-right-radius: 15px !important;
-    }
-
-    .order-category-single-item {
-        font-size: 16px;
-        font-weight: 500;
-        text-decoration: none;
-    }
-
-    .order-category-single-item-id {
-        font-size: 16px;
-        font-weight: 500;
-        text-decoration: none !important;
-        color: #000000 !important;
-    }
-
-    .status-finished {
-        background-color: #d0f0e4;
-        color: #0d8a5f;
-        border: none;
-        min-width: 75% !important;
-        border-radius: 5px !important;
-        padding: 18px 12px !important;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .status-realization {
-        background-color: #e6e1ff;
-        color: #6952e9;
-        border: none;
-        min-width: 75% !important;
-        border-radius: 5px !important;
-        padding: 18px 12px !important;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .status-canceled {
-        background-color: #ffd9d9;
-        color: #e75757;
-        border: none;
-        min-width: 75% !important;
-        border-radius: 5px !important;
-        padding: 18px 12px !important;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .status-waiting {
-        background-color: #ffe9d1;
-        color: #e99c52;
-        border: none;
-        min-width: 75% !important;
-        border-radius: 5px !important;
-        padding: 18px 12px !important;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .status-new {
-        background-color: #e6e1ff;
-        color: #6952e9;
-        border: none;
-        min-width: 75% !important;
-        border-radius: 5px !important;
-        padding: 18px 12px !important;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .status-default {
-        background-color: inherit;
-        border: none;
-        min-width: 75% !important;
-        border-radius: 5px !important;
-        padding: 18px 12px !important;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-</style>
-
-
-
-<div class="home-container">
-    <h2>Panel kontrolny</h2>
-
-    <div class="top-section">
-        <a class="tab-container" href="/avability">
-            <div class="tab-wrapper">
-                <h3>Dostępność</h3>
-                <p>Określ swoją dostępność w kalendarzu</p>
-                <div class="order-box">
-                    <i class="fa-regular fa-calendar" style="color: #8280FF"></i>
-                </div>
+<div class="top-section">
+    <a class="tab-container" href="/avability">
+        <div class="tab-wrapper">
+            <h3>Dostępność</h3>
+            <p>Określ swoją dostępność w kalendarzu</p>
+            <div class="order-box">
+                <i class="fa-regular fa-calendar" style="color: #8280FF"></i>
             </div>
-        </a>
-
-        <a class="tab-container" href="/statistics">
-            <div class="tab-wrapper">
-                <h3>Statystyki</h3>
-                <p>Śledź ilość i status wykonanych zleceń</p>
-                <div class="statistics-box">
-                    <i class="fa-solid fa-chart-simple" style="color: #4AD991"></i>
-                </div>
-            </div>
-        </a>
-
-        <a class="tab-container" href="/report">
-            <div class="tab-wrapper">
-                <h3>Raport</h3>
-                <p>Podsumowanie wykonanych usług</p>
-                <div class="report-box">
-                    <i class="fa-solid fa-file" style="color: #FF9066"></i>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <div class="add-comment" @onclick="OpenCommentDialog">
-        <div class="comment-top">
-            <div class="comment-box">
-                <i class="fa-regular fa-keyboard" style="color: #BA29FF; font-size: 32px;"></i>
-            </div>
-            <h3>Dodaj uwagi do wykonywanego zlecenia</h3>
         </div>
-        <p>Opisz przebieg zlecenia, czy podczas jego wykonywania wystąpiły jakieś problemy? Czy klient zgłasza jakieś uwagi?</p>
+    </a>
+
+    <a class="tab-container" href="/statistics">
+        <div class="tab-wrapper">
+            <h3>Statystyki</h3>
+            <p>Śledź ilość i status wykonanych zleceń</p>
+            <div class="statistics-box">
+                <i class="fa-solid fa-chart-simple" style="color: #4AD991"></i>
+            </div>
+        </div>
+    </a>
+
+    <a class="tab-container" href="/report">
+        <div class="tab-wrapper">
+            <h3>Raport</h3>
+            <p>Podsumowanie wykonanych usług</p>
+            <div class="report-box">
+                <i class="fa-solid fa-file" style="color: #FF9066"></i>
+            </div>
+        </div>
+    </a>
+</div>
+
+<div class="add-comment" @onclick="OpenCommentDialog">
+    <div class="comment-top">
+        <div class="comment-box">
+            <i class="fa-regular fa-keyboard" style="color: #BA29FF; font-size: 32px;"></i>
+        </div>
+        <h3>Dodaj uwagi do wykonywanego zlecenia</h3>
     </div>
-    
+    <p>Opisz przebieg zlecenia, czy podczas jego wykonywania wystąpiły jakieś problemy? Czy klient zgłasza jakieś uwagi?</p>
 </div>
 
 @code {
@@ -254,43 +119,4 @@
             }
         }
     }
-
-    private async Task OpenRatingDialog()
-    {
-        var parameters = new DialogParameters
-        {
-            ["Orders"] = _zamowienia,
-            ["SelectedOrderId"] = 0,
-            ["SelectedRatingValue"] = 0,
-            ["RatingComment"] = string.Empty
-        };
-
-        var options = new DialogOptions
-        {
-            CloseOnEscapeKey = true,
-            MaxWidth = MaxWidth.Medium,
-            FullWidth = true,
-            CloseButton = true,
-            Position = DialogPosition.Center
-        };
-
-        var dialog = await DialogService.ShowAsync<RatingDialog>("", parameters, options);
-        var result = await dialog.Result;
-
-        if (!result.Canceled)
-        {
-            var ratingResult = (RatingDialog.RatingDialogResult)result.Data;
-            try
-            {
-                //TODO: dodać logikę zapisu oceny
-                // await ApiService.AddRating(ratingResult.OrderId, ratingResult.Rating, ratingResult.Comment);
-                Snackbar.Add("Ocena została dodana pomyślnie", Severity.Success);
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Błąd podczas dodawania oceny: {ex.Message}", Severity.Error);
-            }
-        }
-    }
-
 }
