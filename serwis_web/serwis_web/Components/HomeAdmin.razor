@@ -1,0 +1,95 @@
+﻿@rendermode InteractiveServer
+@using ApiService
+@using ApiService.Models
+@inject ApiService ApiService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<div class="top-section">
+    <a class="tab-container">
+        <div class="tab-wrapper">
+            <div class="title-icon">
+                <p>Liczba użytkowników</p>
+                <div class="users-box">
+                    <i class="fa-solid fa-user-group" style="color: #8280FF"></i>
+                </div>
+            </div>
+            <h3>5241</h3>
+        </div>
+    </a>
+
+    <a class="tab-container">
+        <div class="tab-wrapper">
+            <div class="title-icon">
+                <p>Liczba zamówień</p>
+                <div class="orders-box">
+                    <i class="fa-solid fa-cube" style="color: #fec53d"></i>
+                </div>
+            </div>
+            <h3>10231</h3>
+        </div>
+    </a>
+
+    <a class="tab-container">
+        <div class="tab-wrapper">
+            <div class="title-icon">
+                <p>Całkowita sprzedaż</p>
+                <div class="statistics-box">
+                    <i class="fa-solid fa-chart-line" style="color: #4AD991"></i>
+                </div>
+            </div>
+            <h3>25000zł</h3>
+        </div>
+    </a>
+
+    <a class="tab-container">
+        <div class="tab-wrapper">
+            <div class="title-icon">
+                <p>Oczekujące</p>
+                <div class="waiting-box">
+                    <i class="fa-solid fa-clock-rotate-left" style="color: #FF9066"></i>
+                </div>
+            </div>
+            <h3>512</h3>
+        </div>
+    </a>
+</div>
+
+@* wykresik do zrobienia *@
+
+
+@code {
+    private bool _loading = true;
+    private List<Zamowienie> _zamowienia = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadServicesAsync();
+    }
+
+    private async Task LoadServicesAsync()
+    {
+        _loading = true;
+        try
+        {
+            var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+            if (result.Data != null)
+            {
+                _zamowienia = result.Data;
+                
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania zleceń: {result.Error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

@@ -1,0 +1,162 @@
+﻿.top-section {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+}
+.tab-container {
+    width: 32%
+}
+
+.tab-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 15px 25px;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.tab-wrapper:hover {
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1), 0 3px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.tab-wrapper h3 {
+    font-size: 24px;
+    font-weight: 600;
+    padding: 0;
+    margin: 0;
+}
+
+.tab-wrapper p {
+    font-size: 17px;
+    font-weight: 500;
+    color: #979797;
+    padding-bottom: 5px;
+    margin: 0;
+    width: 100%;
+}
+
+.order-box, .statistics-box, .report-box {
+    padding: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.order-box {
+    background-color: #e4e4ff;
+}
+
+.statistics-box {
+    background-color: #d9f7e7;
+}
+
+.report-box {
+    background-color: #ffe7de;
+}
+
+i {
+    font-size: 40px;
+    margin: 0;
+    padding: 0;
+}
+
+.add-comment, .add-rate {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 25px 10px 25px;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.add-comment:hover, .add-rate:hover {
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1), 0 3px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.comment-box {
+    padding: 20px;
+    background-color: #f0d2ff;
+    width: 55px;
+    height: 55px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    margin: 0;
+}
+
+.comment-top, .rate-top {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin: 0;
+}
+
+.comment-top h3, .rate-top h3 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.add-comment p, .add-rate p {
+    font-size: 17px;
+    font-weight: 500;
+    color: #979797;
+    margin: 0;
+}
+
+.rate-box {
+    padding: 20px;
+    background-color: #fef2d6;
+    width: 55px;
+    height: 55px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    margin: 0;
+}
+
+@media (max-width: 1024px) {
+    .tab-container {
+        width: 100%;
+    }
+
+    .tab-container:nth-child(1) {
+        margin-bottom: 30px;
+    }
+
+    .tab-container:nth-child(2) {
+        margin-bottom: 30px;
+    }
+
+    .tab-wrapper {
+        padding: 12px 25px;
+    }
+
+    .order-box, .statistics-box, .report-box {
+        padding: 15px;
+        width: 55px;
+        height: 55px;
+    }
+
+    i {
+        font-size: 36px;
+    }
+}

@@ -269,7 +269,7 @@
 					</div>
 					<div class="single-col">
 						<h4>Adres Email</h4>
-						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input" />
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input" readonly/>
 						<ValidationMessage For="@(() => _userDataModel.Email)" />
 					</div>
 				</div>
@@ -427,24 +427,7 @@
 	{
 		try
 		{
-			int adresEmailId = _currentUser?.AdresEmailId ?? 0;
-
-			if (!string.IsNullOrWhiteSpace(_userDataModel.Email))
-			{
-				var emailDto = new AdresEmailDto { Email = _userDataModel.Email };
-
-				var emailResult = adresEmailId > 0
-					? await ApiService.AdresyEmailRepo.AdresEmailPut(adresEmailId, emailDto)
-					: await ApiService.AdresyEmailRepo.AdresEmailPost(emailDto);
-
-				if (emailResult.Error != null)
-				{
-					ShowError("Błąd podczas zapisywania adresu email: " + emailResult.Error);
-					return;
-				}
-
-				adresEmailId = emailResult.Data?.AdresEmailId ?? 0;
-			}
+			int adresEmailId = _currentUser.AdresEmailId;
 
 			int? numerTelefonuId = _currentUser?.NumerTelefonuId;
 
@@ -465,8 +448,7 @@
 				numerTelefonuId = phoneResult.Data?.NumerTelefonuId;
 			}
 
-			List<int> addressIds = new();
-
+			int adresId = _currentAddress?.AdresId ?? 0;
 			if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
 			{
 				var adresDto = new AdresDto
@@ -479,14 +461,17 @@
 					Kraj = _userDataModel.Kraj
 				};
 
-				var adresResult = await ApiService.AdresyRepo.AdresPost(adresDto);
+				var adresResult = adresId > 0
+					? await ApiService.AdresyRepo.AdresPut(adresId, adresDto)
+					: await ApiService.AdresyRepo.AdresPost(adresDto);
 
-				if (adresResult.Error != null || adresResult.Data == null)
+				if (adresResult.Error != null)
 				{
 					ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
 					return;
 				}
-				addressIds.Add(adresResult.Data.AdresId);
+
+				adresId = adresResult.Data?.AdresId ?? 0;
 			}
 
 			var uzytkownikDto = new UzytkownikDto
@@ -495,7 +480,7 @@
 				Nazwisko = _userDataModel.Nazwisko,
 				AdresEmailId = adresEmailId,
 				NumerTelefonuId = numerTelefonuId,
-				AdresId = addressIds.First(),
+				AdresId = adresId,
 				RolaUzytkownikaId = _userDataModel.RoleId,
 				CzyAktywny = _userDataModel.CzyAktywny,
 			};
@@ -507,6 +492,26 @@
 				Snackbar.Add("Błąd podczas zapisywania danych użytkownika: " + userResult.Error);
 				return;
 			}
+			
+			var userRole = _roles.FirstOrDefault(role => role.RolaUzytkownikaId == _userDataModel.RoleId)?.Nazwa;
+			
+			// var isSevicemen = await ApiService.SerwisanciRepo.SerwisantGet()
+
+			if (userRole == "Serwisant")
+			{
+				var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPost(new SerwisantDto
+				{
+					UzytkownikId = UserId,
+					SerwisyIds = new List<int>()
+				});
+
+				if (servicemenResult.Error != null)
+				{
+					Snackbar.Add("Błąd podczas tworzenia serwisanta: " + userResult.Error);
+					return;
+				}
+			}
+			
 
 			Snackbar.Add("Dane zostały zaktualizowane pomyślnie", Severity.Success);
 

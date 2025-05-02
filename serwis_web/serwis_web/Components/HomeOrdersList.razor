@@ -1,0 +1,349 @@
+﻿@rendermode InteractiveServer
+@using ApiService
+@using ApiService.Models
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
+@inject ApiService ApiService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<style>
+    
+    .orders {
+        display: flex;
+        flex-direction: column;
+        padding: 20px 25px 5px 25px;
+        background-color: #FFFFFF;
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        width: 100%;
+    }
+
+    .orders-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .orders-header h3 {
+        font-size: 26px;
+        font-weight: 600;
+        padding: 0;
+        margin: 0;
+    }
+
+    .orders-header a {
+        padding: 8px 25px;
+        border: 2px solid #D5D5D5;
+        background-color: #FCFDFD;
+        color: #D5D5D5;
+        border-radius: 5px;
+    }
+    
+    .order-container {
+        margin: 0;
+        padding: 0;
+        min-width: 100%;
+        border: none;
+    }
+
+    .order-grid {
+        border: none;
+        box-shadow: none;
+    }
+
+    .order-category {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 14px 10px;
+        margin: 0;
+        text-align: center;
+        background-color: #f1f4f9 !important;
+        border: none;
+    }
+
+    .order-category-left {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 14px 10px;
+        margin: 0;
+        text-align: center;
+        background-color: #f1f4f9 !important;
+        border: none;
+        border-top-left-radius: 15px !important;
+        border-bottom-left-radius: 15px !important;
+    }
+
+    .order-category-right {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 14px 10px;
+        margin: 0;
+        text-align: center;
+        background-color: #f1f4f9 !important;
+        border: none;
+        border-top-right-radius: 15px !important;
+        border-bottom-right-radius: 15px !important;
+    }
+
+    .order-category-single-item {
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    .order-category-single-item-id {
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none !important;
+        color: #000000 !important;
+    }
+
+    .status-finished {
+        background-color: #d0f0e4;
+        color: #0d8a5f;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-realization {
+        background-color: #e0d4fc;
+        color: #6226ef;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-canceled {
+        background-color: #ffd9d9;
+        color: #e75757;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-waiting {
+        background-color: #ffe9d1;
+        color: #e99c52;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-new {
+        background-color: #f1d4ff;
+        color: #ba29ff;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .status-default {
+        background-color: inherit;
+        border: none;
+        min-width: 75% !important;
+        border-radius: 5px !important;
+        padding: 18px 12px !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    @@media (max-width: 1280px) {
+        .orders {
+            padding: 20px 20px 0 20px;
+        }
+    }
+    @@media (max-width: 1024px) {
+        .orders {
+            display: none;
+        }
+    }
+
+</style>
+
+<div class="orders">
+    <div class="orders-header">
+        <h3>Ostatnie zlecenia</h3>
+        <a class="see-more" href="/orders">Zobacz więcej</a>
+    </div>
+
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
+
+        <MudDataGrid T="Zamowienie" Items="@_latestZamowienia" Hover="false" Loading="@_loading"
+                     LoadingProgressColor="Color.Info" Bordered="false" Dense="false"
+                     FixedHeader="true" RowsPerPage="3" Pagination="false" Height="auto"
+                     Class="order-grid">
+
+            <Columns>
+
+                <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.ZamowienieId" Title="Numer Zlecenia"
+                                HeaderClass="order-category-left">
+                    <CellTemplate>
+                        <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                            <MudLink Href="@($"/orders/{context.Item.ZamowienieId}")"
+                                     Class="order-category-single-item-id">@context.Item.ZamowienieId.ToString("D5")</MudLink>
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.DataDodania"
+                                Title="Data utworzenia" HeaderClass="order-category">
+                    <CellTemplate>
+                        <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                            <MudText Class="order-category-single-item">@(context.Item.DataDodania.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+
+
+                <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
+                    <CellTemplate>
+                        <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                            <MudText Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn T="Zamowienie" TProperty="int" Property="x => x.Koszt100" Title="Koszt" HeaderClass="order-category">
+                    <CellTemplate>
+                        <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                            <MudLink Class="order-category-single-item-id">@context.Item.Koszt100 zł</MudLink>
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+
+
+                <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Status.Nazwa" Title="Status"
+                                HeaderClass="order-category-right">
+                    <CellTemplate>
+                        <MudChip Size="Size.Medium" Class="@GetStatusStyle(context.Item.Status.Nazwa)">
+                            <MudText Class="order-category-single-item">@context.Item.Status.Nazwa</MudText>
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+
+            </Columns>
+
+            <PagerContent>
+                <MudDataGridPager T="Zamowienie" RowsPerPageString="Wierszy na stronę"
+                                  InfoFormat="{first_item}-{last_item} z {all_items}" Style="display: none;"/>
+            </PagerContent>
+            <NoRecordsContent>
+                <MudText>Nie znaleziono zleceń</MudText>
+            </NoRecordsContent>
+        </MudDataGrid>
+    </MudContainer>
+
+</div>
+
+
+@code {
+    private bool _loading = true;
+    private List<Zamowienie> _zamowienia = new();
+    private List<Zamowienie> _latestZamowienia = new();
+    private Uzytkownik? _uzytkownik;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrdersAsync();
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        _loading = true;
+        try
+        {
+            await LoadUserAsync();
+            
+            var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+            if (result.Data != null)
+            {
+                _zamowienia = result.Data;
+
+                if (GetUserRole() == "Klient")
+                {
+                    _zamowienia = _zamowienia
+                        .Where(z => z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
+                        .ToList();
+                }
+                else if (GetUserRole() == "Serwisant")
+                {
+                    _zamowienia = _zamowienia
+                        .Where(z => z.Serwisant?.UzytkownikId == _uzytkownik?.UzytkownikId || z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
+                        .ToList();
+                }
+                
+                _latestZamowienia = _zamowienia.Take(3).ToList();
+
+                if (_zamowienia.Count == 0)
+                {
+                    Snackbar.Add("Nie znaleziono żadnych zleceń", Severity.Info);
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania zleceń: {result.Error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUserAsync()
+    {
+        try
+        {
+            _uzytkownik = await ApiService.GetUzytkownik();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private string GetUserRole()
+    {
+        if (_uzytkownik?.RolaUzytkownika == null)
+            return "Brak roli";
+
+        return _uzytkownik.RolaUzytkownika.Nazwa;
+    }
+    
+    private string GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Zakończony" => "status-finished",
+            "W realizacji" => "status-realization",
+            "Anulowany" => "status-canceled",
+            "Oczekujący" => "status-waiting",
+            "Nowy" => "status-new",
+            _ => "status-default"
+        };
+    }
+}
