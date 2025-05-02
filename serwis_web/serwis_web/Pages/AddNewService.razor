@@ -269,7 +269,6 @@
 
 	private string? _message;
 	private string _messageClass = "success-message";
-	private int _userId = 1; //  TODO: zmienić
 	private Uzytkownik? _currentUser;
 	private AdresEmail? _currentEmail;
 	private NumerTelefonu? _currentPhone;
@@ -287,18 +286,11 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		_isLoading = true;
 		try
 		{
-			var userResult = await ApiService.UzytkownicyRepo.UzytkownikGet(_userId);
-
-			if (userResult.Error != null)
-			{
-				ShowError("Błąd podczas ładowania danych użytkownika: " + userResult.Error);
-				return;
-			}
-
-			_currentUser = userResult.Data;
-
+			await LoadUserAsync();
+			
 			if (_currentUser == null)
 			{
 				ShowError("Nie znaleziono danych użytkownika");
@@ -376,6 +368,20 @@
 		finally
 		{
 			_isLoading = false;
+			StateHasChanged();
+		}
+	}
+	
+	private async Task LoadUserAsync()
+	{
+		try
+		{
+			_currentUser = await ApiService.GetUzytkownik();
+			StateHasChanged();
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
 		}
 	}
 
@@ -385,7 +391,7 @@
 		try
 		{
 			_isSaving = true;
-			_errorMessage = string.Empty;
+			_errorMessage = string.Empty; 
 
 			var emailResult = await ApiService.AdresyEmailRepo.AdresEmailPost(new AdresEmailDto
 			{
@@ -437,11 +443,52 @@
 				addressId = adresResult.Data.AdresId;
 			}
 
+			int clientId;
+
+			
+			// var clientResult = await ApiService.KlienciRepo.KlientGet(_currentUser.UzytkownikId); // brakuje pola KlientId w Uzytkownik
+			// if (clientResult.Data != null)
+			// {
+			// 	clientId = clientResult.Data.KlientId;
+			// }
+			// else
+			// {
+			// 	clientResult = await ApiService.KlienciRepo.KlientPost(new KlientDto
+			// 	{
+			// 		UzytkownikId = _currentUser.UzytkownikId,
+			// 		TypKlientaId = 0
+			// 	});
+			// 	
+			// 	if (clientResult.Error != null || clientResult.Data == null)
+			// 	{
+			// 		_errorMessage = $"Błąd podczas tworzenia klienta: {clientResult.Error}";
+			// 		return;
+			// 	}
+			//
+			// 	clientId = clientResult.Data.KlientId;
+			// }
+			
+			
+			var clientResult = await ApiService.KlienciRepo.KlientPost(new KlientDto
+			{
+				UzytkownikId = _currentUser.UzytkownikId,
+				TypKlientaId = 0
+			});
+			
+			if (clientResult.Error != null || clientResult.Data == null)
+			{
+				_errorMessage = $"Błąd podczas tworzenia klienta: {clientResult.Error}";
+				return;
+			}
+
+			clientId = clientResult.Data.KlientId;
+			
+			
 			var createResult = await ApiService.ZamowieniaRepo.ZamowieniePost(new ZamowienieDto
 			{
 				PlanowanaDataRealizacjiOd = _newOrder.PlanowanaDataRealizacjiOd,
 				PlanowanaDataRealizacjiDo = _newOrder.PlanowanaDataRealizacjiDo,
-				KlientId = _userId,
+				KlientId = clientId,
 				AdresEmailId = emailResult.Data.AdresEmailId,
 				NumerTelefonuId = phoneId,
 				AdresId = addressId,
@@ -480,16 +527,6 @@
 	{
 		_message = error;
 		_messageClass = "error-message";
-	}
-
-
-	private class AdresDto
-	{
-		public string? Kraj { get; set; }
-		public string? Ulica { get; set; }
-		public string? NumerDomu { get; set; } // Changed from int to string to fix the error
-		public string? Miasto { get; set; }
-		public string? KodPocztowy { get; set; }
 	}
 
 	public class UserDataModel

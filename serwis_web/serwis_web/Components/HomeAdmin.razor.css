@@ -73,7 +73,7 @@
 }
 
 i {
-    font-size: 30px;
+    font-size: 27px;
     margin: 0;
     padding: 0;
 }
@@ -106,9 +106,5 @@ i {
         padding: 15px;
         width: 55px;
         height: 55px;
-    }
-
-    i {
-        font-size: 36px;
     }
 }

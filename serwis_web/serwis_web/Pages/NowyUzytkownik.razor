@@ -246,6 +246,7 @@
 	private bool _isLoading = true;
 	private bool _isSaving = false;
 	private string _errorMessage = string.Empty;
+	private int _uzytkownikId;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -338,6 +339,7 @@
 			_newUser.NumerTelefonuId = phoneId;
 			_newUser.AdresId = addressIds.First();
 			_newUser.RolaUzytkownikaId = _selectedRoleId;
+			_newUser.CzyAktywny = true;
 
 	
 			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPost(_newUser);
@@ -346,6 +348,25 @@
 			{
 				_errorMessage = $"Błąd podczas tworzenia użytkownika: {userResult.Error}";
 				return;
+			}
+
+			_uzytkownikId = userResult.Data.UzytkownikId;
+			
+			var userRole = _roles.FirstOrDefault(role => role.RolaUzytkownikaId == _newUser.RolaUzytkownikaId)?.Nazwa;
+
+			if (userRole == "Serwisant")
+			{
+				var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPost(new SerwisantDto
+				{
+					UzytkownikId = _uzytkownikId,
+					SerwisyIds = new List<int>()
+				});
+
+				if (servicemenResult.Error != null)
+				{
+					_errorMessage = $"Błąd podczas tworzenia serwisanta: {userResult.Error}";
+					return;
+				}
 			}
 			
 			String hasloNowegoUzytkownika = GenerateRandomPassword();

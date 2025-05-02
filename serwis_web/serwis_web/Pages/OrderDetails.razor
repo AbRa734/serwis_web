@@ -346,7 +346,7 @@
         <h2>Szczegóły zlecenia</h2>
         <div class="header-buttons">
             <button @onclick="OpenHistoryDialog" class="btn-changes">Historia zmian</button>
-            @if (isAdmin)
+            @if (GetUserRole() == "Administrator")
             {
                 <button @onclick="DeleteOrder" class="btn-delete">Usuń zlecenie</button>
             }
@@ -518,6 +518,8 @@
             <h4>Kwota do zapłaty</h4>
             <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" />
 
+            <StripePay />
+
             @if (_komentarze?.Any() == true)
             {
                 <h4>Komentarze</h4>
@@ -538,13 +540,13 @@
             }
 
 
-            @if (isAdmin)
+            @if (GetUserRole() == "Serwisant" || GetUserRole() == "Administrator")
             {
                 <button type="submit">Zapisz zmiany</button>
             }
             else
             {
-                <button>Dodaj komentarz</button>
+                <button >Dodaj komentarz</button>
             }
 
         </div>
@@ -561,7 +563,6 @@
 
 @code {
     [Parameter] public int OrderId { get; set; }
-    private bool isAdmin = true;
 
     private OrderDataModel _orderDataModel = new();
     private Zamowienie? _order;
@@ -570,6 +571,7 @@
     private bool isLoading = true;
     private List<Log> orderLogs = new List<Log>();
     public Uzytkownik? _uzytkownikKlient;
+    public Uzytkownik? _uzytkownikZalogowany;
     private List<DicPriorytet> _priorytety = new();
     private List<DicMetodaPlatnosci> _platnosci = new();
     private List<DicStatus> _statusy = new();
@@ -842,7 +844,7 @@
         var dialog = await DialogService.ShowAsync<HistoryDialog>("Historia zmian", new DialogParameters
             {
                 ["OrderChanges"] = convertedChanges,
-                ["IsAdmin"] = isAdmin
+                ["IsAdmin"] = true,
             }, options);
         var result = await dialog.Result;
     }
@@ -1161,6 +1163,14 @@
     private string GetSelectedStatusName()
     {
         return _statusy.FirstOrDefault(s => s.StatusId == _orderDataModel.StatusId)?.Nazwa ?? "";
+    }
+    
+    private string GetUserRole()
+    {
+        if (_uzytkownikZalogowany?.RolaUzytkownika == null)
+            return "Brak roli";
+
+        return _uzytkownikZalogowany.RolaUzytkownika.Nazwa;
     }
 
 

@@ -212,7 +212,7 @@
 					</div>
 					<div class="single-col">
 						<h4>Adres Email</h4>
-						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" />
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" readonly/>
 						<ValidationMessage For="@(() => _userDataModel.Email)" />
 					</div>
 				</div>
@@ -274,7 +274,6 @@
 	private PasswordChangeModel _passwordModel = new();
 	private string? _message;
 	private string _messageClass = "success-message";
-	private int _userId = 1; //  TODO: zmienić
 	private Uzytkownik? _currentUser;
 	private AdresEmail? _currentEmail;
 	private NumerTelefonu? _currentPhone;
@@ -282,27 +281,20 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		await LoadUserData();
-	}
-
-	private async Task LoadUserData()
-	{
-		var userResult = await ApiService.UzytkownicyRepo.UzytkownikGet(_userId);
-
-		if (userResult.Error != null)
-		{
-			ShowError("Błąd podczas ładowania danych użytkownika: " + userResult.Error);
-			return;
-		}
-
-		_currentUser = userResult.Data;
-
+		await LoadUser();
 		if (_currentUser == null)
 		{
 			ShowError("Nie znaleziono danych użytkownika");
 			return;
 		}
+		
+		await LoadUserData();
 
+	}
+	
+	private async Task LoadUserData()
+	{
+		
 		if (_currentUser.AdresEmailId > 0)
 		{
 			var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(_currentUser.AdresEmailId);
@@ -335,107 +327,101 @@
 			_userDataModel.Kraj = _currentAddress.Kraj;
 		}
 	}
-
-	private async Task SaveUserData()
+	
+	private async Task LoadUser()
 	{
 		try
 		{
-			int adresEmailId = _currentUser?.AdresEmailId ?? 0;
-
-			if (!string.IsNullOrWhiteSpace(_userDataModel.Email))
-			{
-				var emailDto = new AdresEmailDto { Email = _userDataModel.Email };
-
-				var emailResult = adresEmailId > 0
-					? await ApiService.AdresyEmailRepo.AdresEmailPut(adresEmailId, emailDto)
-					: await ApiService.AdresyEmailRepo.AdresEmailPost(emailDto);
-
-				if (emailResult.Error != null)
-				{
-					ShowError("Błąd podczas zapisywania adresu email: " + emailResult.Error);
-					return;
-				}
-
-				adresEmailId = emailResult.Data?.AdresEmailId ?? 0;
-			}
-
-			int? numerTelefonuId = _currentUser?.NumerTelefonuId;
-
-			if (!string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu))
-			{
-				var phoneDto = new NumerTelefonuDto { Numer = _userDataModel.NumerTelefonu };
-
-				var phoneResult = numerTelefonuId.HasValue && numerTelefonuId.Value > 0
-					? await ApiService.NumeryTelefonuRepo.NumerTelefonuPut(numerTelefonuId.Value, phoneDto)
-					: await ApiService.NumeryTelefonuRepo.NumerTelefonuPost(phoneDto);
-
-				if (phoneResult.Error != null)
-				{
-					ShowError("Błąd podczas zapisywania numeru telefonu: " + phoneResult.Error);
-					return;
-				}
-
-				numerTelefonuId = phoneResult.Data?.NumerTelefonuId;
-			}
-
-			int? adresId = _currentAddress?.AdresId;
-			List<int> adresyIds = new List<int>();
-
-			if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
-			{
-				var adresDto = new AdresDto
-				{
-					Ulica = _userDataModel.Ulica,
-					NumerDomu = _userDataModel.NumerDomu,
-					NumerMieszkania = _userDataModel.NumerMieszkania,
-					KodPocztowy = _userDataModel.KodPocztowy,
-					Miasto = _userDataModel.Miasto,
-					Kraj = _userDataModel.Kraj
-				};
-
-				var adresResult = adresId.HasValue && adresId.Value > 0
-					? await ApiService.AdresyRepo.AdresPut(adresId.Value, adresDto)
-					: await ApiService.AdresyRepo.AdresPost(adresDto);
-
-				if (adresResult.Error != null)
-				{
-					ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
-					return;
-				}
-
-				if (adresResult.Data != null)
-				{
-					adresyIds.Add(adresResult.Data.AdresId);
-				}
-			}
-
-			var uzytkownikDto = new UzytkownikDto
-			{
-				Imie = _userDataModel.Imie,
-				Nazwisko = _userDataModel.Nazwisko,
-				AdresEmailId = adresEmailId,
-				NumerTelefonuId = numerTelefonuId,
-				AdresId = adresyIds.FirstOrDefault(),
-				RolaUzytkownikaId = _currentUser?.RolaUzytkownika.RolaUzytkownikaId ?? 2,
-			};
-
-			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_userId, uzytkownikDto);
-
-			if (userResult.Error != null)
-			{
-				ShowError("Błąd podczas zapisywania danych użytkownika: " + userResult.Error);
-				return;
-			}
-
-			ShowSuccess("Dane zostały zaktualizowane pomyślnie");
-
-			await LoadUserData();
+			_currentUser = await ApiService.GetUzytkownik();
+			StateHasChanged();
 		}
 		catch (Exception ex)
 		{
-			ShowError("Wystąpił nieoczekiwany błąd: " + ex.Message);
+			ShowError($"Błąd podczas pobierania danych użytkownika: {ex.Message}");
 		}
 	}
+
+	private async Task SaveUserData()
+{
+	try
+	{
+		if (_currentUser == null)
+		{
+			ShowError("Nie można zapisać zmian – użytkownik nie został załadowany.");
+			return;
+		}
+
+		int adresEmailId = _currentUser.AdresEmailId;
+
+		int numerTelefonuId = _currentUser.NumerTelefonuId ?? 0;
+		if (!string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu))
+		{
+			var phoneDto = new NumerTelefonuDto { Numer = _userDataModel.NumerTelefonu };
+
+			var phoneResult = numerTelefonuId > 0
+				? await ApiService.NumeryTelefonuRepo.NumerTelefonuPut(numerTelefonuId, phoneDto)
+				: await ApiService.NumeryTelefonuRepo.NumerTelefonuPost(phoneDto);
+
+			if (phoneResult.Error != null)
+			{
+				ShowError("Błąd podczas zapisywania numeru telefonu: " + phoneResult.Error);
+				return;
+			}
+
+			numerTelefonuId = phoneResult.Data?.NumerTelefonuId ?? 0;
+		}
+
+		int adresId = _currentAddress?.AdresId ?? 0;
+		if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
+		{
+			var adresDto = new AdresDto
+			{
+				Ulica = _userDataModel.Ulica,
+				NumerDomu = _userDataModel.NumerDomu,
+				NumerMieszkania = _userDataModel.NumerMieszkania,
+				KodPocztowy = _userDataModel.KodPocztowy,
+				Miasto = _userDataModel.Miasto,
+				Kraj = _userDataModel.Kraj
+			};
+
+			var adresResult = adresId > 0
+				? await ApiService.AdresyRepo.AdresPut(adresId, adresDto)
+				: await ApiService.AdresyRepo.AdresPost(adresDto);
+
+			if (adresResult.Error != null)
+			{
+				ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
+				return;
+			}
+
+			adresId = adresResult.Data?.AdresId ?? 0;
+		}
+
+		var updatedUser = new UzytkownikDto
+		{
+			Imie = _userDataModel.Imie,
+			Nazwisko = _userDataModel.Nazwisko,
+			AdresEmailId = adresEmailId,
+			NumerTelefonuId = numerTelefonuId,
+			AdresId = adresId,
+		};
+
+		var updateResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_currentUser.UzytkownikId, updatedUser);
+		if (updateResult.Error != null)
+		{
+			ShowError("Błąd podczas zapisywania danych użytkownika: " + updateResult.Error);
+			return;
+		}
+
+		ShowSuccess("Dane zostały zapisane poprawnie.");
+		await LoadUserData(); 
+	}
+	catch (Exception ex)
+	{
+		ShowError("Wystąpił błąd: " + ex.Message);
+	}
+}
+
 
 	private async Task ChangePassword()
 	{

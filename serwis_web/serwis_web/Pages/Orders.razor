@@ -116,8 +116,8 @@
     }
 
     .status-realization {
-    background-color: #e6e1ff;
-    color: #6952e9;
+    background-color: #e0d4fc;
+    color: #6226ef;
     border: none;
     min-width: 75% !important;
     border-radius: 5px !important;
@@ -149,8 +149,8 @@
     }
 
     .status-new {
-    background-color: #e6e1ff;
-    color: #6952e9;
+    background-color: #f1d4ff;
+    color: #ba29ff;
     border: none;
     min-width: 75% !important;
     border-radius: 5px !important;
@@ -289,6 +289,7 @@
     private bool _loading = true;
     private List<Zamowienie> _zamowienia = new();
     private List<Zamowienie> _filteredZamówienia = new();
+    private Uzytkownik? _uzytkownik;
 
     protected override async Task OnInitializedAsync()
     {
@@ -300,10 +301,26 @@
         _loading = true;
         try
         {
+            await LoadUserAsync();
+            
             var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
             if (result.Data != null)
             {
                 _zamowienia = result.Data;
+                
+                if (GetUserRole() == "Klient")
+                {
+                    _zamowienia = _zamowienia
+                        .Where(z => z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
+                        .ToList();
+                }
+                else if (GetUserRole() == "Serwisant")
+                {
+                    _zamowienia = _zamowienia
+                        .Where(z => z.Serwisant?.UzytkownikId == _uzytkownik?.UzytkownikId || z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
+                        .ToList();
+                }
+                
                 _filteredZamówienia = _zamowienia;
 
                 if (_zamowienia.Count == 0)
@@ -349,6 +366,26 @@
         }
 
         StateHasChanged();
+    }
+    private async Task LoadUserAsync()
+    {
+        try
+        {
+            _uzytkownik = await ApiService.GetUzytkownik();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private string GetUserRole()
+    {
+        if (_uzytkownik?.RolaUzytkownika == null)
+            return "Brak roli";
+
+        return _uzytkownik.RolaUzytkownika.Nazwa;
     }
 
 
