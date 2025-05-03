@@ -1,6 +1,7 @@
 @page "/"
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
+@using System.IdentityModel.Tokens.Jwt
 @using Colors = DesignSystem.Tokens.Colors
 @using ApiService
 @using ApiService.Helpers
@@ -13,6 +14,10 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @layout EmptyLayout
+@inject IHttpContextAccessor context
+@using System.IdentityModel.Tokens.Jwt;
+@using Microsoft.AspNetCore.Mvc;
+@using Console = System.Console
 
 <main
     style="@($"background-color: {Colors.Primary}; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; background-image: url('/shape.png'); background-size: cover; background-position: center;"))">
@@ -73,22 +78,22 @@
             </div>
         </EditForm>
 
-        <p style="text-align: right">Nie masz jeszcze konta? <a href="/rejestracja"
-                                                                style=@($"color: {Colors.Primary}; text-decoration: none;")>Zarejestruj
-                się</a></p>
+        <p style="text-align: right">Nie masz jeszcze konta? <a @onclick="NavigateToRegister" style=@($"color: {Colors.Primary}; text-decoration: none; cursor: pointer;")>Zarejestruj się</a></p>
 
         <div style="margin-top: 20px;">
-            <MudButton Variant="Variant.Filled" Disabled="@_isLoading"
+            <MudButton Href="/clerk.html" Variant="Variant.Filled" Disabled="@_isLoading"
                        Style="@($"height: 42px; border-radius: 8px; width: 100%; background-color: {Colors.Gray}; display: flex; align-items: center; justify-content: center;")">
-                <i class="fab fa-google" style="margin-right: 16px;"></i> Zaloguj się przez Google
-            </MudButton>
-            <MudButton Variant="Variant.Filled" Disabled="@_isLoading"
-                       Style="@($"height: 42px; margin-top: 20px; border-radius: 8px; width: 100%; background-color: {Colors.Gray}; display: flex; align-items: center; justify-content: center;")">
-                <i class="fab fa-facebook" style="margin-right: 16px;"></i> Zaloguj się przez Facebook
+                <i class="fab fa-google" style="margin-right: 16px;"></i> <i class="fab fa-facebook" style="margin-right: 16px;"></i> <i class="fab fa-github" style="margin-right: 16px;"></i> Zaloguj się przez Google/Facebook/Github
             </MudButton>
         </div>
-        <StripePay/>
-        <GoogleLogin/>
+        <div style="margin-top: 20px; text-align: center;">
+            @if (!string.IsNullOrEmpty(email))
+            {
+                <MudAlert Severity="Severity.Info" Style="border-radius: 8px;">
+                    Zalogowano jako: @email
+                </MudAlert>
+            }
+        </div>
     </section>
 </main>
 
@@ -98,6 +103,80 @@
     private bool _pokazHaslo;
     private bool _isLoading;
 
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/rejestracja", forceLoad: true);
+    }
+    
+    private string? email;
+
+    protected override async Task OnInitializedAsync()
+    {
+        email = context.HttpContext?.Request.Cookies["userEmail"];
+        
+        if (!string.IsNullOrEmpty(email))
+        {
+            try
+            {
+                var loginResult = await ApiService.AdministracjaRepo.LoginPost(new LoginRequest
+                {
+                    Haslo = "20u[y;h}6~uwTgyGI%Oo^T,8!",
+                    Email = email,
+                });
+                
+                if (loginResult.Error == null)
+                {
+                    Snackbar.Add("Logowanie udane", Severity.Success);
+                    Navigation.NavigateTo("/index");
+                }
+                else
+                {
+                    
+                    var emailExists = false;
+
+                    var emailResult = await ApiService.AdresyEmailRepo.AdresyEmailGet();
+
+                    if (emailResult.Data != null)
+                    {
+                        emailExists = emailResult.Data.Any(e => e.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    if (emailExists)
+                    {
+                        Snackbar.Add("Konto z tym adresem email już istnieje w bazie. Zaloguj się za pomocą hasła.", Severity.Warning);
+                    }
+                    else
+                    {
+                        var registerRequest = new RegisterRequest
+                        {
+                            Email = email,
+                            Haslo = "20u[y;h}6~uwTgyGI%Oo^T,8!",
+                            Imie = email.Split('@')[0],
+                            Nazwisko = email.Split('@')[1],
+                            Numer = null,
+                        };
+
+                        var registerResult = await ApiService.AdministracjaRepo.RejestracjaPost(registerRequest);
+
+                        if (registerResult.Data)
+                        {
+                            Snackbar.Add("Konto zostało utworzone. Możesz się teraz zalogować.", Severity.Success);
+                            Navigation.NavigateTo("/index");
+                        }
+                        else
+                        {
+                            Snackbar.Add(registerResult.Error ?? "Nie udało się utworzyć konta.", Severity.Error);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+    
     private readonly Func<string, IEnumerable<string>> _validateEmail = email =>
     {
         if (string.IsNullOrWhiteSpace(email))

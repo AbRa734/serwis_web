@@ -11,10 +11,14 @@ public class CheckoutSessionService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<Session> CreateCheckoutSessionAsync()
+    public async Task<Session> CreateCheckoutSessionAsync(PaymentRequest paymentRequest)
     {
         var request = _httpContextAccessor.HttpContext?.Request;
         var domain = $"{request?.Scheme}://{request?.Host}";
+    
+        // Get the referrer (previous page)
+        var referer = _httpContextAccessor.HttpContext?.Request.Headers.Referer.ToString();
+        var returnUrl = !string.IsNullOrEmpty(referer) ? referer : $"{domain}";
 
         var options = new SessionCreateOptions
         {
@@ -25,22 +29,31 @@ public class CheckoutSessionService
                 {
                     PriceData = new SessionLineItemPriceDataOptions
                     {
-                        UnitAmount = 1000,
-                        Currency = "pln",
+                        UnitAmount = paymentRequest.AmountInCents,
+                        Currency = paymentRequest.Currency,
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
-                            Name = "Test",
+                            Name = paymentRequest.ProductName,
+                            Description = paymentRequest.Description
                         },
                     },
                     Quantity = 1,
                 },
             },
             Mode = "payment",
-            SuccessUrl = $"{domain}/",
-            CancelUrl = $"{domain}/",
+            SuccessUrl = $"{returnUrl}?payment_status=success",
+            CancelUrl = $"{returnUrl}?payment_status=cancel",
         };
 
         var service = new SessionService();
         return await service.CreateAsync(options);
     }
+}
+
+public class PaymentRequest
+{
+    public long AmountInCents { get; set; }
+    public string Currency { get; set; } = "pln";
+    public string ProductName { get; set; } = "Usługa serwisowa";
+    public string Description { get; set; } = "";
 }

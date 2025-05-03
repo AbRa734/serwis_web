@@ -2,16 +2,62 @@
 @inject IJSRuntime Js
 @inject NavigationManager Navigation
 
-<button @onclick="Pay">Test płatności</button>
+<button class="payment-button" @onclick="Pay">
+    <i class="fa-brands fa-stripe"></i> <span class="button-text">Zapłać @Amount.ToString("0.00") zł</span>
+</button>
 
 @code {
+    [Parameter]
+    public decimal Amount { get; set; } = 0;
+
     private async Task Pay()
     {
+
         var baseUrl = Navigation.BaseUri.TrimEnd('/');
         var http = new HttpClient();
-        var response = await http.PostAsJsonAsync($"{baseUrl}/platnosc", new { });
+    
+        var paymentRequest = new
+        {
+            AmountInCents = (long)(Amount * 100),
+            Currency = "pln",
+            ProductName = "Usługa serwisowa",
+            Description = $"Płatność: {Amount} zł"
+        };
+
+        var response = await http.PostAsJsonAsync($"{baseUrl}/platnosc", paymentRequest);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
         var sessionId = json.GetProperty("id").GetString();
         await Js.InvokeVoidAsync("redirectToCheckout", sessionId);
     }
 }
+
+<style>
+    .payment-button {
+        background-color: #635BFF;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .payment-button:hover {
+        background-color: #4b45c6;
+    }
+
+    .payment-button:disabled {
+        background-color: #a8a5e6;
+        cursor: not-allowed;
+    }
+
+    .payment-button i {
+        margin-right: 8px;
+    }
+
+    .button-text {
+        display: inline-block;
+        vertical-align: middle;
+    }
+</style>

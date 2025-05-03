@@ -13,6 +13,7 @@
         <PackageReference Include="MudBlazor" Version="8.5.1" />
         <PackageReference Include="QuestPDF" Version="2025.4.0" />
         <PackageReference Include="Stripe.net" Version="48.0.2" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.9.0" />
         <ProjectReference Include="..\..\ApiService\ApiService.csproj" />
         <ProjectReference Include="..\..\AuthService\AuthService.csproj" />
         <ProjectReference Include="..\..\DesignSystem\DesignSystem.csproj" />

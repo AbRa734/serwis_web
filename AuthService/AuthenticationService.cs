@@ -28,9 +28,22 @@ public class AuthenticationService : CircuitHandler
         {
             return;
         }
-    
-        if (currentUrl != _navigationManager.BaseUri && 
-            currentUrl != _navigationManager.BaseUri + "/" && 
+        
+        if (currentUrl.Contains("handshake"))
+        {
+            _navigationManager.NavigateTo("/clerk.html");
+            return;
+        }
+        
+        if (currentUrl.Contains("clerk"))
+        {
+            return;
+        }
+        
+        if (currentUrl != _navigationManager.BaseUri &&
+            currentUrl != _navigationManager.BaseUri + "/" &&
+            !currentUrl.EndsWith("/rejestracja") &&
+            !currentUrl.EndsWith("/przypomnij-haslo") &&
             !_tokenService.HasToken)
         {
             _navigationManager.NavigateTo("/", forceLoad: true);
