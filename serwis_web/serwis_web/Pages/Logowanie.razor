@@ -58,7 +58,7 @@
                 }
             </MudButton>
 
-            <MudButton Variant="Variant.Filled" @onclick="() => { _ = ZalogujSzybko(); }"
+            <MudButton Variant="Variant.Filled" @onclick="() => { _ = ZalogujSzybkoAdmin(); }"
                        Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
                 @if (_isLoading)
                 {
@@ -67,7 +67,33 @@
                 }
                 else
                 {
-                    <span>Zaloguj szybko (debug)</span>
+                    <span>Zaloguj szybko (admin)</span>
+                }
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled" @onclick="() => { _ = ZalogujSzybkoSerwisant(); }"
+                       Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <span class="ms-2">Logowanie...</span>
+                }
+                else
+                {
+                    <span>Zaloguj szybko (serwisant)</span>
+                }
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled" @onclick="() => { _ = ZalogujSzybkoKlient(); }"
+                       Style="@($"background-color: {Colors.Primary}; height: 42px; width: 100%; color: {Colors.White}; border-radius: 8px; margin: 10px 0;")">
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <span class="ms-2">Logowanie...</span>
+                }
+                else
+                {
+                    <span>Zaloguj szybko (klient)</span>
                 }
             </MudButton>
 
@@ -188,12 +214,34 @@
         return Array.Empty<string>();
     };
 
-    private async Task ZalogujSzybko()
+    private async Task ZalogujSzybkoAdmin()
     {
         _wynik = await ApiService.AdministracjaRepo.LoginPost(new LoginRequest
         {
             Haslo = "Test123@",
             Email = "test@test.test",
+        });
+        
+        Navigation.NavigateTo("/index");
+    }
+    
+    private async Task ZalogujSzybkoSerwisant()
+    {
+        _wynik = await ApiService.AdministracjaRepo.LoginPost(new LoginRequest
+        {
+            Haslo = "Test123@",
+            Email = "serwisant.test@test.com",
+        });
+        
+        Navigation.NavigateTo("/index");
+    }
+    
+    private async Task ZalogujSzybkoKlient()
+    {
+        _wynik = await ApiService.AdministracjaRepo.LoginPost(new LoginRequest
+        {
+            Haslo = "Test123@",
+            Email = "klient.test@test.com",
         });
         
         Navigation.NavigateTo("/index");
