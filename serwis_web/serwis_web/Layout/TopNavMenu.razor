@@ -54,7 +54,9 @@
         </div>
     </div>
     <div class="notifications-user">
-        <a href="/settings"><i class="fa-solid fa-user"></i></a>
+        <MudAvatar Color="@GetAvatarColor()" Variant="Variant.Outlined" Style="cursor: pointer;" @onclick="@(() => NavigationManager.NavigateTo("/settings"))">
+            @GetAvatarText()
+        </MudAvatar>
         <div class="user-inf">
             <div class="user-name">@(_uzytkownik?.Imie ?? "Użytkownik")</div>
             <div class="user-role">@GetUserRole()</div>
@@ -99,6 +101,29 @@
         JSRuntime.InvokeVoidAsync("eval", "document.cookie.split(';').forEach(function(c) { document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/'); });");
         _isDropdownOpen = false;
         NavigationManager.NavigateTo("/", true);
+    }
+    
+    private Color GetAvatarColor()
+    {
+        if (_uzytkownik?.RolaUzytkownika == null)
+            return Color.Error;
+        
+        return _uzytkownik.RolaUzytkownika.Nazwa?.ToLower() switch
+        {
+            "klient" => Color.Info,
+            "serwisant" => Color.Success,
+            _ => Color.Error
+        };
+    }
+    
+    private string GetAvatarText()
+    {
+        if (!string.IsNullOrEmpty(_uzytkownik?.Imie))
+            return _uzytkownik.Imie.Substring(0, 1).ToUpper();
+        else if (!string.IsNullOrEmpty(_uzytkownik?.AdresEmail?.Email))
+            return _uzytkownik.AdresEmail.Email.Substring(0, 1).ToUpper();
+        else
+            return "U";
     }
 
     protected override async Task OnInitializedAsync()

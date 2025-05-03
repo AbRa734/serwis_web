@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using serwis_web.Components
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 
 <BootstrapBlazorRoot>
     <MudThemeProvider Theme="_serwis24Theme" @rendermode="InteractiveServer"/>
@@ -24,6 +26,10 @@
     </div>
     <MudSnackbarProvider @rendermode="InteractiveServer"/>
     <MudDialogProvider @rendermode="InteractiveServer" />
+
+    <div class="help-button-container">
+        <HelpButton />
+    </div>
 </BootstrapBlazorRoot>
 
 @code{
@@ -63,11 +69,18 @@
     }
 
     .footer-link {
-        color: var(--mud-palette-primary);
+        color: #1E88E5; /* Direct color value instead of CSS variable */
         text-decoration: none;
     }
 
     .footer-link:hover {
         text-decoration: underline;
+    }
+
+    .help-button-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
     }
 </style>

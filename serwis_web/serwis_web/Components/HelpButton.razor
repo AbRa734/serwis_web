@@ -1,0 +1,12 @@
+@using Color = MudBlazor.Color
+@using Placement = MudBlazor.Placement
+@using Size = MudBlazor.Size
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+<MudTooltip Text="Pomoc" Placement="Placement.Top">
+    <MudFab Color="Color.Primary"
+            StartIcon="@Icons.Material.Filled.Help"
+            Size="Size.Small"
+            OnClick="@(() => NavigationManager.NavigateTo("/contact"))" />
+</MudTooltip>

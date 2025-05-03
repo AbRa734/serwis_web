@@ -7,89 +7,156 @@
 
 <PageTitle>Statystyki</PageTitle>
 
-<h2>Statystyki serwisu</h2>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudPaper Elevation="0" Class="pa-4">
+        <MudText Typo="Typo.h4" Class="mb-4" Style="color: #000000; font-weight: 700;">Statystyki serwisu</MudText>
+        
+        @if (_isLoading)
+        {
+            <MudPaper Class="d-flex justify-center flex-column align-center py-16 rounded-lg" Elevation="0">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Typo="Typo.body1" Class="mt-4">Ładowanie danych statystycznych...</MudText>
+            </MudPaper>
+        }
+        else
+        {
+            <!-- Karty statusów -->
+            <MudGrid Spacing="3" Class="mb-6">
+                @foreach (var card in _statusCards)
+                {
+                    <MudItem xs="12" sm="6" md="4" lg="2">
+                        <MudPaper Class="pa-6 d-flex flex-column align-center mud-theme-primary" 
+                                 Style="border-radius: 12px; transition: all 0.3s;"
+                                 Elevation="2">
+                            <MudText Typo="Typo.h3" Style="color: #FFFFFF; font-weight: 700;">@card.Count</MudText>
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 500;" Class="mt-2">@card.Label</MudText>
+                            <MudDivider Style="@($"width: 40px; height: 3px; margin-top: 8px; background: {GetStatusColor(card.Label)}")" />
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-4">
-    <MudCard Elevation="3" Class="mb-6">
-        <MudCardContent>
-            @if (_isLoading)
-            {
-                <div class="d-flex justify-center flex-column align-center py-12">
-                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-                    <MudText Typo="Typo.body1" Class="mt-4">Ładowanie danych statystycznych...</MudText>
-                </div>
-            }
-            else
-            {
-                <MudGrid>
-                    @foreach (var card in _statusCards)
-                    {
-                        <MudItem xs="12" sm="6" md="4" lg="2">
-                            <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
-                                <MudText Typo="Typo.h3">@card.Count</MudText>
-                                <MudText Typo="Typo.subtitle1">@card.Label</MudText>
-                            </MudPaper>
-                        </MudItem>
-                    }
-                </MudGrid>
-
-                <MudDivider Class="my-6" />
-
-                <MudExpansionPanels Elevation="0" Multiple="true" DisableBorders="true" Class="mt-4">
-                    <MudExpansionPanel IsExpanded="true" 
-                                       Icon="@Icons.Material.Filled.PieChart" 
-                                       Text="Zamówienia według statusu">
-                        <MudPaper Elevation="0" Class="pa-4 d-flex justify-center">
+            <!-- Sekcja wykresów -->
+            <MudGrid Spacing="4">
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="3" Class="rounded-lg overflow-hidden h-100">
+                        <MudCardHeader Class="pb-0">
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Color="Color.Primary">
+                                    <MudIcon Icon="@Icons.Material.Filled.PieChart" Class="mr-2" /> Zamówienia według statusu
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="d-flex justify-center">
                             <MudChart ChartType="ChartType.Pie" 
-                                     Width="400px" 
+                                     Width="90%" 
                                      Height="300px" 
                                      InputData="@_orderStatusData" 
                                      InputLabels="@_orderStatusLabels" 
                                      LegendPosition="Position.Bottom" />
-                        </MudPaper>
-                    </MudExpansionPanel>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
 
-                    <MudExpansionPanel 
-                        Icon="@Icons.Material.Filled.BarChart" 
-                        Text="Obciążenie serwisantów">
-                        <MudPaper Elevation="0" Class="pa-4 d-flex justify-center">
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="3" Class="rounded-lg overflow-hidden h-100">
+                        <MudCardHeader Class="pb-0">
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Color="Color.Primary">
+                                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" /> Obciążenie serwisantów
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
                             <MudChart ChartType="ChartType.Bar" 
                                      Width="100%" 
                                      Height="300px" 
                                      ChartSeries="@_technicianWorkloadSeries" 
                                      XAxisLabels="@_technicianNames" />
-                        </MudPaper>
-                    </MudExpansionPanel>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
 
-                    <MudExpansionPanel 
-                        Icon="@Icons.Material.Filled.Timeline" 
-                        Text="Zamówienia w czasie">
-                        <MudPaper Elevation="0" Class="pa-4">
+                <MudItem xs="12">
+                    <MudCard Elevation="3" Class="rounded-lg overflow-hidden">
+                        <MudCardHeader Class="pb-0">
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Color="Color.Primary">
+                                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" /> Zamówienia w czasie
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
                             <MudChart ChartType="ChartType.Line" 
                                      ChartSeries="@_monthlySeries" 
                                      XAxisLabels="@_monthLabels" 
                                      Width="100%" 
                                      Height="350px" />
-                        </MudPaper>
-                    </MudExpansionPanel>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
 
-                    <MudExpansionPanel 
-                        Icon="@Icons.Material.Filled.AccessTime" 
-                        Text="Średni czas realizacji zamówień">
-                        <MudPaper Elevation="0" Class="pa-4 d-flex justify-center">
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="3" Class="rounded-lg overflow-hidden h-100">
+                        <MudCardHeader Class="pb-0">
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Color="Color.Primary">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="mr-2" /> Średni czas realizacji zamówień
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="d-flex justify-center">
                             <MudChart ChartType="ChartType.Donut" 
-                                     Width="350px" 
-                                     Height="350px" 
+                                     Width="90%" 
+                                     Height="300px" 
                                      InputData="@_avgTimeData" 
                                      InputLabels="@_avgTimeLabels" 
                                      LegendPosition="Position.Right" />
-                        </MudPaper>
-                    </MudExpansionPanel>
-                </MudExpansionPanels>
-            }
-        </MudCardContent>
-    </MudCard>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="3" Class="rounded-lg overflow-hidden h-100">
+                        <MudCardHeader Class="pb-0">
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Color="Color.Primary">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Class="mr-2" /> Porównanie rok do roku
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudChart ChartType="ChartType.Line" 
+                                     Width="100%" 
+                                     Height="300px" 
+                                     ChartSeries="@_yearlyComparisonSeries" 
+                                     XAxisLabels="@_monthLabels" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        }
+    </MudPaper>
 </MudContainer>
+
+<style>
+    .mud-card {
+        transition: all 0.3s;
+    }
+    
+    .mud-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    
+    .mud-chart-legend {
+        margin-top: 10px;
+    }
+    
+    .mud-chart-serie {
+        border-radius: 5px;
+    }
+</style>
 
 @code {
     private double[] _orderStatusData = Array.Empty<double>();
@@ -174,21 +241,10 @@
                 statusLabels.Add(status.Nazwa);
                 statusData.Add(count);
                 
-                string cssClass = status.Nazwa switch
-                {
-                    "Nowe" => "status-new mud-primary-lighten-1",
-                    "W trakcie realizacji" => "status-realization mud-info-lighten-1",
-                    "Oczekujące" => "status-waiting mud-warning-lighten-1",
-                    "Zakończone" => "status-finished mud-success-lighten-1",
-                    "Anulowane" => "status-canceled mud-error-lighten-1",
-                    _ => "status-default"
-                };
-
                 statusCards.Add(new StatusCard
                 {
                     Label = status.Nazwa,
-                    Count = count,
-                    CssClass = cssClass
+                    Count = count
                 });
             }
 
@@ -270,10 +326,22 @@
         }
     }
 
+    private string GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Nowe" => "#3d5afe",
+            "W trakcie realizacji" => "#00b0ff",
+            "Oczekujące" => "#ffc400",
+            "Zakończone" => "#00c853",
+            "Anulowane" => "#ff5252",
+            _ => "#9e9e9e"
+        };
+    }
+
     private class StatusCard
     {
         public string Label { get; set; } = string.Empty;
         public double Count { get; set; }
-        public string CssClass { get; set; } = "status-default";
     }
 }
