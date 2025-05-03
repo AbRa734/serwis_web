@@ -1,0 +1,40 @@
+@using Color = MudBlazor.Color
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <div class="d-flex flex-column">
+                    <div class="d-flex my-2">
+                        <MudText Typo="Typo.subtitle1" Class="mr-2 flex-none" Style="width: 140px; font-weight: bold;">Nazwa odbiorcy:</MudText>
+                        <MudText>Serwis Komputerowy Sp. z o.o.</MudText>
+                    </div>
+                    <div class="d-flex my-2">
+                        <MudText Typo="Typo.subtitle1" Class="mr-2 flex-none" Style="width: 140px; font-weight: bold;">Numer konta:</MudText>
+                        <MudText>PL 12 1234 1234 1234 1234 1234 1234</MudText>
+                    </div>
+                    <div class="d-flex my-2">
+                        <MudText Typo="Typo.subtitle1" Class="mr-2 flex-none" Style="width: 140px; font-weight: bold;">Kwota:</MudText>
+                        <MudText>@Amount.ToString("0.00") zł</MudText>
+                    </div>
+                    <div class="d-flex my-2">
+                        <MudText Typo="Typo.subtitle1" Class="mr-2 flex-none" Style="width: 140px; font-weight: bold;">Tytuł przelewu:</MudText>
+                        <MudText>Usługa serwisowa</MudText>
+                    </div>
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Close">Zamknij</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public decimal Amount { get; set; }
+
+    private void Close() => MudDialog.Close();
+}

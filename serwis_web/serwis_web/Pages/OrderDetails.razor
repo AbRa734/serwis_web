@@ -517,9 +517,23 @@
 
             <h4>Kwota do zapłaty</h4>
             <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" />
+            @{
+                var metodaPlatnosciNazwa = _platnosci.FirstOrDefault(p => p.MetodaPlatnosciId == _orderDataModel.MetodaPlatnosciId)?.Nazwa?.ToLower() ?? "";
+                var metodaPlatnosciTyp = "stripe"; // Default payment method
 
-            <StripePay Amount="@(_orderDataModel.Koszt100)" />
+                // Map payment method name to appropriate type for StripePay component
+                metodaPlatnosciTyp = metodaPlatnosciNazwa switch {
+                    var m when m.Contains("karta") => "karta",
+                    var m when m.Contains("blik") => "blik",
+                    var m when m.Contains("p24") || m.Contains("przelewy24") => "przelewy24",
+                    var m when m.Contains("przelew") => "przelew",
+                    _ => "stripe"
+                };
+            }
 
+            <StripePay Amount="@(_orderDataModel.Koszt100 / 100m)" MetodaPlatnosci="@metodaPlatnosciTyp" />
+            
+            
             @if (_komentarze?.Any() == true)
             {
                 <h4>Komentarze</h4>

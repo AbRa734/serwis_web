@@ -1,27 +1,74 @@
 @using System.Text.Json
 @inject IJSRuntime Js
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
 
-<button class="payment-button" @onclick="Pay">
-    <i class="fa-brands fa-stripe"></i> <span class="button-text">Zapłać @Amount.ToString("0.00") zł</span>
-</button>
+<MudButton Class="@($"payment-button {GetPaymentButtonClass()}")" OnClick="Pay">
+    <MudIcon Icon="@GetPaymentIcon()" Class="mr-2" />
+    <span class="button-text">Zapłać @Amount.ToString("0.00") zł</span>
+</MudButton>
+
 <script src="scripts.js"></script>
+
 @code {
     [Parameter]
     public decimal Amount { get; set; } = 0;
 
+    [Parameter]
+    public string MetodaPlatnosci { get; set; } = "stripe";
+
     private async Task Pay()
     {
+        if (MetodaPlatnosci.ToLower() == "przelew")
+        {
+            var parameters = new DialogParameters
+            {
+                { "Amount", Amount }
+            };
+
+            var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true
+            };
+
+            var dialog = DialogService.Show<BankTransferDialog>("Dane do przelewu", parameters, options);
+            await dialog.Result;
+            return;
+        }
 
         var baseUrl = Navigation.BaseUri.TrimEnd('/');
         var http = new HttpClient();
-    
+
+        // Set payment method types based on selection
+        List<string> paymentMethodTypes = new List<string>();
+
+        switch (MetodaPlatnosci.ToLower())
+        {
+            case "karta":
+                paymentMethodTypes = new List<string> { "card" };
+                break;
+            case "blik":
+                paymentMethodTypes = new List<string> { "blik" };
+                break;
+            case "przelewy24":
+            case "p24":
+                paymentMethodTypes = new List<string> { "p24" };
+                break;
+            case "stripe":
+            default:
+                paymentMethodTypes = new List<string> { "card", "blik", "p24" };
+                break;
+        }
+
         var paymentRequest = new
         {
             AmountInCents = (long)(Amount * 100),
             Currency = "pln",
             ProductName = "Usługa serwisowa",
-            Description = $"Płatność: {Amount} zł"
+            Description = $"Płatność: {Amount} zł",
+            PaymentMethodTypes = paymentMethodTypes
         };
 
         var response = await http.PostAsJsonAsync($"{baseUrl}/platnosc", paymentRequest);
@@ -29,31 +76,81 @@
         var sessionId = json.GetProperty("id").GetString();
         await Js.InvokeVoidAsync("customRedirectToCheckout", sessionId);
     }
+
+    private string GetPaymentButtonClass()
+    {
+        return MetodaPlatnosci.ToLower() switch
+        {
+            "karta" => "payment-card",
+            "blik" => "payment-blik",
+            "przelewy24" or "p24" => "payment-p24",
+            "przelew" => "payment-transfer",
+            "stripe" or _ => "payment-stripe"
+        };
+    }
+
+    private string GetPaymentIcon()
+    {
+        return MetodaPlatnosci.ToLower() switch
+        {
+            "karta" => Icons.Material.Filled.CreditCard,
+            "blik" => Icons.Material.Filled.PhoneAndroid,
+            "przelewy24" or "p24" => Icons.Material.Filled.Payment,
+            "przelew" => Icons.Material.Filled.AccountBalance,
+            "stripe" or _ => Icons.Material.Filled.Money
+        };
+    }
 }
 
 <style>
     .payment-button {
-        background-color: #635BFF;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s;
+        border: none !important;
+        padding: 10px 20px !important;
+        border-radius: 4px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        transition: background-color 0.3s !important;
+        color: white !important;
     }
 
-    .payment-button:hover {
-        background-color: #4b45c6;
+    .payment-stripe {
+        background-color: #635BFF !important;
     }
 
-    .payment-button:disabled {
-        background-color: #a8a5e6;
-        cursor: not-allowed;
+    .payment-stripe:hover {
+        background-color: #4b45c6 !important;
     }
 
-    .payment-button i {
-        margin-right: 8px;
+    .payment-card {
+        background-color: #2C3E50 !important;
+    }
+
+    .payment-card:hover {
+        background-color: #1A2530 !important;
+    }
+
+    .payment-blik {
+        background-color: #E30613 !important;
+    }
+
+    .payment-blik:hover {
+        background-color: #B90510 !important;
+    }
+
+    .payment-p24 {
+        background-color: #01662C !important;
+    }
+
+    .payment-p24:hover {
+        background-color: #014C21 !important;
+    }
+
+    .payment-transfer {
+        background-color: #3498DB !important;
+    }
+
+    .payment-transfer:hover {
+        background-color: #2980B9 !important;
     }
 
     .button-text {

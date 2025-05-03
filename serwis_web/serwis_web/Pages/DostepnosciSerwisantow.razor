@@ -142,23 +142,23 @@
             <span>Niedostępny</span>
         </div>
     </div>*@
-    
+
     <div class="technician-filter">
-        <MudChip 
-            T="string"
-            Color="@(selectedTechnicianId == null ? Color.Primary : Color.Default)"
-            OnClick="@(() => FilterByTechnician(null))"
-            Class="filter-chip">
-            Wszyscy
-        </MudChip>
-        @foreach (var technician in _technicians)
+        @if (!_isSerwisant)
         {
-            <MudChip T="string"
-                Color="@(selectedTechnicianId == technician.Key ? Color.Primary : Color.Default)"
-                OnClick="@(() => FilterByTechnician(technician.Key))"
-                Class="filter-chip">
-                @technician.Value
-            </MudChip>
+            <MudSelect T="int?" Label="Wybierz serwisanta"
+                       Value="selectedTechnicianId"
+                       ValueChanged="@((int? val) => FilterByTechnician(val))"
+                       Style="min-width: 150px;">
+                @foreach (var technician in _technicians)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)technician.Key)">@technician.Value (ID: @technician.Key)</MudSelectItem>
+                }
+            </MudSelect>
+        }
+        else if (_technicians.Count > 0)
+        {
+            <MudText>Twoja dostępność: @(_technicians.FirstOrDefault().Value) (ID: @(_technicians.FirstOrDefault().Key))</MudText>
         }
     </div>
 
@@ -178,57 +178,169 @@
     private Dictionary<CalendarItem, DostepnoscSerwisanta> _eventToDostepnosc = new();
     private List<DostepnoscSerwisanta> _wszystkieDostepnosci = new();
     private Dictionary<int, string> _technicians = new();
+    private List<Serwisant> _allSerwisants = new();
     private int? selectedTechnicianId = null;
+    private Uzytkownik _currentUser;
+    private bool _isSerwisant = false;
+    private int? _currentSerwisantId = null;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCurrentUser();
+        await LoadTechnicians();
         await LoadAvailabilities();
+        
+        if (!_isSerwisant)
+        {
+            selectedTechnicianId = null;
+        }
+    }
+    
+    private async Task LoadCurrentUser()
+    {
+        try {
+            _currentUser = await ApiService.GetUzytkownik();
+            _isSerwisant = _currentUser?.RolaUzytkownika?.Nazwa?.ToLower() == "serwisant";
+            
+            if (_isSerwisant)
+            {
+                var serwisanci = await ApiService.SerwisanciRepo.SerwisanciGet();
+                if (serwisanci.Data != null)
+                {
+                    var serwisant = serwisanci.Data.FirstOrDefault(s => 
+                        s.UzytkownikId == _currentUser.UzytkownikId);
+                    
+                    if (serwisant != null)
+                    {
+                        _currentSerwisantId = serwisant.SerwisantId;
+                        selectedTechnicianId = _currentSerwisantId;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas ładowania danych użytkownika: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadTechnicians()
+    {
+        try
+        {
+            var result = await ApiService.SerwisanciRepo.SerwisanciGet();
+            if (result.Data != null)
+            {
+                _allSerwisants = result.Data.ToList();
+                
+                _technicians.Clear();
+                
+                foreach (var serwisant in _allSerwisants)
+                {
+                    if (serwisant.Uzytkownik != null && !_technicians.ContainsKey(serwisant.SerwisantId))
+                    {
+                        var imieNazwisko = $"{serwisant.Uzytkownik.Imie} {serwisant.Uzytkownik.Nazwisko}".Trim();
+                        _technicians[serwisant.SerwisantId] = imieNazwisko;
+                    }
+                }
+                
+                if (_isSerwisant && _currentSerwisantId.HasValue)
+                {
+                    var filteredTechnicians = new Dictionary<int, string>();
+                    if (_technicians.TryGetValue(_currentSerwisantId.Value, out var techName))
+                    {
+                        filteredTechnicians[_currentSerwisantId.Value] = techName;
+                    }
+                    _technicians = filteredTechnicians;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas ładowania serwisantów: {ex.Message}", Severity.Error);
+        }
     }
 
     private async Task LoadAvailabilities()
     {
-        _events.Clear();
-        _filteredEvents.Clear();
-        _eventToDostepnosc.Clear();
-        _wszystkieDostepnosci.Clear();
-        _technicians.Clear();
-        
-        var result = await ApiService.DostepnosciSerwisantaRepo.DostepnosciSerwisantaGet();
-        if (result.Data is not null)
+        try
         {
-            _wszystkieDostepnosci = result.Data;
+            _events.Clear();
+            _filteredEvents.Clear();
+            _eventToDostepnosc.Clear();
+            _wszystkieDostepnosci.Clear();
 
-            foreach (var d in result.Data)
+            var result = await ApiService.DostepnosciSerwisantaRepo.DostepnosciSerwisantaGet();
+            if (result.Data is not null)
             {
-                var imieNazwisko = $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
+                var validSerwisantIds = _allSerwisants.Select(s => s.SerwisantId).ToHashSet();
                 
-                if (!_technicians.ContainsKey(d.SerwisantId))
+                if (_isSerwisant && _currentSerwisantId.HasValue)
                 {
-                    _technicians[d.SerwisantId] = imieNazwisko;
+                    _wszystkieDostepnosci = result.Data
+                        .Where(d => d.SerwisantId == _currentSerwisantId.Value)
+                        .ToList();
                 }
-                
-                var item = new CalendarItem
+                else
                 {
-                    Start = d.DataOd,
-                    End = d.DataDo,
-                    //Text = $"{imieNazwisko} ({(d.CzyDostepny ? "Dostępny" : "Niedostępny")})",
-                    Text = $"{imieNazwisko}",
-                };
-                _events.Add(item);
-                _eventToDostepnosc[item] = d;
+                    _wszystkieDostepnosci = result.Data
+                        .Where(d => validSerwisantIds.Contains(d.SerwisantId))
+                        .ToList();
+                }
+
+                foreach (var d in _wszystkieDostepnosci)
+                {
+                    if (_technicians.TryGetValue(d.SerwisantId, out var imieNazwisko))
+                    {
+                        var item = new CalendarItem
+                        {
+                            Start = d.DataOd,
+                            End = d.DataDo,
+                            Text = imieNazwisko,
+                        };
+                        _events.Add(item);
+                        _eventToDostepnosc[item] = d;
+                    }
+                    else if (d.Serwisant?.Uzytkownik != null)
+                    {
+                        var name = $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
+                        var item = new CalendarItem
+                        {
+                            Start = d.DataOd,
+                            End = d.DataDo,
+                            Text = name,
+                        };
+                        _events.Add(item);
+                        _eventToDostepnosc[item] = d;
+                    }
+                }
+
+                _filteredEvents = new List<CalendarItem>(_events);
+
+                if (_isSerwisant && _currentSerwisantId.HasValue)
+                {
+                    FilterByTechnician(_currentSerwisantId.Value);
+                }
+
+                if (selectedTechnicianId == null)
+                {
+                    _filteredEvents = new List<CalendarItem>();
+                }
             }
-            
-            _filteredEvents = new List<CalendarItem>(_events);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas ładowania dostępności: {ex.Message}", Severity.Error);
         }
     }
 
     private void FilterByTechnician(int? technicianId)
     {
         selectedTechnicianId = technicianId;
-        
+
         if (technicianId == null)
         {
-            _filteredEvents = new List<CalendarItem>(_events);
+            _filteredEvents = new List<CalendarItem>();
         }
         else
         {
@@ -237,11 +349,35 @@
                 .ToList();
         }
     }
+    
     private async Task OpenAddAvailabilityDialog()
     {
+        Dictionary<int, string> availableTechnicians;
+        
+        if (_isSerwisant && _currentSerwisantId.HasValue)
+        {
+            availableTechnicians = new Dictionary<int, string>();
+            if (_technicians.TryGetValue(_currentSerwisantId.Value, out var name))
+            {
+                availableTechnicians[_currentSerwisantId.Value] = name;
+            }
+        }
+        else
+        {
+            availableTechnicians = new Dictionary<int, string>();
+            foreach (var serwisant in _allSerwisants)
+            {
+                if (serwisant.Uzytkownik != null)
+                {
+                    var imieNazwisko = $"{serwisant.Uzytkownik.Imie} {serwisant.Uzytkownik.Nazwisko}".Trim();
+                    availableTechnicians[serwisant.SerwisantId] = imieNazwisko;
+                }
+            }
+        }
+    
         var parameters = new DialogParameters
         {
-            ["TechnicianDict"] = _technicians
+            ["TechnicianDict"] = availableTechnicians
         };
     
         var options = new DialogOptions
@@ -264,7 +400,7 @@
             if (apiResult.Data != null)
             {
                 Snackbar.Add("Dostępność została dodana pomyślnie", Severity.Success);
-                await LoadAvailabilities(); // Reload all data
+                await LoadAvailabilities();
             }
             else
             {
@@ -272,25 +408,44 @@
             }
         }
     }
+    
     private async Task CellClicked(DateTime dateTime)
     {
         var dzien = dateTime.Date;
         var godzina = dateTime.TimeOfDay;
     
+        var validSerwisantIds = _allSerwisants.Select(s => s.SerwisantId).ToHashSet();
+        
         var dostepniSerwisanci = _wszystkieDostepnosci
             .Where(d => 
                 d.DataOd <= dateTime && 
                 d.DataDo >= dateTime && 
-                d.CzyDostepny)
-            .Select(d => $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim())
+                d.CzyDostepny &&
+                validSerwisantIds.Contains(d.SerwisantId))
+            .Select(d => {
+                if (_technicians.TryGetValue(d.SerwisantId, out var name))
+                    return name;
+                else if (d.Serwisant?.Uzytkownik != null)
+                    return $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
+                else
+                    return $"Serwisant ID: {d.SerwisantId}";
+            })
             .ToList();
         
         var niedostepniSerwisanci = _wszystkieDostepnosci
             .Where(d => 
                 d.DataOd <= dateTime && 
                 d.DataDo >= dateTime && 
-                !d.CzyDostepny)
-            .Select(d => $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim())
+                !d.CzyDostepny &&
+                validSerwisantIds.Contains(d.SerwisantId))
+            .Select(d => {
+                if (_technicians.TryGetValue(d.SerwisantId, out var name))
+                    return name;
+                else if (d.Serwisant?.Uzytkownik != null)
+                    return $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
+                else
+                    return $"Serwisant ID: {d.SerwisantId}";
+            })
             .ToList();
 
         var parameters = new DialogParameters
@@ -323,12 +478,18 @@
             }
         }
     }
+    
     private async Task ItemClicked(CalendarItem item)
     {
         if (!_eventToDostepnosc.TryGetValue(item, out var dostepnosc))
             return;
 
-        var imieNazwisko = $"{dostepnosc.Serwisant.Uzytkownik.Imie} {dostepnosc.Serwisant.Uzytkownik.Nazwisko}".Trim();
+        string imieNazwisko = "Nieznany";
+        if (_technicians.TryGetValue(dostepnosc.SerwisantId, out var techName))
+        {
+            imieNazwisko = techName;
+        }
+        
         var statusText = dostepnosc.CzyDostepny ? "Dostępny" : "Niedostępny";
 
         var parameters = new DialogParameters
@@ -347,7 +508,7 @@
             CloseButton = true
         };
     
-        var dialog = await DialogService.ShowAsync<AvailabilityDetailsDialog>($"Szczegóły dostępności", parameters, options);
+        var dialog = await DialogService.ShowAsync<AvailabilityDetailsDialog>("Szczegóły dostępności", parameters, options);
         var result = await dialog.Result;
     
         if (!result.Canceled && result.Data is string action)

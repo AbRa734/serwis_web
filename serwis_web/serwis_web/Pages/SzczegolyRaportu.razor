@@ -6,6 +6,7 @@
 @using QuestPDF.Fluent
 @using QuestPDF.Helpers
 @using Colors = QuestPDF.Helpers.Colors
+@using Console = System.Console
 @inject ApiService.ApiService ApiService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
@@ -18,11 +19,20 @@
     <MudSelect T="int?" Label="Wybierz numer zamówienia" Value="_selectedOrderId" ValueChanged="OnOrderSelectionChanged"
                AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"
                Class="mb-4" FullWidth="true">
-        @foreach (var zamowienie in _zamowienia.Where((x) => x.ZamowienieId != 0).ToList())
+        @if (_filteredZamowienia.Count == 0 || !_filteredZamowienia.Any(x => x.ZamowienieId != 0))
         {
-            <MudSelectItem T="int?" Value="@zamowienie.ZamowienieId">
-                Zamówienie #@zamowienie.ZamowienieId - @zamowienie.Status?.Nazwa
+            <MudSelectItem T="int?" Value="0" Disabled="true">
+                Brak dostępnych zamówień
             </MudSelectItem>
+        }
+        else
+        {
+            @foreach (var zamowienie in _filteredZamowienia.Where((x) => x.ZamowienieId != 0).ToList())
+            {
+                <MudSelectItem T="int?" Value="@zamowienie.ZamowienieId">
+                    Zamówienie #@zamowienie.ZamowienieId - @zamowienie.Status?.Nazwa
+                </MudSelectItem>
+            }
         }
     </MudSelect>
 
@@ -201,14 +211,70 @@
 
 @code {
     private List<Zamowienie> _zamowienia = new();
+    private List<Zamowienie> _filteredZamowienia = new();
     private Zamowienie? _selectedOrder;
     private int? _selectedOrderId;
     private bool _isLoading = false;
     private bool _generatingPdf = false;
+    private Uzytkownik _currentUser;
+    private bool _isSerwisant = false;
+    private bool _isKlient = false;
+    private int? _serwisantId = null;
+    private int? _klientId = null;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCurrentUserAsync();
         await LoadZamowienia();
+    }
+
+    private async Task LoadCurrentUserAsync()
+    {
+        try
+        {
+            _currentUser = await ApiService.GetUzytkownik();
+            
+            Console.WriteLine(_currentUser.RolaUzytkownika.Nazwa);
+            
+            if (_currentUser.RolaUzytkownika.Nazwa == "Serwisant")
+            {
+                _isSerwisant = true;
+                
+                // Find the Serwisant ID associated with this user
+                var serwisanci = await ApiService.SerwisanciRepo.SerwisanciGet();
+                if (serwisanci.Data != null)
+                {
+                    var serwisant = serwisanci.Data.FirstOrDefault(s => s.UzytkownikId == _currentUser.UzytkownikId);
+                    if (serwisant != null)
+                    {
+                        _serwisantId = serwisant.SerwisantId;
+                    }
+                }
+            }
+            else if (_currentUser.RolaUzytkownika.Nazwa == "Klient")
+            {
+                _isKlient = true;
+                
+                // Find the Klient ID associated with this user
+                var klienci = await ApiService.KlienciRepo.KlienciGet();
+                if (klienci.Data != null)
+                {
+                    var klient = klienci.Data.FirstOrDefault(k => k.UzytkownikId == _currentUser.UzytkownikId);
+                    if (klient != null)
+                    {
+                        _klientId = klient.KlientId;
+                    }
+                    else
+                    {
+                        _klientId = _currentUser.UzytkownikId;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
+        }
     }
 
     private async Task LoadZamowienia()
@@ -220,6 +286,26 @@
             if (result.Data != null)
             {
                 _zamowienia = result.Data;
+                
+                Console.WriteLine(_isKlient);
+                Console.WriteLine(_klientId);
+                
+                // Filter orders based on user role
+                if (_isSerwisant && _serwisantId.HasValue)
+                {
+                    // Filter for technician - show only orders assigned to them
+                    _filteredZamowienia = _zamowienia.Where(z => z.SerwisantId == _serwisantId.Value).ToList();
+                }
+                else if (_isKlient)
+                {
+                    // Filter for client - show only their orders
+                    _filteredZamowienia = _zamowienia.Where(z => z.Klient.UzytkownikId == _klientId).ToList();
+                }
+                else
+                {
+                    // No filtering for other roles (like admin)
+                    _filteredZamowienia = _zamowienia;
+                }
             }
             else
             {
@@ -260,7 +346,16 @@
             var result = await ApiService.ZamowieniaRepo.ZamowienieGet(_selectedOrderId ?? 0);
             if (result.Data != null)
             {
-                _selectedOrder = result.Data;
+                // Additional security check - verify this order belongs to the current user if they're a client
+                if (_isKlient && _klientId.HasValue && result.Data.KlientId != _klientId.Value)
+                {
+                    Snackbar.Add("Brak dostępu do tego zamówienia", Severity.Error);
+                    _selectedOrder = null;
+                }
+                else
+                {
+                    _selectedOrder = result.Data;
+                }
             }
             else
             {

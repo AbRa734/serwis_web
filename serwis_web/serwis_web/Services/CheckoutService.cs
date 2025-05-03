@@ -18,7 +18,9 @@ public class CheckoutSessionService
 
         var options = new SessionCreateOptions
         {
-            PaymentMethodTypes = new List<string> { "card" },
+            PaymentMethodTypes = paymentRequest.PaymentMethodTypes.Count > 0 
+                ? paymentRequest.PaymentMethodTypes 
+                : new List<string> { "card", "blik", "p24" },
             LineItems = new List<SessionLineItemOptions>
             {
                 new SessionLineItemOptions
@@ -52,4 +54,5 @@ public class PaymentRequest
     public string Currency { get; set; } = "pln";
     public string ProductName { get; set; } = "Usługa serwisowa";
     public string Description { get; set; } = "";
+    public List<string> PaymentMethodTypes { get; set; } = new List<string> { "card", "blik", "p24" };
 }

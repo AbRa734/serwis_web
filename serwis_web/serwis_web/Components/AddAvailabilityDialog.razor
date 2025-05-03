@@ -92,9 +92,14 @@
     {
         _dateFrom = DateTime.Today;
         _dateTo = DateTime.Today;
-        
+    
         _timeFrom = new TimeSpan(8, 0, 0);
         _timeTo = new TimeSpan(17, 0, 0);
+    
+        if (TechnicianDict != null && TechnicianDict.Any())
+        {
+            _model.SerwisantId = TechnicianDict.Keys.First();
+        }
     }
     
     private async Task Submit()
