@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Heron.MudCalendar" Version="3.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.14" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.14" />
         <PackageReference Include="MudBlazor" Version="8.5.1" />
         <PackageReference Include="QuestPDF" Version="2025.4.0" />

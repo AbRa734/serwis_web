@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using MudBlazor.Services;
 using QuestPDF.Infrastructure;
@@ -18,11 +20,26 @@ builder.Services.AddScoped<ApiService.ApiService>();
 builder.Services.AddScoped<CheckoutSessionService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    })
+    .AddCookie()
+    .AddGoogle(options =>
+    {
+        options.ClientId = "601032152906-dnkls2bjaiga5mmabuforg5f3llmadev.apps.googleusercontent.com";
+        options.ClientSecret = "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";
+        options.CallbackPath = "/google";
+    });
 
 builder.Services.AddBootstrapBlazor();
 builder.Services.AddMudServices();
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -46,7 +63,8 @@ app.MapRazorComponents<App>()
 app.UseStatusCodePagesWithRedirects("/Error");
 
 QuestPDF.Settings.License = LicenseType.Community;
-StripeConfiguration.ApiKey = "sk_test_51RHTepH8Eh2h5xHth0gIqcvTUQINF5t2pEPF6J8ghuJUYJ7SheubGn1FdUMISm09sPhVvYWse0d0wWuOiwAHFLNI00ph5Q9zsZ";
+StripeConfiguration.ApiKey =
+    "sk_test_51RHTepH8Eh2h5xHth0gIqcvTUQINF5t2pEPF6J8ghuJUYJ7SheubGn1FdUMISm09sPhVvYWse0d0wWuOiwAHFLNI00ph5Q9zsZ";
 
 app.MapPost("/platnosc", async (CheckoutSessionService checkoutService) =>
 {
