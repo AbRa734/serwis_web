@@ -4,79 +4,108 @@
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
 
 <div class="top-section">
-    <a class="tab-container">
-        <div class="tab-wrapper">
-            <div class="title-icon">
-                <p>Liczba użytkowników</p>
-                <div class="users-box">
-                    <i class="fa-solid fa-user-group" style="color: #8280FF"></i>
+    @if (_isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Style="align-items: center; justify-content: center; display: flex; margin: 0 auto;"/>
+    }
+    else
+    {
+        <a class="tab-container">
+            <div class="tab-wrapper">
+                <div class="title-icon">
+                    <p>Liczba użytkowników</p>
+                    <div class="users-box">
+                        <i class="fa-solid fa-user-group" style="color: #8280FF"></i>
+                    </div>
                 </div>
+                <h3>@_usersCount</h3>
             </div>
-            <h3>5241</h3>
-        </div>
-    </a>
+        </a>
 
-    <a class="tab-container">
-        <div class="tab-wrapper">
-            <div class="title-icon">
-                <p>Liczba zamówień</p>
-                <div class="orders-box">
-                    <i class="fa-solid fa-cube" style="color: #fec53d"></i>
+        <a class="tab-container">
+            <div class="tab-wrapper">
+                <div class="title-icon">
+                    <p>Liczba zamówień</p>
+                    <div class="orders-box">
+                        <i class="fa-solid fa-cube" style="color: #fec53d"></i>
+                    </div>
                 </div>
+                <h3>@_ordersCount</h3>
             </div>
-            <h3>10231</h3>
-        </div>
-    </a>
+        </a>
 
-    <a class="tab-container">
-        <div class="tab-wrapper">
-            <div class="title-icon">
-                <p>Całkowita sprzedaż</p>
-                <div class="statistics-box">
-                    <i class="fa-solid fa-chart-line" style="color: #4AD991"></i>
+        <a class="tab-container">
+            <div class="tab-wrapper">
+                <div class="title-icon">
+                    <p>Całkowita sprzedaż</p>
+                    <div class="statistics-box">
+                        <i class="fa-solid fa-chart-line" style="color: #4AD991"></i>
+                    </div>
                 </div>
+                <h3>@($"{_totalSales}zł")</h3>
             </div>
-            <h3>25000zł</h3>
-        </div>
-    </a>
+        </a>
 
-    <a class="tab-container">
-        <div class="tab-wrapper">
-            <div class="title-icon">
-                <p>Oczekujące</p>
-                <div class="waiting-box">
-                    <i class="fa-solid fa-clock-rotate-left" style="color: #FF9066"></i>
+        <a class="tab-container">
+            <div class="tab-wrapper">
+                <div class="title-icon">
+                    <p>Oczekujące</p>
+                    <div class="waiting-box">
+                        <i class="fa-solid fa-clock-rotate-left" style="color: #FF9066"></i>
+                    </div>
                 </div>
+                <h3>@_pendingOrdersCount</h3>
             </div>
-            <h3>512</h3>
-        </div>
-    </a>
-</div>
+        </a>
+    }
+</div>  
 
 @* wykresik do zrobienia *@
 
 
 @code {
-    private bool _loading = true;
+    private bool _isLoading = true;
     private List<Zamowienie> _zamowienia = new();
-
+    private List<Uzytkownik> _uzytkownicy = new();
+    private int _usersCount = 0;
+    private int _ordersCount = 0;
+    private int _totalSales = 0;
+    private int _pendingOrdersCount = 0;
+    
+    
     protected override async Task OnInitializedAsync()
     {
-        await LoadServicesAsync();
+        _isLoading = true;
+        try
+        {
+            await LoadOrdersAsync();
+            await LoadUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił blad podczas ładowania danych: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
-    private async Task LoadServicesAsync()
+    private async Task LoadOrdersAsync()
     {
-        _loading = true;
         try
         {
             var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
             if (result.Data != null)
             {
                 _zamowienia = result.Data;
-                
+                _ordersCount = _zamowienia.Count();
+                _pendingOrdersCount = _zamowienia.Count(zamowienie => zamowienie.Status.Nazwa == "Oczekujący" || zamowienie.Status.Nazwa == "W realizacji" || zamowienie.Status.Nazwa == "Nowy");
+                _totalSales = _zamowienia.Sum(zamowienie => zamowienie.Koszt100);
             }
             else
             {
@@ -85,11 +114,28 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił wyjątek podczas ładowania zleceń: {ex.Message}", Severity.Error);
         }
-        finally
+    }
+    
+    private async Task LoadUsersAsync()
+    {
+        try
         {
-            _loading = false;
+            var result = await ApiService.UzytkownicyRepo.UzytkownicyGet();
+            if (result.Data != null)
+            {
+                _uzytkownicy = result.Data;
+                _usersCount = _uzytkownicy.Count();
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania użytkowników: {result.Error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił wyjątek podczas ładowania użytkowników: {ex.Message}", Severity.Error);
         }
     }
 }

@@ -358,7 +358,7 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     
-    @if (isLoading)
+    @if (_isLoading)
     {
         <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Style="align-items: center; justify-content: center; display: flex; margin: 0 auto;"/>
     }
@@ -539,7 +539,6 @@
                 </div>
             }
 
-
             @if (GetUserRole() == "Serwisant" || GetUserRole() == "Administrator")
             {
                 <button type="submit">Zapisz zmiany</button>
@@ -568,7 +567,7 @@
     private Zamowienie? _order;
     private List<DicTypSerwisu> _serwisy = new();
     private List<Serwisant> _serwisanci = new();
-    private bool isLoading = true;
+    private bool _isLoading = true;
     private List<Log> orderLogs = new List<Log>();
     public Uzytkownik? _uzytkownikKlient;
     public Uzytkownik? _uzytkownikZalogowany;
@@ -583,16 +582,16 @@
     public NumerTelefonu? _currentPhoneSerwisant;
     public AdresEmail? _currentEmailSerwisantt;
 
-
-
+    
     private string? _message;
     private string _messageClass = "success-message";
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
+        _isLoading = true;
         try
         {
+            await LoadUserData();
             await LoadOrderData();
             await LoadOrderLogs();
         }
@@ -603,9 +602,22 @@
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
         
+    }
+
+    private async Task LoadUserData()
+    {
+        try
+        {
+            _uzytkownikZalogowany = await ApiService.GetUzytkownik();
+        }
+        catch (Exception ex)
+        {
+            ShowError("Błąd podczas ładowania danych użytkownika: " + ex.Message);
+            return;
+        }
     }
 
     private async Task LoadOrderData()
@@ -616,7 +628,7 @@
 
             if (orderResult.Error != null)
             {
-                ShowError("Błąd podczas ładowania danych użytkownika: " + orderResult.Error);
+                ShowError("Błąd podczas ładowania danych zlecenia: " + orderResult.Error);
                 return;
             }
 
@@ -624,7 +636,7 @@
 
             if (_order == null)
             {
-                ShowError("Nie znaleziono danych użytkownika");
+                ShowError("Nie znaleziono zlecenia");
                 return;
             }
 
@@ -962,30 +974,29 @@
 
                 numerTelefonuId = phoneResult.Data?.NumerTelefonuId;
             }
-
-            List<int> addressIds = new();
-
-            if (!string.IsNullOrWhiteSpace(_orderDataModel.Ulica) && !string.IsNullOrWhiteSpace(_orderDataModel.Miasto))
+            
+            int? addressId = null;
+            if (!string.IsNullOrWhiteSpace(_orderDataModel.Ulica) || !string.IsNullOrWhiteSpace(_orderDataModel.Miasto))
             {
-                var adresDto = new AdresDto
+                var adresResult = await ApiService.AdresyRepo.AdresPost(new AdresDto
                 {
+                    Kraj = _orderDataModel.Kraj,
                     Ulica = _orderDataModel.Ulica,
                     NumerDomu = _orderDataModel.NumerDomu,
                     NumerMieszkania = _orderDataModel.NumerMieszkania,
-                    KodPocztowy = _orderDataModel.KodPocztowy,
                     Miasto = _orderDataModel.Miasto,
-                    Kraj = _orderDataModel.Kraj
-                };
-
-                var adresResult = await ApiService.AdresyRepo.AdresPost(adresDto);
+                    KodPocztowy = _orderDataModel.KodPocztowy
+                });
 
                 if (adresResult.Error != null || adresResult.Data == null)
                 {
                     ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
                     return;
                 }
-                addressIds.Add(adresResult.Data.AdresId);
+
+                addressId = adresResult.Data.AdresId;
             }
+            
             
             if (!string.IsNullOrWhiteSpace(_orderDataModel.ImieKlienta) && !string.IsNullOrWhiteSpace(_orderDataModel.NazwiskoKlienta))
             {
@@ -994,10 +1005,10 @@
                     RolaUzytkownikaId = _uzytkownikKlient.RolaUzytkownika.RolaUzytkownikaId,
                     Imie = _orderDataModel.ImieKlienta,
                     Nazwisko = _orderDataModel.NazwiskoKlienta,
-                    AdresEmailId = adresEmailId,
-                    NumerTelefonuId = numerTelefonuId,
+                    AdresEmailId = _uzytkownikKlient.AdresEmailId,
+                    NumerTelefonuId = _uzytkownikKlient.NumerTelefonuId,
                     CzyAktywny = _uzytkownikKlient.CzyAktywny,
-                    AdresId = addressIds.First(),
+                    AdresId = _uzytkownikKlient.Adres.AdresId,
                 };
 
                 var userResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_uzytkownikKlient.UzytkownikId, userDto);
@@ -1084,24 +1095,24 @@
             
             
             var zamowienieDto = new ZamowienieDto
-                {
-                    SerwisantId = _orderDataModel.SerwisantId,
-                    KlientId = _orderDataModel.KlientId,
-                    SerwisId = _orderDataModel.SerwisId,
-                    StatusId = _orderDataModel.StatusId,
-                    PriorytetId = _orderDataModel.PriorytetId,
-                    MetodaPlatnosciId = _orderDataModel.MetodaPlatnosciId,
-                    KomentarzeIds = _orderDataModel.KomentarzeIds,
-                    NumerTelefonuId = numerTelefonuId,
-                    AdresEmailId = adresEmailId,
-                    Koszt100 = _orderDataModel.Koszt100,
-                    Opis = _orderDataModel.Opis,
-                    AdresId = addressIds.First(),
-                    PlanowanaDataRealizacjiOd = _orderDataModel.PlanowanaDataRealizacjiOd,
-                    PlanowanaDataRealizacjiDo = _orderDataModel.PlanowanaDataRealizacjiDo,
-                    ZrealizowanaDataRealizacjiOd = _orderDataModel.ZrealizowanaDataRealizacjiOd,
-                    ZrealizowanaDataRealizacjiDo = _orderDataModel.ZrealizowanaDataRealizacjiDo
-                };
+            {
+                SerwisantId = _orderDataModel.SerwisantId,
+                KlientId = _orderDataModel.KlientId,
+                SerwisId = _orderDataModel.SerwisId,
+                StatusId = _orderDataModel.StatusId,
+                PriorytetId = _orderDataModel.PriorytetId,
+                MetodaPlatnosciId = _orderDataModel.MetodaPlatnosciId,
+                KomentarzeIds = _orderDataModel.KomentarzeIds,
+                NumerTelefonuId = numerTelefonuId,
+                AdresEmailId = adresEmailId,
+                Koszt100 = _orderDataModel.Koszt100,
+                Opis = _orderDataModel.Opis,
+                AdresId = addressId,
+                PlanowanaDataRealizacjiOd = _orderDataModel.PlanowanaDataRealizacjiOd,
+                PlanowanaDataRealizacjiDo = _orderDataModel.PlanowanaDataRealizacjiDo,
+                ZrealizowanaDataRealizacjiOd = _orderDataModel.ZrealizowanaDataRealizacjiOd,
+                ZrealizowanaDataRealizacjiDo = _orderDataModel.ZrealizowanaDataRealizacjiDo
+            };
 
             var result = await ApiService.ZamowieniaRepo.ZamowieniePut(OrderId, zamowienieDto);
 

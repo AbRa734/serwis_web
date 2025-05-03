@@ -369,6 +369,19 @@
 				}
 			}
 			
+			var clientResult = await ApiService.KlienciRepo.KlientPost(new KlientDto
+			{
+				UzytkownikId = _uzytkownikId,
+				TypKlientaId = 0
+			});
+
+			if (clientResult.Error != null)
+			{
+				_errorMessage = $"Błąd podczas tworzenia klienta: {userResult.Error}";
+				return;
+			}
+			
+			
 			String hasloNowegoUzytkownika = GenerateRandomPassword();
 			var autoryzacjaResult = await ApiService.AdministracjaRepo.RejestracjaUzytkownikaWIdentity(new RegisterRequestIdentity
 			{

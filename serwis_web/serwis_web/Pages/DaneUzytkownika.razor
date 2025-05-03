@@ -144,16 +144,23 @@
 	.reset-password:hover {
 		background-color: #85d4c8;
 	}
-
-	.delete-account {
+	.active_account{
+		background-color: #15a80a;
+		color: #ffffff;
+		border: none;
+		font-size: 16px;
+		text-align: center;
+		cursor: pointer;
+	}
+	.inactive_account{
 		background-color: #f14c3c;
-		font-weight: 500;
-		margin-top: 15px;
+		color: #ffffff;
+		border: none;
+		font-size: 16px;
+		text-align: center;
+		cursor: pointer;
 	}
-
-	.delete-account:hover {
-		background-color: #d12413;
-	}
+	
 
 	@@media (max-width: 1366px) {
 		.service-tab
@@ -322,7 +329,7 @@
 				<InputDate @bind-Value="_userDataModel.DataAktualizacji" placeholder="Data" class="form-input" readonly />
 
 				<h4>Aktywnosc konta</h4>
-				<InputSelect @bind-Value="_userDataModel.CzyAktywny" class="form-input" style="background-color:#f14c3c; color: #ffffff; border: none; font-size: 16px; text-align: center">
+				<InputSelect @bind-Value="_userDataModel.CzyAktywny" class="@GetActivityAccountClass()">
 					<option value="true">Tak</option>
 					<option value="false">Nie</option>
 				</InputSelect>
@@ -534,7 +541,11 @@
 		_message = error;
 		_messageClass = "error-message";
 	}
-
+	
+	private string GetActivityAccountClass()
+	{
+		return _userDataModel.CzyAktywny ? "form-input active_account" : "form-input inactive_account";
+	}
 
 	public class UserDataModel
 	{
