@@ -629,7 +629,7 @@
         }
         catch (Exception ex)
         {
-            ShowError("Błąd podczas ładowania danych użytkownika: " + ex.Message);
+            ShowError("Błąd podczas ładowania danych użytkownika.");
             return;
         }
     }
@@ -642,7 +642,7 @@
 
             if (orderResult.Error != null)
             {
-                ShowError("Błąd podczas ładowania danych zlecenia: " + orderResult.Error);
+                ShowError("Błąd podczas ładowania danych zlecenia.");
                 return;
             }
 
@@ -765,7 +765,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
         }
     }
     
@@ -817,7 +817,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Błąd podczas pobierania danych serwisanta: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Błąd podczas pobierania danych serwisanta.", Severity.Error);
         }
     }
 
@@ -836,12 +836,12 @@
             }
             else
             {
-                Snackbar.Add($"Błąd pobierania historii: {logsResult.Error}", Severity.Warning);
+                Snackbar.Add($"Błąd pobierania historii.", Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Błąd podczas pobierania historii: {ex.Message}", Severity.Warning);
+            Snackbar.Add($"Błąd podczas pobierania historii.", Severity.Warning);
         }
     }
     private async Task OpenHistoryDialog()
@@ -912,12 +912,12 @@
                 }
                 else
                 {
-                    Snackbar.Add($"Błąd: {logResult.Error}", Severity.Error);
+                    Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
                 }
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+                Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
             }
         }
     }
@@ -941,7 +941,7 @@
             }
             else
             {
-                Snackbar.Add($"Błąd podczas usuwania: {result.Error}", Severity.Error);
+                Snackbar.Add($"Błąd podczas usuwania.", Severity.Error);
             }
         }
     }
@@ -963,7 +963,7 @@
 
                 if (emailResult.Error != null)
                 {
-                    ShowError("Błąd podczas zapisywania adresu email: " + emailResult.Error);
+                    ShowError("Błąd podczas zapisywania adresu email.");
                     return;
                 }
 
@@ -982,7 +982,7 @@
 
                 if (phoneResult.Error != null)
                 {
-                    ShowError("Błąd podczas zapisywania numeru telefonu: " + phoneResult.Error);
+                    ShowError("Błąd podczas zapisywania numeru telefonu");
                     return;
                 }
 
@@ -1004,7 +1004,7 @@
 
                 if (adresResult.Error != null || adresResult.Data == null)
                 {
-                    ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
+                    ShowError("Błąd podczas zapisywania adresu.");
                     return;
                 }
 
@@ -1029,8 +1029,8 @@
 
                 if (userResult.Error != null || userResult.Data == null)
                 {
-                    // ShowError("Błąd podczas zapisywania uzytkownika: " + userResult.Error);
-                    Snackbar.Add("Błąd podczas zapisywania danych klienta: " + userResult.Error);
+                    // ShowError("Błąd podczas zapisywania uzytkownika.");
+                    Snackbar.Add("Błąd podczas zapisywania danych klienta.");
                     return;
                 }
             }
@@ -1059,7 +1059,7 @@
                             
                             if (emailResult.Error != null)
                             {
-                                ShowError("Błąd podczas zapisywania adresu email serwisanta: " + emailResult.Error);
+                                ShowError("Błąd podczas zapisywania adresu email serwisanta.");
                                 return;
                             }
                             
@@ -1078,7 +1078,7 @@
                             
                             if (phoneResult.Error != null)
                             {
-                                ShowError("Błąd podczas zapisywania numeru telefonu serwisanta: " + phoneResult.Error);
+                                ShowError("Błąd podczas zapisywania numeru telefonu serwisanta");
                                 return;
                             }
                             
@@ -1100,7 +1100,7 @@
                         
                         if (userResult.Error != null || userResult.Data == null)
                         {
-                            Snackbar.Add("Błąd podczas zapisywania danych serwisanta: " + userResult.Error, Severity.Error);
+                            Snackbar.Add("Błąd podczas zapisywania danych serwisanta.", Severity.Error);
                             return;
                         }
                     }
@@ -1147,12 +1147,12 @@
             }
             else
             {
-                Snackbar.Add($"Błąd: {result.Error}", Severity.Error);
+                Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił nieoczekiwany błąd, spróbuj ponownie później.", Severity.Error);
         }
     }
 

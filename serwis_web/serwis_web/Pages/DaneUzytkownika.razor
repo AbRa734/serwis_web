@@ -369,7 +369,7 @@
 
 		if (userResult.Error != null)
 		{
-			ShowError("Błąd podczas ładowania danych użytkownika: " + userResult.Error);
+			ShowError("Błąd podczas ładowania danych użytkownika.");
 			return;
 		}
 
@@ -449,7 +449,7 @@
 
 				if (phoneResult.Error != null)
 				{
-					ShowError("Błąd podczas zapisywania numeru telefonu: " + phoneResult.Error);
+					ShowError("Błąd podczas zapisywania numeru telefonu.");
 					return;
 				}
 
@@ -475,7 +475,7 @@
 
 				if (adresResult.Error != null)
 				{
-					ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
+					ShowError("Błąd podczas zapisywania adresu.");
 					return;
 				}
 
@@ -497,7 +497,7 @@
 
 			if (userResult.Error != null)
 			{
-				Snackbar.Add("Błąd podczas zapisywania danych użytkownika: " + userResult.Error);
+				Snackbar.Add("Błąd podczas zapisywania danych użytkownika.");
 				return;
 			}
 			
@@ -515,7 +515,7 @@
 
 				if (servicemenResult.Error != null)
 				{
-					Snackbar.Add("Błąd podczas tworzenia serwisanta: " + userResult.Error);
+					Snackbar.Add("Błąd podczas tworzenia serwisanta.");
 					return;
 				}
 			}
@@ -530,7 +530,7 @@
 
 				if (servicemenResult.Error != null)
 				{
-					Snackbar.Add("Błąd podczas tworzenia serwisanta: " + userResult.Error);
+					Snackbar.Add("Błąd podczas tworzenia serwisanta.");
 					return;
 				}
 			}
@@ -541,7 +541,7 @@
 		}
 		catch (Exception ex)
 		{
-			ShowError("Wystąpił nieoczekiwany błąd: " + ex.Message);
+			ShowError("Wystąpił nieoczekiwany błąd.");
 		}
 	}
 

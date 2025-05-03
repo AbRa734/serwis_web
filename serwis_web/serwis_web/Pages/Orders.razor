@@ -330,12 +330,12 @@
             }
             else
             {
-                Snackbar.Add($"Błąd podczas ładowania zleceń: {result.Error}", Severity.Error);
+                Snackbar.Add($"Wystąpił błąd podczas ładowania zleceń.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił nieoczekiwany problem, spróbuj ponownie później.", Severity.Error);
         }
         finally
         {
@@ -376,7 +376,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił błąd podczas pobierania danych użytkownika.", Severity.Error);
         }
     }
     

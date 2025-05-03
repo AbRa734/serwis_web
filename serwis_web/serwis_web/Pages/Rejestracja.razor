@@ -151,12 +151,12 @@
             }
             else
             {
-                Snackbar.Add(wynik.Error ?? "Nie udało się zarejestrować. Spróbuj ponownie.", Severity.Error);
+                Snackbar.Add( "Nie udało się zarejestrować. Spróbuj ponownie.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił nieoczekiwany błąd.", Severity.Error);
         }
         finally
         {

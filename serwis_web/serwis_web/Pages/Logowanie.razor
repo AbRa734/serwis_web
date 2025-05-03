@@ -191,14 +191,14 @@
                         }
                         else
                         {
-                            Snackbar.Add(registerResult.Error ?? "Nie udało się utworzyć konta.", Severity.Error);
+                            Snackbar.Add("Nie udało się utworzyć konta.", Severity.Error);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+                Snackbar.Add($"Wystąpił nieoczekiwany błąd, spróbuj ponownie później.", Severity.Error);
             }
         }
     }
@@ -267,12 +267,12 @@
             }
             else
             {
-                Snackbar.Add(_wynik?.Error ?? "Nieprawidłowy email lub hasło", Severity.Error);
+                Snackbar.Add("Nieprawidłowy email lub hasło", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił nieoczekiwany błąd, spróbuj ponownie później.", Severity.Error);
         }
         finally
         {

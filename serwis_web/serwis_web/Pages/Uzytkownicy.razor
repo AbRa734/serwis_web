@@ -311,12 +311,12 @@
             }
             else
             {
-                Snackbar.Add($"Błąd podczas ładowania użytkowników: {result.Error}", Severity.Error);
+                Snackbar.Add($"Błąd podczas ładowania użytkowników.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
         }
         finally
         {

@@ -51,7 +51,7 @@ else if (GetUserRole() == "Administrator")
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Błąd podczas pobierania danych użytkownika: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Błąd podczas pobierania danych użytkownika.", Severity.Error);
         }
     }
     

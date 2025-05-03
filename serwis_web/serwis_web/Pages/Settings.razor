@@ -348,7 +348,7 @@
 		}
 		catch (Exception ex)
 		{
-			ShowError($"Błąd podczas pobierania danych użytkownika: {ex.Message}");
+			ShowError($"Błąd podczas pobierania danych użytkownika.");
 		}
 	}
 
@@ -375,7 +375,7 @@
 
 			if (phoneResult.Error != null)
 			{
-				ShowError("Błąd podczas zapisywania numeru telefonu: " + phoneResult.Error);
+				ShowError("Błąd podczas zapisywania numeru telefonu.");
 				return;
 			}
 
@@ -401,7 +401,7 @@
 
 			if (adresResult.Error != null)
 			{
-				ShowError("Błąd podczas zapisywania adresu: " + adresResult.Error);
+				ShowError("Błąd podczas zapisywania adresu.");
 				return;
 			}
 
@@ -420,7 +420,7 @@
 		var updateResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_currentUser.UzytkownikId, updatedUser);
 		if (updateResult.Error != null)
 		{
-			ShowError("Błąd podczas zapisywania danych użytkownika: " + updateResult.Error);
+			ShowError("Błąd podczas zapisywania danych użytkownika.");
 			return;
 		}
 
@@ -429,7 +429,7 @@
 	}
 	catch (Exception ex)
 	{
-		ShowError("Wystąpił błąd: " + ex.Message);
+		ShowError("Wystąpił błąd, spróbuj ponownie później.");
 	}
 }
 
@@ -444,7 +444,7 @@
 		}
 		else
 		{
-			ShowError(result.Error ?? "Nie udało się wysłać przypomnienia. Spróbuj ponownie.");
+			ShowError("Nie udało się wysłać przypomnienia. Spróbuj ponownie.");
 		}
 
 		_passwordModel = new PasswordChangeModel();

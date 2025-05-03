@@ -87,7 +87,7 @@
 
             if (result.Error != null || result.Data == null || (result.Data != null && result.Data.CzyZrestartowanoHaslo))
             {
-                if (result.Error != null) Snackbar.Add(result.Error, Severity.Error);
+                if (result.Error != null) Snackbar.Add("Wystąpił błąd przy próbie zresetowania hasła, spróbuj ponownie później.", Severity.Error);
                 _isDisabled = true;
             }
             else
@@ -114,7 +114,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił nieoczekiwany błąd, spróbuj ponownie później.", Severity.Error);
             _isDisabled = true;
         }
     }
@@ -144,13 +144,13 @@
                 }
                 else
                 {
-                    Snackbar.Add(result.Error ?? "Nie udało się zresetować hasła. Spróbuj ponownie.", Severity.Error);
+                    Snackbar.Add("Nie udało się zresetować hasła. Spróbuj ponownie.", Severity.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił nieoczekiwany błąd, spróbuj ponownie później.", Severity.Error);
         }
         finally
         {

@@ -134,7 +134,7 @@
         }
     }
 
-    @@media (max-width: 600) {
+    @@media (max-width: 600px) {
 
         .order-category {
             text-align: start;
@@ -232,7 +232,7 @@
         }
         else
         {
-            Snackbar.Add("Błąd podczas pobierania danych: " + result.Error, Severity.Error);
+            Snackbar.Add("Wystąpił błąd podczas pobierania danych.", Severity.Error);
         }
         _loading = false;
         StateHasChanged();
@@ -288,7 +288,7 @@
                     }
                     else
                     {
-                        Snackbar.Add("Błąd: " + updateResult.Error, Severity.Error);
+                        Snackbar.Add("Wystąpił nieoczekiwany błąd, spróbuj ponownie później.", Severity.Error);
                     }
                 }
                 else
@@ -300,7 +300,7 @@
                     }
                     else
                     {
-                        Snackbar.Add("Błąd: " + createResult.Error, Severity.Error);
+                        Snackbar.Add("Wystąpił nieoczekiwany błąd, spróbuj ponownie później.", Severity.Error);
                     }
                 }
                 await LoadData();
@@ -350,7 +350,7 @@
         }
         else
         {
-            Snackbar.Add("Błąd podczas usuwania: " + result.Error, Severity.Error);
+            Snackbar.Add("Błąd podczas usuwania priorytetu.", Severity.Error);
         }
     }
 

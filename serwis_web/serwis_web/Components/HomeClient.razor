@@ -81,12 +81,12 @@
             }
             else
             {
-                Snackbar.Add($"Błąd podczas ładowania zleceń: {result.Error}", Severity.Error);
+                Snackbar.Add($"Błąd podczas ładowania zleceń.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
         }
         finally
         {
@@ -127,7 +127,7 @@
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Błąd podczas dodawania komentarza: {ex.Message}", Severity.Error);
+                Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
             }
         }
     }
@@ -165,7 +165,7 @@
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Błąd podczas dodawania oceny: {ex.Message}", Severity.Error);
+                Snackbar.Add($"Błąd podczas dodawania oceny.", Severity.Error);
             }
         }
     }

@@ -220,7 +220,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Błąd podczas ładowania danych użytkownika: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Błąd podczas ładowania danych użytkownika.", Severity.Error);
         }
     }
 
@@ -257,7 +257,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Błąd podczas ładowania serwisantów: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Błąd podczas ładowania serwisantów.", Severity.Error);
         }
     }
 
@@ -330,7 +330,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Błąd podczas ładowania dostępności: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Błąd podczas ładowania dostępności serwisantów.", Severity.Error);
         }
     }
 
@@ -404,7 +404,7 @@
             }
             else
             {
-                Snackbar.Add($"Błąd: {apiResult.Error}", Severity.Error);
+                Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
             }
         }
     }
@@ -530,7 +530,7 @@
                     }
                     else
                     {
-                        Snackbar.Add($"Błąd: {apiResult.Error}", Severity.Error);
+                        Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
                     }
                 }
             }
@@ -556,7 +556,7 @@
                     }
                     else
                     {
-                        Snackbar.Add($"Błąd: {apiResult.Error}", Severity.Error);
+                        Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
                     }
                 }
             }
