@@ -55,16 +55,48 @@
     </a>
 </div>
 
-@* wykresik do zrobienia *@
-
+<div class="chart-container">
+    <MudPaper Class="pa-4 my-4">
+        <MudText Typo="Typo.h6">Szczegóły sprzedaży</MudText>
+        <MudChart ChartType="ChartType.Line"
+                  ChartSeries="@Series"
+                  XAxisLabels="@XAxisLabels"
+                  Width="100%"
+                  Height="350px"
+                  ChartOptions="options">
+        </MudChart>
+        <div class="d-flex justify-space-between align-center mt-4">
+            <MudSelect T="string" Label="Widok danych"
+                       Value="@_selectedViewOption"
+                       ValueChanged="@(value => ChangeViewOption(value))">
+                <MudSelectItem Value="@("month")">Miesięcznie</MudSelectItem>
+                <MudSelectItem Value="@("status")">Według statusu</MudSelectItem>
+                <MudSelectItem Value="@("priority")">Według priorytetu</MudSelectItem>
+            </MudSelect>
+        </div>
+    </MudPaper>
+</div>
 
 @code {
     private bool _loading = true;
     private List<Zamowienie> _zamowienia = new();
 
+    private ChartOptions options = new ChartOptions();
+    private List<ChartSeries> Series = new List<ChartSeries>();
+    private string[] XAxisLabels = Array.Empty<string>();
+    private bool _showDataMarkers = false;
+    private string _selectedViewOption = "month";
+
     protected override async Task OnInitializedAsync()
     {
         await LoadServicesAsync();
+        InitializeChartOptions();
+    }
+
+    private void InitializeChartOptions()
+    {
+        options.InterpolationOption = InterpolationOption.NaturalSpline;
+        options.YAxisFormat = "0";
     }
 
     private async Task LoadServicesAsync()
@@ -76,7 +108,7 @@
             if (result.Data != null)
             {
                 _zamowienia = result.Data;
-                
+                ProcessChartData();
             }
             else
             {
@@ -91,5 +123,146 @@
         {
             _loading = false;
         }
+    }
+
+    private void ProcessChartData()
+    {
+        if (_zamowienia == null || !_zamowienia.Any())
+        {
+            Series = new List<ChartSeries>
+            {
+                new ChartSeries { Name = "Brak danych", Data = new double[] { 0 } }
+            };
+            XAxisLabels = new[] { "Brak danych" };
+            return;
+        }
+
+        switch (_selectedViewOption)
+        {
+            case "month":
+                ProcessMonthlyData();
+                break;
+            case "status":
+                ProcessStatusData();
+                break;
+            case "priority":
+                ProcessPriorityData();
+                break;
+            default:
+                ProcessMonthlyData();
+                break;
+        }
+    }
+
+    private void ProcessMonthlyData()
+    {
+        var today = DateTime.Today;
+        var sixMonthsAgo = today.AddMonths(-6);
+
+        var dateRanges = Enumerable.Range(0, 6)
+            .Select(i => today.AddMonths(-i))
+            .Select(date => new { Month = date.Month, Year = date.Year })
+            .Reverse()
+            .ToList();
+
+        XAxisLabels = dateRanges
+            .Select(d => $"{GetMonthName(d.Month)} {d.Year}")
+            .ToArray();
+
+        var orderCounts = dateRanges
+            .Select(d => _zamowienia.Count(z =>
+                z.DataDodania.Month == d.Month &&
+                z.DataDodania.Year == d.Year))
+            .ToArray();
+
+        Series = new List<ChartSeries>
+        {
+            new ChartSeries
+            {
+                Name = "Liczba zamówień",
+                Data = orderCounts.Select(c => (double)c).ToArray(),
+                ShowDataMarkers = _showDataMarkers
+            }
+        };
+    }
+
+    private void ProcessStatusData()
+    {
+        var ordersByStatus = _zamowienia
+            .GroupBy(z => z.Status?.StatusId ?? 0)
+            .Select(g => new { StatusId = g.Key, Count = g.Count(), Status = g.First().Status?.Nazwa ?? "Nieznany" })
+            .OrderBy(x => x.StatusId)
+            .ToList();
+
+        XAxisLabels = ordersByStatus.Select(s => s.Status).ToArray();
+
+        Series = new List<ChartSeries>
+        {
+            new ChartSeries
+            {
+                Name = "Liczba zamówień",
+                Data = ordersByStatus.Select(s => (double)s.Count).ToArray(),
+                ShowDataMarkers = _showDataMarkers
+            }
+        };
+    }
+
+    private void ProcessPriorityData()
+    {
+        var ordersByPriority = _zamowienia
+            .GroupBy(z => z.Priorytet?.PriorytetId ?? 0)
+            .Select(g => new { PriorityId = g.Key, Count = g.Count(), Priority = g.First().Priorytet?.Nazwa ?? "Nieznany" })
+            .OrderBy(x => x.PriorityId)
+            .ToList();
+
+        XAxisLabels = ordersByPriority.Select(p => p.Priority).ToArray();
+
+        Series = new List<ChartSeries>
+        {
+            new ChartSeries
+            {
+                Name = "Liczba zamówień",
+                Data = ordersByPriority.Select(p => (double)p.Count).ToArray(),
+                ShowDataMarkers = _showDataMarkers
+            }
+        };
+    }
+
+    private string GetMonthName(int month)
+    {
+        return month switch
+        {
+            1 => "Sty",
+            2 => "Lut",
+            3 => "Mar",
+            4 => "Kwi",
+            5 => "Maj",
+            6 => "Cze",
+            7 => "Lip",
+            8 => "Sie",
+            9 => "Wrz",
+            10 => "Paź",
+            11 => "Lis",
+            12 => "Gru",
+            _ => "Nieznany"
+        };
+    }
+
+    private void ChangeViewOption(string option)
+    {
+        _selectedViewOption = option;
+        ProcessChartData();
+        StateHasChanged();
+    }
+
+    private void ToggleDataMarkers(bool show)
+    {
+        _showDataMarkers = show;
+        foreach (var series in Series)
+        {
+            series.ShowDataMarkers = show;
+        }
+
+        StateHasChanged();
     }
 }
