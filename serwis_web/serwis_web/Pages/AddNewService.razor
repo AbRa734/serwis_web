@@ -175,14 +175,27 @@
 					<div class="service-col">
 						<Textarea @bind-Value="_newOrder.Opis" PlaceHolder="Opisz swój problem" class="form-textarea" required/>
 
-						<h4>Priorytet</h4>
-						<select @bind="_selectedPriorytetId">
-							@foreach (var priorytet in _priorytets)
-							{
-								<option value="@priorytet.PriorytetId">@priorytet.Nazwa</option>
-							}
-						</select>
-
+						<div class="service-row">
+							<div class="single-col">
+								<h4>Priorytet</h4>
+								<select @bind="_selectedPriorytetId">
+									@foreach (var priorytet in _priorytets)
+									{
+										<option value="@priorytet.PriorytetId">@priorytet.Nazwa</option>
+									}
+								</select>
+							</div>
+							<div class="single-col">
+								<h4>Dostępni serwisanci</h4>
+								<select @bind="_selectedSerwisantId">
+									@foreach (var serwisant in _serwisants)
+									{
+										<option value="@serwisant.SerwisantId">@serwisant.Uzytkownik.Imie @serwisant.Uzytkownik.Nazwisko</option>
+									}
+								</select>
+							</div>
+						</div>
+						
 						<h4>Planowana Data Realizacji</h4>
 						<InputDate @bind-Value="_newOrder.PlanowanaDataRealizacjiOd" placeholder="" class="form-input" required />
 						<ValidationMessage For="@(() => _newOrder.PlanowanaDataRealizacjiOd)" />
@@ -193,44 +206,44 @@
 					</div>
 
 					<div class="service-col">
-						<h4>Dostępni serwisanci</h4>
-						<select @bind="_selectedSerwisantId">
-							@foreach (var serwisant in _serwisants)
+						<h4>Klient</h4>
+						<select value="@_selectedClientId" @onchange="HandleClientChange">
+							@foreach (var klient in _clients)
 							{
-								<option value="@serwisant.SerwisantId">@serwisant.Uzytkownik.Imie @serwisant.Uzytkownik.Nazwisko</option>
+								<option value="@klient.KlientId">@klient.Uzytkownik.Imie @klient.Uzytkownik.Nazwisko</option>
 							}
 						</select>
 
 						<h4>Numer Telefonu</h4>
-						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="form-input" required />
-						<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)" />
+						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="form-input" required/>
+						<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)"/>
 
 						<h4>Adres Email</h4>
-						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input" type="email" required />
-						<ValidationMessage For="@(() => _userDataModel.Email)" />
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input" type="email" required/>
+						<ValidationMessage For="@(() => _userDataModel.Email)"/>
 
 						<h4>Państwo</h4>
-						<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" class="form-input" required />
+						<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" class="form-input" required/>
 
 						<div class="service-row">
 							<div class="single-col">
 								<h4>Ulica</h4>
-								<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" class="form-input" required />
+								<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" class="form-input" required/>
 							</div>
 							<div class="single-col">
 								<h4>Numer Domu</h4>
-								<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="form-input" required />
+								<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="form-input" required/>
 							</div>
 						</div>
 
 						<div class="service-row">
 							<div class="single-col">
 								<h4>Miasto</h4>
-								<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" class="form-input" required />
+								<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" class="form-input" required/>
 							</div>
 							<div class="single-col">
 								<h4>Kod pocztowy</h4>
-								<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" required />
+								<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" required/>
 							</div>
 						</div>
 					</div>
@@ -279,6 +292,8 @@
 	private int _selectedPriorytetId = 0;
 	private List<Serwisant> _serwisants = new();
 	private int _selectedSerwisantId = 0;
+	private List<Klient> _clients = new();
+	private int _selectedClientId = 0;
 
 	private bool _isLoading = true;
 	private bool _isSaving = false;
@@ -343,10 +358,21 @@
 			var serwisantResult = await ApiService.SerwisanciRepo.SerwisanciGet();
 			if (serwisantResult.Data != null)
 			{
-				_serwisants = serwisantResult.Data;
+				_serwisants = serwisantResult.Data.Where(s => s.CzyAktywny).ToList();
 				if (_serwisants.Any())
 				{
 					_selectedSerwisantId = _serwisants.First().SerwisantId;
+				}
+			}
+			
+			var klientResult = await ApiService.KlienciRepo.KlienciGet();
+			if (klientResult.Data != null)
+			{
+				_clients = klientResult.Data;
+				if (_clients.Any())
+				{
+					_selectedClientId = _clients.First().KlientId;
+					await UpdateClientInfo(_selectedClientId);
 				}
 			}
 
@@ -443,45 +469,32 @@
 				addressId = adresResult.Data.AdresId;
 			}
 
-			int clientId;
-
+			int clientId = 0;
 			
-			// var clientResult = await ApiService.KlienciRepo.KlientGet(_currentUser.UzytkownikId); // brakuje pola KlientId w Uzytkownik
-			// if (clientResult.Data != null)
-			// {
-			// 	clientId = clientResult.Data.KlientId;
-			// }
-			// else
-			// {
-			// 	clientResult = await ApiService.KlienciRepo.KlientPost(new KlientDto
-			// 	{
-			// 		UzytkownikId = _currentUser.UzytkownikId,
-			// 		TypKlientaId = 0
-			// 	});
-			// 	
-			// 	if (clientResult.Error != null || clientResult.Data == null)
-			// 	{
-			// 		_errorMessage = $"Błąd podczas tworzenia klienta: {clientResult.Error}";
-			// 		return;
-			// 	}
-			//
-			// 	clientId = clientResult.Data.KlientId;
-			// }
-			
-			
-			var clientResult = await ApiService.KlienciRepo.KlientPost(new KlientDto
+			var clientResult = await ApiService.KlienciRepo.KlientGet(_selectedClientId); 
+			if (clientResult.Data != null)
 			{
-				UzytkownikId = _currentUser.UzytkownikId,
-				TypKlientaId = 0
-			});
-			
-			if (clientResult.Error != null || clientResult.Data == null)
+				clientId = clientResult.Data.KlientId;
+			}
+			else
 			{
-				_errorMessage = $"Błąd podczas tworzenia klienta: {clientResult.Error}";
+				_errorMessage = $"Błąd podczas ładowania klienta: ";
 				return;
 			}
-
-			clientId = clientResult.Data.KlientId;
+			
+			// var clientResult = await ApiService.KlienciRepo.KlientPost(new KlientDto
+			// {
+			// 	UzytkownikId = _currentUser.UzytkownikId,
+			// 	TypKlientaId = 0
+			// });
+			//
+			// if (clientResult.Error != null || clientResult.Data == null)
+			// {
+			// 	_errorMessage = $"Błąd podczas tworzenia klienta: {clientResult.Error}";
+			// 	return;
+			// }
+			//
+			// clientId = clientResult.Data.KlientId;
 			
 			
 			var createResult = await ApiService.ZamowieniaRepo.ZamowieniePost(new ZamowienieDto
@@ -514,6 +527,71 @@
 		finally
 		{
 			_isSaving = false;
+		}
+	}
+	
+	private async Task HandleClientChange(ChangeEventArgs e)
+	{
+		if (int.TryParse(e.Value?.ToString(), out int clientId))
+		{
+			_selectedClientId = clientId;
+        
+			await UpdateClientInfo(clientId);
+		}
+	}
+
+	private async Task UpdateClientInfo(int clientId)
+	{
+		try
+		{
+			var selectedClient = _clients.FirstOrDefault(c => c.KlientId == clientId);
+        
+			if (selectedClient != null)
+			{
+				var userResult = await ApiService.UzytkownicyRepo.UzytkownikGet(selectedClient.Uzytkownik.UzytkownikId);
+            
+				if (userResult.Data != null)
+				{
+					var user = userResult.Data;
+                
+					if (user.AdresEmailId > 0)
+					{
+						var emailResult = await ApiService.AdresyEmailRepo.AdresEmailGet(user.AdresEmailId);
+						if (emailResult.Data != null)
+						{
+							_userDataModel.Email = emailResult.Data.Email;
+						}
+					}
+                
+					if (user.NumerTelefonuId.HasValue && user.NumerTelefonuId.Value > 0)
+					{
+						var phoneResult = await ApiService.NumeryTelefonuRepo.NumerTelefonuGet(user.NumerTelefonuId.Value);
+						if (phoneResult.Data != null)
+						{
+							_userDataModel.NumerTelefonu = phoneResult.Data.Numer;
+						}
+					}
+					
+					if (user.Adres != null )
+					{
+						var adresResult = await ApiService.AdresyRepo.AdresGet(user.Adres.AdresId);
+						if (adresResult.Data != null)
+						{
+							_userDataModel.Kraj = adresResult.Data.Kraj;
+							_userDataModel.Ulica = adresResult.Data.Ulica;
+							_userDataModel.NumerDomu = adresResult.Data.NumerDomu;
+							_userDataModel.Miasto = adresResult.Data.Miasto;
+							_userDataModel.KodPocztowy = adresResult.Data.KodPocztowy;
+						}
+					}
+					
+					StateHasChanged(); 
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Błąd podczas pobierania danych serwisanta: {ex.Message}", Severity.Error);
 		}
 	}
 

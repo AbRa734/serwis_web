@@ -194,7 +194,7 @@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
 
     <MudCardHeader Class="order-header">
-        <MudText Class="order-header-tittle">Lista zleceń</MudText>
+        <MudText Class="order-header-tittle">Lista użytkowników</MudText>
     </MudCardHeader>
 
     <MudCardHeader Class="order-header-search-button">
@@ -240,7 +240,7 @@
                 </CellTemplate>
             </PropertyColumn>
 
-            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.AdresEmail.Email" Title="Nazwisko" HeaderClass="order-category">
+            <PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.Nazwisko" Title="Nazwisko" HeaderClass="order-category">
                 <CellTemplate>
                     <MudChip Size="Size.Medium" Class="@GetRoleStyle("")">
                         <MudText Class="order-category-single-item">@(context.Item.Nazwisko ?? "Nie określono")</MudText>
@@ -338,9 +338,9 @@
                 u.UzytkownikId.ToString().Contains(searchLower) ||
                 (u.Imie?.ToLower().Contains(searchLower) == true) ||
                 (u.Nazwisko?.ToLower().Contains(searchLower) == true) ||
-                u.AdresEmail.Email.ToLower().Contains(searchLower) ||
-                (u.NumerTelefonu?.Numer?.ToLower().Contains(searchLower) == true) ||
-                u.DataDodania.ToString("dd MMMM yyyy").ToLower().Contains(searchLower)
+                u.DataDodania.ToString("dd MMMM yyyy").ToLower().Contains(searchLower) ||
+                (u.DataAktualizacji.HasValue && u.DataAktualizacji.Value.ToString("dd MMMM yyyy").ToLower().Contains(searchLower)) ||
+                u.RolaUzytkownika.Nazwa.ToLower().Contains(searchLower)
             ).ToList();
         }
 

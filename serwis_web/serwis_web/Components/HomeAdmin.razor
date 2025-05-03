@@ -4,110 +4,142 @@
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
 
-<div class="top-section">
-    <a class="tab-container">
-        <div class="tab-wrapper">
-            <div class="title-icon">
-                <p>Liczba użytkowników</p>
-                <div class="users-box">
-                    <i class="fa-solid fa-user-group" style="color: #8280FF"></i>
+@if (_isLoading)
+{
+    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Style="align-items: center; justify-content: center; display: flex; margin: 0 auto;"/>
+}
+else
+{
+    <div class="top-section">
+        <a class="tab-container">
+            <div class="tab-wrapper">
+                <div class="title-icon">
+                    <p>Liczba użytkowników</p>
+                    <div class="users-box">
+                        <i class="fa-solid fa-user-group" style="color: #8280FF"></i>
+                    </div>
                 </div>
+                <h3>@_usersCount</h3>
             </div>
-            <h3>5241</h3>
-        </div>
-    </a>
+        </a>
 
-    <a class="tab-container">
-        <div class="tab-wrapper">
-            <div class="title-icon">
-                <p>Liczba zamówień</p>
-                <div class="orders-box">
-                    <i class="fa-solid fa-cube" style="color: #fec53d"></i>
+        <a class="tab-container">
+            <div class="tab-wrapper">
+                <div class="title-icon">
+                    <p>Liczba zamówień</p>
+                    <div class="orders-box">
+                        <i class="fa-solid fa-cube" style="color: #fec53d"></i>
+                    </div>
                 </div>
+                <h3>@_ordersCount</h3>
             </div>
-            <h3>10231</h3>
-        </div>
-    </a>
+        </a>
 
-    <a class="tab-container">
-        <div class="tab-wrapper">
-            <div class="title-icon">
-                <p>Całkowita sprzedaż</p>
-                <div class="statistics-box">
-                    <i class="fa-solid fa-chart-line" style="color: #4AD991"></i>
+        <a class="tab-container">
+            <div class="tab-wrapper">
+                <div class="title-icon">
+                    <p>Całkowita sprzedaż</p>
+                    <div class="statistics-box">
+                        <i class="fa-solid fa-chart-line" style="color: #4AD991"></i>
+                    </div>
                 </div>
+                <h3>@($"{_totalSales}zł")</h3>
             </div>
-            <h3>25000zł</h3>
-        </div>
-    </a>
+        </a>
 
-    <a class="tab-container">
-        <div class="tab-wrapper">
-            <div class="title-icon">
-                <p>Oczekujące</p>
-                <div class="waiting-box">
-                    <i class="fa-solid fa-clock-rotate-left" style="color: #FF9066"></i>
+        <a class="tab-container">
+            <div class="tab-wrapper">
+                <div class="title-icon">
+                    <p>Oczekujące</p>
+                    <div class="waiting-box">
+                        <i class="fa-solid fa-clock-rotate-left" style="color: #FF9066"></i>
+                    </div>
                 </div>
+                <h3>@_pendingOrdersCount</h3>
             </div>
-            <h3>512</h3>
-        </div>
-    </a>
-</div>
+        </a>
+    </div>
 
-<div class="chart-container">
-    <MudPaper Class="pa-4 my-4">
-        <MudText Typo="Typo.h6">Szczegóły sprzedaży</MudText>
-        <MudChart ChartType="ChartType.Line"
-                  ChartSeries="@Series"
-                  XAxisLabels="@XAxisLabels"
-                  Width="100%"
-                  Height="350px"
-                  ChartOptions="options">
-        </MudChart>
-        <div class="d-flex justify-space-between align-center mt-4">
-            <MudSelect T="string" Label="Widok danych"
-                       Value="@_selectedViewOption"
-                       ValueChanged="@(value => ChangeViewOption(value))">
-                <MudSelectItem Value="@("month")">Miesięcznie</MudSelectItem>
-                <MudSelectItem Value="@("status")">Według statusu</MudSelectItem>
-                <MudSelectItem Value="@("priority")">Według priorytetu</MudSelectItem>
-            </MudSelect>
-        </div>
-    </MudPaper>
-</div>
+    <div class="chart-container">
+        <MudPaper Class="pa-4 my-4">
+            <MudText Typo="Typo.h6">Szczegóły sprzedaży</MudText>
+            <MudChart ChartType="ChartType.Line"
+                      ChartSeries="@Series"
+                      XAxisLabels="@XAxisLabels"
+                      Width="100%"
+                      Height="350px"
+                      ChartOptions="options">
+            </MudChart>
+            <div class="d-flex justify-space-between align-center mt-4">
+                <MudSelect T="string" Label="Widok danych"
+                           Value="@_selectedViewOption"
+                           ValueChanged="@(value => ChangeViewOption(value))">
+                    <MudSelectItem Value="@("month")">Miesięcznie</MudSelectItem>
+                    <MudSelectItem Value="@("status")">Według statusu</MudSelectItem>
+                    <MudSelectItem Value="@("priority")">Według priorytetu</MudSelectItem>
+                </MudSelect>
+            </div>
+        </MudPaper>
+    </div>
+    
+}
+
 
 @code {
-    private bool _loading = true;
+    private bool _isLoading = true;
     private List<Zamowienie> _zamowienia = new();
-
+    private List<Uzytkownik> _uzytkownicy = new();
+    private int _usersCount = 0;
+    private int _ordersCount = 0;
+    private int _totalSales = 0;
+    private int _pendingOrdersCount = 0;
+    
     private ChartOptions options = new ChartOptions();
     private List<ChartSeries> Series = new List<ChartSeries>();
     private string[] XAxisLabels = Array.Empty<string>();
     private bool _showDataMarkers = false;
     private string _selectedViewOption = "month";
-
+    
+    
     protected override async Task OnInitializedAsync()
     {
-        await LoadServicesAsync();
-        InitializeChartOptions();
+        _isLoading = true;
+        try
+        {
+            await LoadOrdersAsync();
+            await LoadUsersAsync();
+            InitializeChartOptions();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił blad podczas ładowania danych: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
-
+    
     private void InitializeChartOptions()
     {
         options.InterpolationOption = InterpolationOption.NaturalSpline;
         options.YAxisFormat = "0";
     }
 
-    private async Task LoadServicesAsync()
+    private async Task LoadOrdersAsync()
     {
-        _loading = true;
         try
         {
             var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
             if (result.Data != null)
             {
                 _zamowienia = result.Data;
+                _ordersCount = _zamowienia.Count();
+                _pendingOrdersCount = _zamowienia.Count(zamowienie => zamowienie.Status.Nazwa == "Oczekujący" || zamowienie.Status.Nazwa == "W realizacji" || zamowienie.Status.Nazwa == "Nowy");
+                _totalSales = _zamowienia.Sum(zamowienie => zamowienie.Koszt100);
                 ProcessChartData();
             }
             else
@@ -117,14 +149,31 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Wystąpił wyjątek: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _loading = false;
+            Snackbar.Add($"Wystąpił wyjątek podczas ładowania zleceń: {ex.Message}", Severity.Error);
         }
     }
-
+    
+    private async Task LoadUsersAsync()
+    {
+        try
+        {
+            var result = await ApiService.UzytkownicyRepo.UzytkownicyGet();
+            if (result.Data != null)
+            {
+                _uzytkownicy = result.Data;
+                _usersCount = _uzytkownicy.Count();
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania użytkowników: {result.Error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił wyjątek podczas ładowania użytkowników: {ex.Message}", Severity.Error);
+        }
+    }
+    
     private void ProcessChartData()
     {
         if (_zamowienia == null || !_zamowienia.Any())
