@@ -400,6 +400,7 @@
 
 		_userDataModel.UzytkownikId = _currentUser.UzytkownikId;
 		_userDataModel.RoleId = _currentUser.RolaUzytkownika.RolaUzytkownikaId;
+		_userDataModel.PreviousRolId = _currentUser.RolaUzytkownika.RolaUzytkownikaId;
 		_userDataModel.CzyAktywny = _currentUser.CzyAktywny;
 		_userDataModel.CzyAktywnyText = _currentUser.CzyAktywny ? "Tak" : "Nie";
 		_userDataModel.AdresEmailId = _currentUser.AdresEmailId;
@@ -501,15 +502,30 @@
 			}
 			
 			var userRole = _roles.FirstOrDefault(role => role.RolaUzytkownikaId == _userDataModel.RoleId)?.Nazwa;
-			
-			// var isSevicemen = await ApiService.SerwisanciRepo.SerwisantGet()
+			// var previousUserRole = _roles.FirstOrDefault(role => role.RolaUzytkownikaId == _userDataModel.PreviousRolId)?.Nazwa;
 
 			if (userRole == "Serwisant")
 			{
 				var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPost(new SerwisantDto
 				{
 					UzytkownikId = UserId,
-					SerwisyIds = new List<int>()
+					SerwisyIds = new List<int>(),
+					CzyAktywny = true
+				});
+
+				if (servicemenResult.Error != null)
+				{
+					Snackbar.Add("Błąd podczas tworzenia serwisanta: " + userResult.Error);
+					return;
+				}
+			}
+			else
+			{
+				var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPost(new SerwisantDto
+				{
+					UzytkownikId = UserId,
+					SerwisyIds = new List<int>(),
+					CzyAktywny = false
 				});
 
 				if (servicemenResult.Error != null)
@@ -519,7 +535,6 @@
 				}
 			}
 			
-
 			Snackbar.Add("Dane zostały zaktualizowane pomyślnie", Severity.Success);
 
 			await LoadUserData();
@@ -568,6 +583,7 @@
 		public DateTime? DataAktualizacji { get; set; }
 		public DateTime DataDodania { get; set; }
 		public int RoleId { get; set; }
+		public int PreviousRolId { get; set; }
 		public bool CzyAktywny { get; set; }
 		public string CzyAktywnyText { get; set; }
 		public int AdresEmailId { get; set; }

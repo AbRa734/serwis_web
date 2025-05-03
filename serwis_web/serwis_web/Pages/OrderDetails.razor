@@ -725,7 +725,7 @@
             var serwisantResult = await ApiService.SerwisanciRepo.SerwisanciGet();
             if (serwisantResult.Data != null)
             {
-                _serwisanci = serwisantResult.Data;
+                _serwisanci = serwisantResult.Data.Where(s => s.CzyAktywny).ToList();
             }
 
             var priorytetsResult = await ApiService.PriotytetyRepo.PriotytetyGet();

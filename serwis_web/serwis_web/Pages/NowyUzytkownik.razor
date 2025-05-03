@@ -359,7 +359,8 @@
 				var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPost(new SerwisantDto
 				{
 					UzytkownikId = _uzytkownikId,
-					SerwisyIds = new List<int>()
+					SerwisyIds = new List<int>(),
+					CzyAktywny = true,
 				});
 
 				if (servicemenResult.Error != null)
