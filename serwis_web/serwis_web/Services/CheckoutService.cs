@@ -15,10 +15,6 @@ public class CheckoutSessionService
     {
         var request = _httpContextAccessor.HttpContext?.Request;
         var domain = $"{request?.Scheme}://{request?.Host}";
-    
-        // Get the referrer (previous page)
-        var referer = _httpContextAccessor.HttpContext?.Request.Headers.Referer.ToString();
-        var returnUrl = !string.IsNullOrEmpty(referer) ? referer : $"{domain}";
 
         var options = new SessionCreateOptions
         {
@@ -41,8 +37,8 @@ public class CheckoutSessionService
                 },
             },
             Mode = "payment",
-            SuccessUrl = $"{returnUrl}?payment_status=success",
-            CancelUrl = $"{returnUrl}?payment_status=cancel",
+            SuccessUrl = $"{domain}/payment-complete.html?status=success",
+            CancelUrl = $"{domain}/payment-complete.html?status=cancelled",
         };
 
         var service = new SessionService();

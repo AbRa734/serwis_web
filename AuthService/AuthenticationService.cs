@@ -44,6 +44,7 @@ public class AuthenticationService : CircuitHandler
             currentUrl != _navigationManager.BaseUri + "/" &&
             !currentUrl.EndsWith("/rejestracja") &&
             !currentUrl.EndsWith("/przypomnij-haslo") &&
+            !currentUrl.EndsWith("/payment-complete") &&
             !_tokenService.HasToken)
         {
             _navigationManager.NavigateTo("/", forceLoad: true);
