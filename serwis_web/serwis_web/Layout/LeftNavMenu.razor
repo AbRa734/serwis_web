@@ -5,6 +5,7 @@
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 @rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
 
 <style>
     .mud-drawer.mud-drawer-mini {
@@ -73,6 +74,7 @@
 
     private void LogoutUser()
     {
+        JSRuntime.InvokeVoidAsync("eval", "document.cookie.split(';').forEach(function(c) { document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/'); });");
         Navigation.NavigateTo("/", true);
     }
     

@@ -5,6 +5,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
 
 <style>
     .search-container {
@@ -78,7 +79,7 @@
                             <i class="fa-solid fa-gear"></i> Ustawienia profilu
                         </a>
                         <div class="dropdown-divider"></div>
-                        <a href="/" class="dropdown-item" @onclick="ToggleDropdown">
+                        <a class="dropdown-item" @onclick="LogoutUser" style="cursor: pointer;">
                             <i class="fa-solid fa-power-off"></i> Wyloguj się
                         </a>
                     </div>
@@ -92,6 +93,13 @@
     private Uzytkownik? _uzytkownik = null;
     private string? searchText = null;
     private bool _isDropdownOpen = false;
+    
+    private void LogoutUser()
+    {
+        JSRuntime.InvokeVoidAsync("eval", "document.cookie.split(';').forEach(function(c) { document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/'); });");
+        _isDropdownOpen = false;
+        NavigationManager.NavigateTo("/", true);
+    }
 
     protected override async Task OnInitializedAsync()
     {

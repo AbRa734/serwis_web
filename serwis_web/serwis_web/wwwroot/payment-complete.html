@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <title>Płatność zakończona</title>
+    <meta charset="utf-8"/>
+    <script>
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status');
+
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({ type: 'PAYMENT_COMPLETED', status: status }, '*');
+            }
+
+            setTimeout(function() {
+                window.close();
+            }, 2000);
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .message {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .status-success {
+            color: #4CAF50;
+        }
+        .status-cancelled {
+            color: #F44336;
+        }
+    </style>
+</head>
+<body>
+<div id="success-message" class="message status-success" style="display:none">
+    Płatność zakończona pomyślnie. To okno zostanie zamknięte automatycznie.
+</div>
+<div id="cancel-message" class="message status-cancelled" style="display:none">
+    Płatność anulowana. To okno zostanie zamknięte automatycznie.
+</div>
+
+<script>
+    const status = new URLSearchParams(window.location.search).get('status');
+    if (status === 'success') {
+        document.getElementById('success-message').style.display = 'block';
+    } else {
+        document.getElementById('cancel-message').style.display = 'block';
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logowanie za pomocą Clerk</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9fafb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 460px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 14px;
+            color: #666666;
+            margin-bottom: 30px;
+        }
+
+        .clerk-button {
+            display: inline-block;
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .clerk-button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        #sign-in {
+            margin-top: 20px;
+        }
+
+        .user-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f9ff;
+            border-radius: 8px;
+            text-align: left;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .clerk-button {
+                font-size: 14px;
+            }
+        }
+    </style>
+    <script
+            async
+            crossorigin="anonymous"
+            data-clerk-publishable-key="pk_test_c291bmQtZm94aG91bmQtNzYuY2xlcmsuYWNjb3VudHMuZGV2JA"
+            src="https://sound-foxhound-76.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+            type="text/javascript">
+    </script>
+</head>
+<body>
+
+<div class="login-container">
+    <h1>Zaloguj się za pomocą platformy</h1>
+    <p>Wybierz platformę i zaloguj się do swojego konta.</p>
+    <div id="sign-in"></div>
+    <div class="user-info" id="user-info">
+        <p>Status: <span id="cookie-status">Brak danych w ciasteczku</span></p>
+    </div>
+</div>
+
+<script>
+    function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    function checkExistingCookie() {
+        const userEmail = getCookie("userEmail");
+        if (userEmail) {
+            document.getElementById("cookie-status").textContent = "Email zapisany: " + userEmail;
+            document.getElementById("user-info").style.display = "block";
+        }
+    }
+
+    // Pełna lokalizacja Clerk
+    const clerkLocalization = {
+        locale: "pl-PL",
+        socialButtonsBlockButton: "Kontynuuj z {{provider}}",
+        dividerText: "lub",
+        formFieldLabel__emailAddress: "Adres email",
+        formFieldLabel__phoneNumber: "Numer telefonu",
+        formFieldLabel__emailAddresses: "Adresy email",
+        formFieldLabel__phoneNumbers: "Numery telefonu",
+        formFieldLabel__password: "Hasło",
+        formFieldLabel__firstName: "Imię",
+        formFieldLabel__lastName: "Nazwisko",
+        formFieldLabel__username: "Nazwa użytkownika",
+        formButtonPrimary: "Kontynuuj",
+        formButtonReset: "Anuluj",
+        footerActionLink__useAnotherMethod: "Użyj innej metody",
+        backButton: "Wstecz",
+        signIn: {
+            start: {
+                title: "Zaloguj się",
+                subtitle: "aby kontynuować do konta",
+                actionText: "Nie masz konta?",
+                actionLink: "Zarejestruj się",
+            },
+            password: {
+                title: "Wprowadź swoje hasło",
+                subtitle: "aby kontynuować do konta",
+                actionLink: "Zapomniałeś hasła?",
+            },
+            forgotPassword: {
+                title: "Zresetuj swoje hasło",
+                subtitle: "Link do resetowania hasła zostanie wysłany na Twój email",
+                formTitle: "Reset hasła",
+                formSubtitle: "Link do resetowania hasła zostanie wysłany na Twój email",
+                resendButton: "Nie otrzymałeś? Wyślij ponownie"
+            },
+            emailCode: {
+                title: "Sprawdź swój email",
+                subtitle: "aby kontynuować logowanie",
+                formTitle: "Kod weryfikacyjny",
+                formSubtitle: "Wprowadź kod weryfikacyjny wysłany na Twój email",
+                resendButton: "Nie otrzymałeś? Wyślij ponownie"
+            },
+            emailLink: {
+                title: "Sprawdź swój email",
+                subtitle: "aby kontynuować logowanie",
+                formTitle: "Link do logowania",
+                formSubtitle: "Użyj linku wysłanego na Twój email",
+                resendButton: "Nie otrzymałeś? Wyślij ponownie",
+                expireText: "Ten email wygaśnie za {{expireTime}}",
+                unusedTab: {
+                    title: "Możesz zamknąć tę kartę"
+                }
+            }
+        },
+        signUp: {
+            start: {
+                title: "Utwórz konto",
+                subtitle: "aby rozpocząć",
+                actionText: "Masz już konto?",
+                actionLink: "Zaloguj się",
+            },
+            emailLink: {
+                title: "Sprawdź swój email",
+                subtitle: "aby kontynuować rejestrację",
+                formTitle: "Link weryfikacyjny",
+                formSubtitle: "Użyj linku wysłanego na Twój email",
+                resendButton: "Nie otrzymałeś? Wyślij ponownie",
+                expireText: "Ten email wygaśnie za {{expireTime}}",
+                unusedTab: {
+                    title: "Możesz zamknąć tę kartę"
+                }
+            },
+            emailCode: {
+                title: "Sprawdź swój email",
+                subtitle: "aby kontynuować rejestrację",
+                formTitle: "Kod weryfikacyjny",
+                formSubtitle: "Wprowadź kod weryfikacyjny wysłany na Twój email",
+                resendButton: "Nie otrzymałeś? Wyślij ponownie"
+            },
+            continue: {
+                title: "Podaj dodatkowe informacje",
+                subtitle: "aby zakończyć rejestrację",
+            }
+        },
+        userProfile: {
+            title: "Profil użytkownika",
+            subtitle: "Zarządzaj swoim profilem",
+            firstName: "Imię",
+            lastName: "Nazwisko",
+            username: "Nazwa użytkownika",
+            primaryButton: "Zapisz zmiany"
+        },
+        userButton: {
+            action__signOut: "Wyloguj się",
+            action__signOutAll: "Wyloguj się ze wszystkich kont",
+            action__manageAccount: "Zarządzaj kontem"
+        }
+    };
+
+    window.addEventListener("load", async () => {
+        checkExistingCookie();
+
+        if (window.Clerk) {
+            await window.Clerk.load({
+                frontendApi: 'sound-foxhound-76.clerk.accounts.dev',
+                localization: clerkLocalization
+            });
+
+            window.Clerk.addListener(({ user }) => {
+                if (user) {
+                    const userEmail = user.primaryEmailAddress.emailAddress;
+                    setCookie("userEmail", userEmail, 7);
+
+                    document.getElementById("cookie-status").textContent = "Email zapisany: " + userEmail;
+                    document.getElementById("user-info").style.display = "block";
+                }
+            });
+
+            window.Clerk.mountSignIn(document.getElementById("sign-in"), {
+                redirectUrl: window.location.origin,
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

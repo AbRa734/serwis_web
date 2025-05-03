@@ -85,18 +85,6 @@
                                      LegendPosition="Position.Right" />
                         </MudPaper>
                     </MudExpansionPanel>
-
-                    <MudExpansionPanel 
-                        Icon="@Icons.Material.Filled.DateRange" 
-                        Text="Porównanie rok do roku">
-                        <MudPaper Elevation="0" Class="pa-4">
-                            <MudChart ChartType="ChartType.Line" 
-                                     ChartSeries="@_yearlyComparisonSeries" 
-                                     XAxisLabels="@_monthLabels" 
-                                     Width="100%" 
-                                     Height="300px" />
-                        </MudPaper>
-                    </MudExpansionPanel>
                 </MudExpansionPanels>
             }
         </MudCardContent>

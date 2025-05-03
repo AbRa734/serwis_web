@@ -5,6 +5,7 @@
 @using ApiService
 @using ApiService.Models
 @using ApiService.Repositories
+@inject IJSRuntime JSRuntime
 
 <style>
 	.settings-container {
@@ -251,19 +252,17 @@
 
 				<h2>Zmień hasło</h2>
 
-				<h4>Obecne Hasło</h4>
-				<InputText type="password" @bind-Value="_passwordModel.CurrentPassword" placeholder="" />
-				<ValidationMessage For="@(() => _passwordModel.CurrentPassword)" />
-
-				<h4>Nowe Hasło</h4>
-				<InputText type="password" @bind-Value="_passwordModel.NewPassword" placeholder="" />
-				<ValidationMessage For="@(() => _passwordModel.NewPassword)" />
-
-				<h4>Powtórz Nowe Hasło</h4>
-				<InputText type="password" @bind-Value="_passwordModel.ConfirmPassword" placeholder="" />
-				<ValidationMessage For="@(() => _passwordModel.ConfirmPassword)" />
-
-				<button type="submit" class="setting-btn">Zapisz zmiany</button>
+				@if (_isSocialLogin)
+				{
+					<div class="error-message">
+						Zalogowano za pośrednictwem platformy społecznościowej. Aby zmienić hasło, skorzystaj z ustawień konta w serwisie zewnętrznym.
+					</div>
+				}
+				else
+				{
+					<button type="submit" class="setting-btn">Zrestartuj hasło</button>
+				}
+				
 			</EditForm>
 		</div>
 	</div>
@@ -279,6 +278,8 @@
 	private NumerTelefonu? _currentPhone;
 	private Adres? _currentAddress;
 
+	private bool _isSocialLogin = false;
+
 	protected override async Task OnInitializedAsync()
 	{
 		await LoadUser();
@@ -287,9 +288,19 @@
 			ShowError("Nie znaleziono danych użytkownika");
 			return;
 		}
-		
-		await LoadUserData();
 
+		await LoadUserData();
+    
+		// Check if logged in with social platform
+		try {
+			var userEmail = await JSRuntime.InvokeAsync<string>("eval", 
+				"document.cookie.split(';').find(c => c.trim().startsWith('userEmail='))?.split('=')[1] || ''");
+			_isSocialLogin = !string.IsNullOrEmpty(userEmail);
+		}
+		catch {
+			// If any error accessing cookies, default to not social login
+			_isSocialLogin = false;
+		}
 	}
 	
 	private async Task LoadUserData()
@@ -425,13 +436,17 @@
 
 	private async Task ChangePassword()
 	{
-		if (_passwordModel.NewPassword != _passwordModel.ConfirmPassword)
+		var result = await ApiService.AdministracjaRepo.RestartHaslaPost(ApiService.GetUzytkownik().Result.AdresEmail.Email);
+
+		if (result.Error == null && result.Data)
 		{
-			ShowError("Nowe hasła nie są identyczne");
-			return;
+			ShowSuccess("Link do zresetowania hasła został wysłany na podany adres email.");
+		}
+		else
+		{
+			ShowError(result.Error ?? "Nie udało się wysłać przypomnienia. Spróbuj ponownie.");
 		}
 
-		ShowSuccess("Hasło zostało zmienione pomyślnie");
 		_passwordModel = new PasswordChangeModel();
 	}
 
@@ -468,15 +483,6 @@
 
 	public class PasswordChangeModel
 	{
-		[Required(ErrorMessage = "Obecne hasło jest wymagane")]
-		public string CurrentPassword { get; set; } = string.Empty;
 
-		[Required(ErrorMessage = "Nowe hasło jest wymagane")]
-		[MinLength(6, ErrorMessage = "Hasło musi mieć co najmniej 6 znaków")]
-		public string NewPassword { get; set; } = string.Empty;
-
-		[Required(ErrorMessage = "Potwierdzenie hasła jest wymagane")]
-		[Compare("NewPassword", ErrorMessage = "Hasła muszą być identyczne")]
-		public string ConfirmPassword { get; set; } = string.Empty;
 	}
 }
