@@ -9,15 +9,15 @@
 
 <style>
     .mud-drawer.mud-drawer-mini {
-        height: auto!important;
-        transition: none!important;
+        height: auto !important;
+        transition: none !important;
     }
 
-    .mud-overlay .mud-overlay-scrim.mud-overlay-dark {
+    /*.mud-overlay .mud-overlay-scrim.mud-overlay-dark {
         border-color: transparent!important;
         background-color: transparent!important;
-    }
-    
+    }*/
+
     .mud-drawer-mini .mud-nav-link-text {
         display: none !important;
     }
@@ -77,7 +77,7 @@
         JSRuntime.InvokeVoidAsync("eval", "document.cookie.split(';').forEach(function(c) { document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/'); });");
         Navigation.NavigateTo("/", true);
     }
-    
+
     protected override async Task OnInitializedAsync()
     {
         _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
@@ -157,7 +157,7 @@
                 Path = "/users",
                 IconClass = "fa-solid fa-user-group",
                 Label = "Użytkownicy",
-                // ShowForRoles = new[] { "Administrator" }
+                ShowForRoles = ["Administrator"]
             },
 
             new MenuItem
@@ -165,7 +165,7 @@
                 Path = "/new-user",
                 IconClass = "fa-solid fa-user-group",
                 Label = "Nowy Użytkownik",
-                // ShowForRoles = new[] { "Administrator" }
+                ShowForRoles = ["Administrator"]
             },
 
             new MenuItem
@@ -173,54 +173,67 @@
                 Path = "/avability",
                 IconClass = "fa-solid fa-calendar-days",
                 Label = "Dostępność",
-                ShowForRoles = new[] { "Administrator", "Serwisant" }
+                ShowForRoles = ["Administrator", "Serwisant"]
             },
 
             new MenuItem { IsDivider = true },
 
-            new MenuItem { Path = "/report", IconClass = "fa-solid fa-file", Label = "Raport" },
+            new MenuItem { Path = "/report", IconClass = "fa-solid fa-file", Label = "Raport", ShowForRoles = ["Administrator", "Serwisant"] },
 
             new MenuItem
             {
                 Path = "/statistics",
                 IconClass = "fa-solid fa-chart-simple",
                 Label = "Statystyki",
-                //ShowForRoles = new[] { "Administrator", "Serwisant" }
+                ShowForRoles = ["Administrator", "Serwisant"]
             },
 
             new MenuItem { Path = "/contact", IconClass = "fa-solid fa-user-group", Label = "Kontakt" },
             new MenuItem { Path = "/settings", IconClass = "fa-solid fa-gear", Label = "Ustawienia" },
-            new MenuItem { Path = "/bank/metody-platnosci", IconClass = "fa-solid fa-money-bill", Label = "Metody płatności" },
-            new MenuItem { Path = "/bank/priorytety", IconClass = "fa-solid fa-flag", Label = "Priorytety" },
+            new MenuItem
+            {
+                Path = "/bank/metody-platnosci", IconClass = "fa-solid fa-money-bill", Label = "Metody płatności",
+                ShowForRoles = ["Administrator"]
+            },
+            new MenuItem
+            {
+                Path = "/bank/priorytety", IconClass = "fa-solid fa-flag", Label = "Priorytety",
+                ShowForRoles = ["Administrator"]
+            },
             new MenuItem
             {
                 Path = "/bank/role-uzytkownika",
                 IconClass = "fa-solid fa-user-tag",
-                Label = "Role użytkownika"
+                Label = "Role użytkownika",
+                ShowForRoles = ["Administrator"]
             },
             new MenuItem
             {
                 Path = "/bank/statusy",
                 IconClass = "fa-solid fa-tag",
-                Label = "Statusy"
+                Label = "Statusy",
+                ShowForRoles = ["Administrator"]
             },
             new MenuItem
             {
                 Path = "/bank/typy-klienta",
                 IconClass = "fa-solid fa-users",
-                Label = "Typy klienta"
+                Label = "Typy klienta",
+                ShowForRoles = ["Administrator"]
             },
             new MenuItem
             {
                 Path = "/bank/typy-oceny",
                 IconClass = "fa-solid fa-star",
-                Label = "Typy oceny"
+                Label = "Typy oceny",
+                ShowForRoles = ["Administrator"]
             },
             new MenuItem
             {
                 Path = "/bank/typy-serwisu",
                 IconClass = "fa-solid fa-screwdriver-wrench",
-                Label = "Typy serwisu"
+                Label = "Typy serwisu",
+                ShowForRoles = ["Administrator"]
             },
         };
 
