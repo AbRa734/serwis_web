@@ -258,7 +258,7 @@
             });
 
             window.Clerk.mountSignIn(document.getElementById("sign-in"), {
-                redirectUrl: "https://localhost:5510/clerk.html",
+                redirectUrl: window.location.origin,
             });
         }
     });
