@@ -13,6 +13,14 @@
                 @Body
             </div>
         </div>
+        <footer class="footer">
+            <div class="footer-content">
+                <MudText Typo="Typo.caption">
+                    &copy; @DateTime.Now.Year Serwis24. Wszelkie prawa zastrzeżone. |
+                    <a href="https://p.lodz.pl" target="_blank" class="footer-link">Politechnika Łódzka</a>
+                </MudText>
+            </div>
+        </footer>
     </div>
     <MudSnackbarProvider @rendermode="InteractiveServer"/>
     <MudDialogProvider @rendermode="InteractiveServer" />
@@ -27,3 +35,39 @@
         },
     };
 }
+
+<style>
+    .layout-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .body-content {
+        flex: 1;
+    }
+
+    .footer {
+        padding: 1rem 0;
+        margin-top: auto;
+        width: 100%;
+        background-color: #f5f5f5;
+        border-top: 1px solid #e0e0e0;
+        text-align: center;
+    }
+
+    .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .footer-link {
+        color: var(--mud-palette-primary);
+        text-decoration: none;
+    }
+
+    .footer-link:hover {
+        text-decoration: underline;
+    }
+</style>
