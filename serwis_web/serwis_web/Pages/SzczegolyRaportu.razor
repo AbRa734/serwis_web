@@ -52,31 +52,168 @@
     .pdf-icon {
         font-size: 26px;
     }
+
+    /* Style dla karuzeli */
+    .order-carousel {
+        width: 100%;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    .order-carousel ::deep .mud-carousel {
+        height: auto !important;
+        min-height: 220px; /* Zwiększona wysokość */
+    }
+
+    .order-carousel ::deep .mud-carousel-item {
+        padding: 8px;
+    }
+
+    .order-card-container {
+        height: 200px; /* Zwiększona wysokość karty */
+        padding: 0 8px;
+    }
+
+    .selected-order {
+        border-width: 2px !important;
+    }
+
+    .order-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .order-back {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .order-tab {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        padding: 16px;
+    }
+
+    .narrower-paper {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+        padding: 0;
+        margin: 0;
+    }
     
+    /* Styl dla przycisków karuzeli */
+    ::deep .mud-carousel-navigation-button {
+        color: #4880FF;
+    }
+    
+    /* Ukrycie wskaźników (bullets) */
+    ::deep .mud-carousel-indicators {
+        display: none !important;
+    }
 </style>
 
 <div class="order-container">
     <h2>Raport zlecenia</h2>
+    <div class="order-back">
+        <div class="order-tab">
+                <MudText Typo="Typo.h6" Class="mb-3">Wybierz zamówienie</MudText>
 
-    <MudSelect T="int?" Label="Wybierz numer zamówienia" Value="_selectedOrderId" ValueChanged="OnOrderSelectionChanged"
-               AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"
-               Class="mb-4" FullWidth="true">
-        @if (_filteredZamowienia.Count == 0 || !_filteredZamowienia.Any(x => x.ZamowienieId != 0))
-        {
-            <MudSelectItem T="int?" Value="0" Disabled="true">
-                Brak dostępnych zamówień
-            </MudSelectItem>
-        }
-        else
-        {
-            @foreach (var zamowienie in _filteredZamowienia.Where((x) => x.ZamowienieId != 0).ToList())
-            {
-                <MudSelectItem T="int?" Value="@zamowienie.ZamowienieId">
-                    Zamówienie #@zamowienie.ZamowienieId - @zamowienie.Status?.Nazwa
-                </MudSelectItem>
-            }
-        }
-    </MudSelect>
+                @if (_isLoading)
+                {
+                    <MudSkeleton Height="60px" Animation="Animation.Wave" />
+                }
+                else if (_filteredZamowienia.Count == 0 || !_filteredZamowienia.Any(x => x.ZamowienieId != 0))
+                {
+                    <MudAlert Severity="Severity.Info">Brak dostępnych zamówień</MudAlert>
+                }
+                else
+                {
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField T="string"
+                                          Label="Szukaj zamówienia"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search"
+                                          AdornmentColor="Color.Primary"
+                                          ValueChanged="@((s) => FilterOrders(s))"
+                                          Clearable="true"
+                                          Class="mb-3" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <div class="order-carousel">
+                        <MudCarousel @ref="_carousel" 
+                                    AutoCycle="false" 
+                                    ShowArrows="true" 
+                                    ShowBullets="false" 
+                                    EnableSwipeGesture="true"
+                                    TData="object"
+                                    Style="height: 210px"
+                                    ItemsSource="@GetCarouselItems()"
+                                    CustomNavigationActions="true">
+                            <ItemTemplate>
+                                <div style="display: flex; justify-content: space-around; width: 100%;">
+                                    @{
+                                        var itemGroup = context as Zamowienie[];
+                                        if (itemGroup != null)
+                                        {
+                                            foreach (var zamowienie in itemGroup)
+                                            {
+                                                <div class="order-card-container">
+                                                    <MudCard Elevation="2"
+                                                             Class="@(_selectedOrderId == zamowienie.ZamowienieId ? "mud-border-primary selected-order" : "")"
+                                                             Style="cursor: pointer; height: 100%; overflow: hidden;"
+                                                             @onclick="@(() => OnOrderSelectionChanged(zamowienie.ZamowienieId))">
+                                                        <MudCardHeader Style="padding: 10px 16px;">
+                                                            <CardHeaderContent>
+                                                                <MudText Typo="Typo.subtitle1" Style="font-size: 15px; margin-bottom: 2px;">
+                                                                    #@zamowienie.ZamowienieId.ToString("D5")
+                                                                </MudText>
+                                                                <MudText Typo="Typo.caption" Style="font-size: 13px;">
+                                                                    @(zamowienie.Serwis?.Nazwa?.Length > 20 ? zamowienie.Serwis?.Nazwa?.Substring(0, 20) + "..." : zamowienie.Serwis?.Nazwa)
+                                                                </MudText>
+                                                            </CardHeaderContent>
+                                                            <CardHeaderActions>
+                                                                <MudChip T="string" 
+                                                                         Color="@GetStatusColor(zamowienie.Status?.Nazwa ?? "")" 
+                                                                         Size="Size.Small" 
+                                                                         Style="height: 24px; font-size: 11px;">
+                                                                    @zamowienie.Status?.Nazwa
+                                                                </MudChip>
+                                                            </CardHeaderActions>
+                                                        </MudCardHeader>
+                                                        <MudCardContent Style="padding: 8px 16px;">
+                                                            <MudText Typo="Typo.caption" Style="font-size: 13px; margin-bottom: 6px;">
+                                                                Data: @zamowienie.DataDodania.ToString("dd.MM.yyyy")
+                                                            </MudText>
+                                                            <MudText Typo="Typo.caption" Style="font-size: 13px; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                                Klient: @(zamowienie.Klient?.Uzytkownik != null
+                                                                            ? $"{zamowienie.Klient.Uzytkownik.Imie} {zamowienie.Klient.Uzytkownik.Nazwisko}"
+                                                                            : "-")
+                                                            </MudText>
+                                                            @if (!string.IsNullOrEmpty(zamowienie.Opis))
+                                                            {
+                                                                <MudText Typo="Typo.caption" Style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                                                    Opis: @(zamowienie.Opis.Length > 50 ? zamowienie.Opis.Substring(0, 50) + "..." : zamowienie.Opis)
+                                                                </MudText>
+                                                            }
+                                                        </MudCardContent>
+                                                    </MudCard>
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
+                    </div>
+                }
+        </div></div>
 
     <div class="order-back">
         <div class="order-tab">
@@ -270,11 +407,60 @@
     private bool _isKlient = false;
     private int? _serwisantId = null;
     private int? _klientId = null;
+    
+    private List<Zamowienie> _displayedZamowienia = new();
+    private string _searchText = string.Empty;
+    private MudCarousel<object> _carousel;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCurrentUserAsync();
         await LoadZamowienia();
+        _displayedZamowienia = _filteredZamowienia;
+    }
+    
+    // Nowa metoda do grupowania zamówień po 3 dla karuzeli (zamiast 4)
+    private List<Zamowienie[]> GetCarouselItems()
+    {
+        var result = new List<Zamowienie[]>();
+        var filteredList = string.IsNullOrWhiteSpace(_searchText) 
+            ? _filteredZamowienia 
+            : _filteredZamowienia.Where(z => 
+                z.ZamowienieId.ToString().Contains(_searchText) ||
+                (z.Serwis?.Nazwa?.ToLower().Contains(_searchText.ToLower()) ?? false) ||
+                (z.Status?.Nazwa?.ToLower().Contains(_searchText.ToLower()) ?? false) ||
+                (z.Klient?.Uzytkownik?.Imie?.ToLower().Contains(_searchText.ToLower()) ?? false) ||
+                (z.Klient?.Uzytkownik?.Nazwisko?.ToLower().Contains(_searchText.ToLower()) ?? false) ||
+                (z.Opis?.ToLower().Contains(_searchText.ToLower()) ?? false)
+            ).ToList();
+        
+        // Grupujemy zamówienia po 3 (zamiast 4)
+        for (int i = 0; i < filteredList.Count; i += 3)
+        {
+            var group = filteredList.Skip(i).Take(3).ToArray();
+            result.Add(group);
+        }
+        
+        return result;
+    }
+    
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Zakończony" => Color.Success,
+            "W realizacji" => Color.Info,
+            "Anulowany" => Color.Error,
+            "Oczekujący" => Color.Warning,
+            "Nowy" => Color.Primary,
+            _ => Color.Default
+        };
+    }
+    
+    private void FilterOrders(string searchText)
+    {
+        _searchText = searchText?.ToLower() ?? string.Empty;
+        StateHasChanged();
     }
 
     private async Task LoadCurrentUserAsync()
@@ -694,5 +880,4 @@
         if (days == 1) return "dzień";
         return "dni";
     }
-
 }
