@@ -2,6 +2,7 @@
 @using ApiService
 @using ApiService.Models
 @using ApiService.Repositories
+@using System.ComponentModel.DataAnnotations
 @rendermode InteractiveServer
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
@@ -58,67 +59,94 @@
             </div>
         </div>
 
-        <div class="service-tab">
-            <div class="service-col">
-                <h3>Formularz kontaktowy</h3>
-                <h4>Imię</h4>
-                <input type="text" placeholder="Podaj swoje imię" @bind="_name" />
+        <EditForm Model="@_contactModel" OnValidSubmit="SendMessage">
+            <DataAnnotationsValidator />
+            <div class="service-tab">
+                <div class="service-col">
+                    <h3>Formularz kontaktowy</h3>
+                    <h4>Imię</h4>
+                    <input type="text" placeholder="Podaj swoje imię" @bind="_contactModel.Name" />
+                    <ValidationMessage For="@(() => _contactModel.Name)" class="validation-message" />
 
-                <h4>Email</h4>
-                <input type="email" placeholder="Podaj swój adres email" @bind="_email" />
+                    <h4>Email</h4>
+                    <input type="email" placeholder="Podaj swój adres email" @bind="_contactModel.Email" />
+                    <ValidationMessage For="@(() => _contactModel.Email)" class="validation-message" />
 
-                <h4>Temat</h4>
-                <input type="text" placeholder="Temat wiadomości" @bind="_subject" />
+                    <h4>Temat</h4>
+                    <input type="text" placeholder="Temat wiadomości" @bind="_contactModel.Subject" />
+                    <ValidationMessage For="@(() => _contactModel.Subject)" class="validation-message" />
+                </div>
+                <div class="service-col">
+                    <h3>&nbsp;</h3>
+                    <h4>Treść wiadomości</h4>
+                    <textarea class="textarea" placeholder="Opisz swój problem lub pytanie..." @bind="_contactModel.Message"></textarea>
+                    <ValidationMessage For="@(() => _contactModel.Message)" class="validation-message" />
+                </div>
             </div>
-            <div class="service-col">
-                <h3>&nbsp;</h3>
-                <h4>Treść wiadomości</h4>
-                <textarea class="textarea" placeholder="Opisz swój problem lub pytanie..." @bind="_message"></textarea>
-            </div>
-        </div>
 
-        <button @onclick="SendMessage" disabled="@_isSending">
-            @if (_isSending)
-            {
-                <span>Wysyłanie...</span>
-            }
-            else
-            {
-                <span>Wyślij wiadomość</span>
-            }
-        </button>
-        
+            <button type="submit" disabled="@_isSending">
+                @if (_isSending)
+                {
+                    <span>Wysyłanie...</span>
+                }
+                else
+                {
+                    <span>Wyślij wiadomość</span>
+                }
+            </button>
+        </EditForm>
+
         <div class="map-container">
             <h3>Nasza lokalizacja</h3>
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2469.869241033757!2d19.449142677061726!3d51.75371457187036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471a34d85d1152f3%3A0xbe75c3beee4bad56!2zUG9saXRlY2huaWthIMWBw7Nkemth!5e0!3m2!1spl!2spl!4v1746280311556!5m2!1spl!2spl" 
-                   width="100%" height="600px" style="height:600px; border:0; margin-top: 20px; margin-bottom: 20px;" 
-                   allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2469.869241033757!2d19.449142677061726!3d51.75371457187036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471a34d85d1152f3%3A0xbe75c3beee4bad56!2zUG9saXRlY2huaWthIMWBw7Nkemth!5e0!3m2!1spl!2spl!4v1746280311556!5m2!1spl!2spl"
+                    width="100%" height="600px" style="height:600px; border:0; margin-top: 20px; margin-bottom: 20px;"
+                    allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
     </div>
 </div>
 
+<style>
+    .validation-message {
+        color: #ff5252;
+        font-size: 0.75rem;
+        margin-top: 4px;
+        display: block;
+    }
+
+    input.invalid, textarea.invalid {
+        border-color: #ff5252;
+    }
+</style>
+
 @code {
-    private string _name = "";
-    private string _email = "";
-    private string _subject = "";
-    private string _message = "";
     private bool _isSending = false;
+
+    private class ContactModel
+    {
+        [Required(ErrorMessage = "Imię jest wymagane")]
+        [StringLength(100, ErrorMessage = "Imię nie może przekraczać 100 znaków")]
+        [MinLength(2, ErrorMessage = "Imię musi zawierać co najmniej 2 znaki")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email jest wymagany")]
+        [EmailAddress(ErrorMessage = "Podaj prawidłowy adres email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Temat jest wymagany")]
+        [StringLength(100, ErrorMessage = "Temat nie może przekraczać 100 znaków")]
+        [MinLength(2, ErrorMessage = "Temat musi zawierać co najmniej 2 znaki")]
+        public string Subject { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Treść wiadomości jest wymagana")]
+        [StringLength(1000, ErrorMessage = "Treść wiadomości nie może przekraczać 1000 znaków")]
+        [MinLength(10, ErrorMessage = "Treść wiadomości musi zawierać co najmniej 10 znaków")]
+        public string Message { get; set; } = string.Empty;
+    }
+
+    private ContactModel _contactModel = new();
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(_name) || string.IsNullOrWhiteSpace(_email) ||
-            string.IsNullOrWhiteSpace(_subject) || string.IsNullOrWhiteSpace(_message))
-        {
-            Snackbar.Add("Wypełnij wszystkie pola formularza", Severity.Warning);
-            return;
-        }
-
-        if (!IsValidEmail(_email))
-        {
-            Snackbar.Add("Podaj prawidłowy adres email", Severity.Warning);
-            return;
-        }
-
         try
         {
             _isSending = true;
@@ -126,8 +154,8 @@
             var emailRequest = new KontaktEmailRequest
             {
                 EmailOdbiorcy = "245935@edu.p.lodz.pl",
-                Temat = _subject,
-                Tresc = $"Imie:{_name}{Environment.NewLine}Od:{_email}{Environment.NewLine}Treść:{_message}"
+                Temat = _contactModel.Subject,
+                Tresc = $"Imie: {_contactModel.Name}{Environment.NewLine}Od: {_contactModel.Email}{Environment.NewLine}Treść: {_contactModel.Message}"
             };
 
             var result = await ApiService.KontaktEmailRepo.KontaktEmailPost(emailRequest);
@@ -154,22 +182,6 @@
 
     private void ResetForm()
     {
-        _name = "";
-        _email = "";
-        _subject = "";
-        _message = "";
-    }
-
-    private bool IsValidEmail(string email)
-    {
-        try
-        {
-            var addr = new System.Net.Mail.MailAddress(email);
-            return addr.Address == email;
-        }
-        catch
-        {
-            return false;
-        }
+        _contactModel = new ContactModel();
     }
 }

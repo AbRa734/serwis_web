@@ -13,7 +13,8 @@
 
             <MudGrid>
                 <MudItem xs="12">
-                    <MudSelect T="int" Label="Serwisant" @bind-Value="_model.SerwisantId" Required Disabled>
+                    <MudSelect T="int" Label="Serwisant" @bind-Value="_model.SerwisantId" Required Disabled
+                               For="@(() => _model.SerwisantId)">
                         @foreach (var pair in TechnicianDict ?? new Dictionary<int, string>())
                         {
                             <MudSelectItem Value="@pair.Key">@pair.Value</MudSelectItem>
@@ -26,19 +27,27 @@
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudDatePicker Label="Data od" @bind-Date="_dateFrom" Required />
+                    <MudDatePicker Label="Data od" @bind-Date="_model.DataOd" Required
+                                   Validation="@(new Func<DateTime?, string>(ValidateStartDate))"
+                                   For="@(() => _model.DataOd)" />
                 </MudItem>
 
                 <MudItem xs="6">
-                    <MudTimePicker Label="Godzina od" @bind-Time="_timeFrom" Required />
+                    <MudTimePicker Label="Godzina od" @bind-Time="_model.CzasOd" Required
+                                   Validation="@(new Func<TimeSpan?, string>(ValidateStartTime))"
+                                   For="@(() => _model.CzasOd)" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudDatePicker Label="Data do" @bind-Date="_dateTo" Required />
+                    <MudDatePicker Label="Data do" @bind-Date="_model.DataDo" Required
+                                   Validation="@(new Func<DateTime?, string>(ValidateEndDate))"
+                                   For="@(() => _model.DataDo)" />
                 </MudItem>
 
                 <MudItem xs="6">
-                    <MudTimePicker Label="Godzina do" @bind-Time="_timeTo" Required />
+                    <MudTimePicker Label="Godzina do" @bind-Time="_model.CzasDo" Required
+                                   Validation="@(new Func<TimeSpan?, string>(ValidateEndTime))"
+                                   For="@(() => _model.CzasDo)" />
                 </MudItem>
 
                 @if (!string.IsNullOrEmpty(_errorMessage))
@@ -52,7 +61,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Anuluj</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@_isSaving">
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(_isSaving || !IsFormValid())">
             @if (_isSaving)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
@@ -74,17 +83,25 @@
     private string _errorMessage = string.Empty;
     private bool _isSaving = false;
 
-    private DateTime? _dateFrom;
-    private TimeSpan? _timeFrom;
-    private DateTime? _dateTo;
-    private TimeSpan? _timeTo;
-
     private class AvailabilityModel
     {
         [Required(ErrorMessage = "Wybierz serwisanta")]
+        [Range(1, int.MaxValue, ErrorMessage = "Wybierz serwisanta")]
         public int SerwisantId { get; set; }
 
         public bool CzyDostepny { get; set; } = true;
+
+        [Required(ErrorMessage = "Data rozpoczęcia jest wymagana")]
+        public DateTime? DataOd { get; set; }
+
+        [Required(ErrorMessage = "Godzina rozpoczęcia jest wymagana")]
+        public TimeSpan? CzasOd { get; set; }
+
+        [Required(ErrorMessage = "Data zakończenia jest wymagana")]
+        public DateTime? DataDo { get; set; }
+
+        [Required(ErrorMessage = "Godzina zakończenia jest wymagana")]
+        public TimeSpan? CzasDo { get; set; }
     }
 
     private AvailabilityModel _model = new();
@@ -94,26 +111,68 @@
         _model.SerwisantId = Dostepnosc.SerwisantId;
         _model.CzyDostepny = Dostepnosc.CzyDostepny;
 
-        _dateFrom = Dostepnosc.DataOd.Date;
-        _timeFrom = Dostepnosc.DataOd.TimeOfDay;
-        _dateTo = Dostepnosc.DataDo.Date;
-        _timeTo = Dostepnosc.DataDo.TimeOfDay;
+        _model.DataOd = Dostepnosc.DataOd.Date;
+        _model.CzasOd = Dostepnosc.DataOd.TimeOfDay;
+        _model.DataDo = Dostepnosc.DataDo.Date;
+        _model.CzasDo = Dostepnosc.DataDo.TimeOfDay;
+    }
+
+    private string ValidateStartDate(DateTime? date)
+    {
+        if (date == null)
+            return "Data rozpoczęcia jest wymagana";
+        return null;
+    }
+
+    private string ValidateStartTime(TimeSpan? time)
+    {
+        if (time == null)
+            return "Godzina rozpoczęcia jest wymagana";
+        return null;
+    }
+
+    private string ValidateEndDate(DateTime? date)
+    {
+        if (date == null)
+            return "Data zakończenia jest wymagana";
+
+        if (_model.DataOd.HasValue && date.Value.Date < _model.DataOd.Value.Date)
+            return "Data zakończenia nie może być wcześniejsza niż data rozpoczęcia";
+
+        return null;
+    }
+
+    private string ValidateEndTime(TimeSpan? time)
+    {
+        if (time == null)
+            return "Godzina zakończenia jest wymagana";
+
+        if (_model.DataOd.HasValue && _model.DataDo.HasValue &&
+            _model.CzasOd.HasValue && time.HasValue &&
+            _model.DataOd.Value.Date == _model.DataDo.Value.Date &&
+            time.Value <= _model.CzasOd.Value)
+            return "Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia";
+
+        return null;
+    }
+
+    private bool IsFormValid()
+    {
+        if (_model.DataOd == null || _model.CzasOd == null ||
+            _model.DataDo == null || _model.CzasDo == null)
+            return false;
+
+        var dataOd = _model.DataOd.Value.Date.Add(_model.CzasOd.Value);
+        var dataDo = _model.DataDo.Value.Date.Add(_model.CzasDo.Value);
+
+        return dataDo > dataOd;
     }
 
     private async Task Submit()
     {
-        if (_dateFrom == null || _timeFrom == null || _dateTo == null || _timeTo == null)
+        if (!IsFormValid())
         {
-            _errorMessage = "Wszystkie pola daty i czasu są wymagane";
-            return;
-        }
-
-        var dataOd = _dateFrom.Value.Date.Add(_timeFrom.Value);
-        var dataDo = _dateTo.Value.Date.Add(_timeTo.Value);
-
-        if (dataDo <= dataOd)
-        {
-            _errorMessage = "Data i czas zakończenia musi być późniejszy niż data i czas rozpoczęcia";
+            _errorMessage = "Formularz zawiera błędy. Sprawdź poprawność dat i czasów.";
             return;
         }
 
@@ -121,6 +180,9 @@
         {
             _isSaving = true;
             _errorMessage = string.Empty;
+
+            var dataOd = _model.DataOd.Value.Date.Add(_model.CzasOd.Value);
+            var dataDo = _model.DataDo.Value.Date.Add(_model.CzasDo.Value);
 
             var updatedDostepnoscDto = new DostepnoscSerwisantaDto
             {

@@ -1,4 +1,5 @@
 @using ApiService.Models
+@using System.ComponentModel.DataAnnotations
 @using Color = MudBlazor.Color
 @using Colors = DesignSystem.Tokens.Colors
 @using DialogResult = MudBlazor.DialogResult
@@ -47,6 +48,11 @@
         background-color: #336ff5;
     }
 
+    .validation-message {
+        color: #ff5252;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
 </style>
 
 <MudDialog Class="container">
@@ -54,13 +60,33 @@
         <MudText Class="tittle">@(IsNew ? "Dodaj priorytet" : "Edytuj priorytet")</MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="Priorytet.Nazwa" Label="Nazwa" Required="true" 
-                      RequiredError="Nazwa jest wymagana" />
-        <MudTextField @bind-Value="Priorytet.Opis" Label="Opis" Lines="1" Class="mt-3" />
+        <EditForm Model="@_model" OnValidSubmit="Submit">
+            <DataAnnotationsValidator />
+
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Nazwa" Label="Nazwa" Required="true"
+                                  Validation="@(new Func<string, string>(ValidateNazwa))"
+                                  For="@(() => _model.Nazwa)" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Opis" Label="Opis" Lines="1" Class="mt-3"
+                                  Validation="@(new Func<string, string>(ValidateOpis))"
+                                  For="@(() => _model.Opis)" />
+                </MudItem>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Error" Class="mt-3">@_errorMessage</MudAlert>
+                    </MudItem>
+                }
+            </MudGrid>
+        </EditForm>
     </DialogContent>
     <DialogActions>
         <MudButton Class="cancel" OnClick="Cancel">Anuluj</MudButton>
-        <MudButton Class="save" OnClick="Submit">Zapisz</MudButton>
+        <MudButton Class="save" OnClick="Submit" Disabled="@(!IsFormValid())">Zapisz</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -70,6 +96,82 @@
     [Parameter] public DicPriorytetDto Priorytet { get; set; } = new();
     [Parameter] public bool IsNew { get; set; }
 
-    private void Submit() => MudDialog.Close(DialogResult.Ok(Priorytet));
+    private string _errorMessage = string.Empty;
+
+    private class PriorytetModel
+    {
+        [Required(ErrorMessage = "Nazwa jest wymagana")]
+        [StringLength(100, ErrorMessage = "Nazwa nie może przekraczać 100 znaków")]
+        [MinLength(2, ErrorMessage = "Nazwa musi zawierać co najmniej 2 znaki")]
+        public string Nazwa { get; set; } = string.Empty;
+
+        [StringLength(250, ErrorMessage = "Opis nie może przekraczać 250 znaków")]
+        public string Opis { get; set; } = string.Empty;
+    }
+
+    private PriorytetModel _model = new();
+
+    protected override void OnInitialized()
+    {
+        if (Priorytet != null)
+        {
+            _model.Nazwa = Priorytet.Nazwa ?? string.Empty;
+            _model.Opis = Priorytet.Opis ?? string.Empty;
+        }
+    }
+
+    private string ValidateNazwa(string nazwa)
+    {
+        if (string.IsNullOrWhiteSpace(nazwa))
+            return "Nazwa jest wymagana";
+
+        if (nazwa.Length < 2)
+            return "Nazwa musi zawierać co najmniej 2 znaki";
+
+        if (nazwa.Length > 100)
+            return "Nazwa nie może przekraczać 100 znaków";
+
+        return null;
+    }
+
+    private string ValidateOpis(string opis)
+    {
+        if (opis != null && opis.Length > 250)
+            return "Opis nie może przekraczać 250 znaków";
+
+        return null;
+    }
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(_model.Nazwa) &&
+               _model.Nazwa.Length >= 2 &&
+               _model.Nazwa.Length <= 100 &&
+               (string.IsNullOrEmpty(_model.Opis) || _model.Opis.Length <= 250);
+    }
+
+    private void Submit()
+    {
+        _errorMessage = string.Empty;
+
+        if (!IsFormValid())
+        {
+            _errorMessage = "Popraw błędy w formularzu przed zapisaniem";
+            return;
+        }
+
+        try
+        {
+            Priorytet.Nazwa = _model.Nazwa;
+            Priorytet.Opis = _model.Opis;
+
+            MudDialog.Close(DialogResult.Ok(Priorytet));
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Wystąpił błąd: {ex.Message}";
+        }
+    }
+
     private void Cancel() => MudDialog.Cancel();
 }

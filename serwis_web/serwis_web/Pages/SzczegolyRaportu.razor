@@ -418,7 +418,6 @@
         UpdateCarouselItems();
     }
 
-    // Oddzielna metoda do aktualizacji elementów karuzeli
     private void UpdateCarouselItems()
     {
         var filteredList = string.IsNullOrWhiteSpace(_searchText)
@@ -434,7 +433,6 @@
 
         _carouselItems.Clear();
 
-        // Grupujemy zamówienia po 3 (zamiast 4)
         for (int i = 0; i < filteredList.Count; i += 3)
         {
             var group = filteredList.Skip(i).Take(3).ToArray();
@@ -474,7 +472,6 @@
             {
                 _isSerwisant = true;
 
-                // Find the Serwisant ID associated with this user
                 var serwisanci = await ApiService.SerwisanciRepo.SerwisanciGet();
                 if (serwisanci.Data != null)
                 {
@@ -489,7 +486,6 @@
             {
                 _isKlient = true;
 
-                // Find the Klient ID associated with this user
                 var klienci = await ApiService.KlienciRepo.KlienciGet();
                 if (klienci.Data != null)
                 {
@@ -524,20 +520,16 @@
                 Console.WriteLine(_isKlient);
                 Console.WriteLine(_klientId);
 
-                // Filter orders based on user role
                 if (_isSerwisant && _serwisantId.HasValue)
                 {
-                    // Filter for technician - show only orders assigned to them
                     _filteredZamowienia = _zamowienia.Where(z => z.SerwisantId == _serwisantId.Value).ToList();
                 }
                 else if (_isKlient)
                 {
-                    // Filter for client - show only their orders
                     _filteredZamowienia = _zamowienia.Where(z => z.Klient.UzytkownikId == _klientId).ToList();
                 }
                 else
                 {
-                    // No filtering for other roles (like admin)
                     _filteredZamowienia = _zamowienia;
                 }
             }
@@ -580,7 +572,6 @@
             var result = await ApiService.ZamowieniaRepo.ZamowienieGet(_selectedOrderId ?? 0);
             if (result.Data != null)
             {
-                // Additional security check - verify this order belongs to the current user if they're a client
                 if (_isKlient && _klientId.HasValue && result.Data.KlientId != _klientId.Value)
                 {
                     Snackbar.Add("Brak dostępu do tego zamówienia", Severity.Error);

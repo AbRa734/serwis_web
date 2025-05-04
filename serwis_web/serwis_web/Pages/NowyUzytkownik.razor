@@ -2,6 +2,7 @@
 @using ApiService.Models
 @using Color = MudBlazor.Color
 @using Size = MudBlazor.Size
+@using System.ComponentModel.DataAnnotations
 @rendermode InteractiveServer
 @inject ApiService.ApiService ApiService
 @inject NavigationManager NavigationManager
@@ -110,6 +111,30 @@
 		background-color: #336ff5;
 	}
 
+	.validation-message {
+		color: #F44336;
+		font-size: 12px;
+		margin-top: -5px;
+		margin-bottom: 10px;
+	}
+
+	.error-message {
+		color: #F44336;
+		font-size: 14px;
+		margin-top: 10px;
+		padding: 10px;
+		background-color: rgba(244, 67, 54, 0.1);
+		border-radius: 5px;
+	}
+
+	.field-container {
+		margin-bottom: 15px;
+	}
+
+	.invalid-field {
+		border: 1px solid #F44336 !important;
+	}
+
 	@@media (max-width: 1366px) {
 		.service-tab {
 			gap: 80px;
@@ -173,28 +198,46 @@
 
 				<div class="service-tab">
 					<div class="service-col">
-						<h4>Rola użytkownika</h4>
-						<select @bind="_selectedRoleId">
+						<h4>Rola użytkownika <span style="color: #F44336">*</span></h4>
+						<select @bind="_selectedRoleId" class="@(_formSubmitted && _roleValidationMessage != string.Empty ? "invalid-field" : "")">
+							<option value="0">Wybierz rolę</option>
 							@foreach (var role in _roles)
 							{
 								<option value="@role.RolaUzytkownikaId">@role.Nazwa</option>
 							}
 						</select>
+						@if (_formSubmitted && _roleValidationMessage != string.Empty)
+						{
+							<div class="validation-message">@_roleValidationMessage</div>
+						}
 
-						<h4>Imię</h4>
-						<InputText @bind-Value="_newUser.Imie" placeholder="Imię użytkownika" class="form-control" />
-						<ValidationMessage For="@(() => _newUser.Imie)" />
+						<h4>Imię <span style="color: #F44336">*</span></h4>
+						<InputText @bind-Value="_newUser.Imie" placeholder="Imię użytkownika" class="@(_formSubmitted && string.IsNullOrEmpty(_newUser.Imie) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && string.IsNullOrEmpty(_newUser.Imie))
+						{
+							<div class="validation-message">Imię jest wymagane</div>
+						}
 
-						<h4>Nazwisko</h4>
-						<InputText @bind-Value="_newUser.Nazwisko" placeholder="Nazwisko użytkownika" class="form-control" />
-						<ValidationMessage For="@(() => _newUser.Nazwisko)" />
+						<h4>Nazwisko <span style="color: #F44336">*</span></h4>
+						<InputText @bind-Value="_newUser.Nazwisko" placeholder="Nazwisko użytkownika" class="@(_formSubmitted && string.IsNullOrEmpty(_newUser.Nazwisko) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && string.IsNullOrEmpty(_newUser.Nazwisko))
+						{
+							<div class="validation-message">Nazwisko jest wymagane</div>
+						}
 
 						<h4>Numer Telefonu</h4>
-						<InputText @bind-Value="_phone" placeholder="Numer telefonu" class="form-control" />
+						<InputText @bind-Value="_phone" placeholder="Numer telefonu" class="@(_formSubmitted && _phoneValidationMessage != string.Empty ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && _phoneValidationMessage != string.Empty)
+						{
+							<div class="validation-message">@_phoneValidationMessage</div>
+						}
 
-						<h4>Adres Email</h4>
-						<InputText @bind-Value="_email" placeholder="Adres email" class="form-control" type="email" />
-						<ValidationMessage For="@(() => _email)" />
+						<h4>Adres Email <span style="color: #F44336">*</span></h4>
+						<InputText @bind-Value="_email" placeholder="Adres email" class="@(_formSubmitted && _emailValidationMessage != string.Empty ? "form-control invalid-field" : "form-control")" type="email" />
+						@if (_formSubmitted && _emailValidationMessage != string.Empty)
+						{
+							<div class="validation-message">@_emailValidationMessage</div>
+						}
 					</div>
 					<div class="service-col">
 						<h4>Państwo</h4>
@@ -204,13 +247,21 @@
 						<InputText @bind-Value="_adres.Ulica" placeholder="Ulica" class="form-control" />
 
 						<h4>Numer Domu</h4>
-						<InputText @bind-Value="_adres.NumerDomu" placeholder="Numer domu" class="form-control" />
+						<InputText @bind-Value="_adres.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && _numerDomuValidationMessage != string.Empty ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && _numerDomuValidationMessage != string.Empty)
+						{
+							<div class="validation-message">@_numerDomuValidationMessage</div>
+						}
 
 						<h4>Miasto</h4>
 						<InputText @bind-Value="_adres.Miasto" placeholder="Miasto" class="form-control" />
 
 						<h4>Kod pocztowy</h4>
-						<InputText @bind-Value="_adres.KodPocztowy" placeholder="Kod pocztowy" class="form-control" />
+						<InputText @bind-Value="_adres.KodPocztowy" placeholder="Kod pocztowy" class="@(_formSubmitted && _kodPocztowyValidationMessage != string.Empty ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && _kodPocztowyValidationMessage != string.Empty)
+						{
+							<div class="validation-message">@_kodPocztowyValidationMessage</div>
+						}
 					</div>
 				</div>
 
@@ -247,6 +298,13 @@
 	private bool _isSaving = false;
 	private string _errorMessage = string.Empty;
 	private int _uzytkownikId;
+	private bool _formSubmitted = false;
+
+	private string _emailValidationMessage = string.Empty;
+	private string _phoneValidationMessage = string.Empty;
+	private string _roleValidationMessage = string.Empty;
+	private string _numerDomuValidationMessage = string.Empty;
+	private string _kodPocztowyValidationMessage = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -273,11 +331,96 @@
 		}
 	}
 
-	private async Task OnValidSubmit()
+	private bool ValidateForm()
 	{
+		bool isValid = true;
+
+		_emailValidationMessage = string.Empty;
+		_phoneValidationMessage = string.Empty;
+		_roleValidationMessage = string.Empty;
+		_numerDomuValidationMessage = string.Empty;
+		_kodPocztowyValidationMessage = string.Empty;
+
+		if (_selectedRoleId <= 0)
+		{
+			_roleValidationMessage = "Wybierz rolę użytkownika";
+			isValid = false;
+		}
+
 		if (string.IsNullOrWhiteSpace(_email))
 		{
-			_errorMessage = "Adres email jest wymagany.";
+			_emailValidationMessage = "Adres email jest wymagany";
+			isValid = false;
+		}
+		else if (!IsValidEmail(_email))
+		{
+			_emailValidationMessage = "Nieprawidłowy format adresu email";
+			isValid = false;
+		}
+
+		if (!string.IsNullOrWhiteSpace(_phone) && !IsValidPhoneNumber(_phone))
+		{
+			_phoneValidationMessage = "Nieprawidłowy format numeru telefonu";
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(_newUser.Imie))
+		{
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(_newUser.Nazwisko))
+		{
+			isValid = false;
+		}
+
+		if (!string.IsNullOrWhiteSpace(_adres.NumerDomu))
+		{
+			if (!int.TryParse(_adres.NumerDomu, out _))
+			{
+				_numerDomuValidationMessage = "Numer domu musi być liczbą";
+				isValid = false;
+			}
+		}
+
+		if (!string.IsNullOrWhiteSpace(_adres.KodPocztowy) && !IsValidPostalCode(_adres.KodPocztowy))
+		{
+			_kodPocztowyValidationMessage = "Nieprawidłowy format kodu pocztowego";
+			isValid = false;
+		}
+
+		return isValid;
+	}
+
+	private bool IsValidEmail(string email)
+	{
+		try
+		{
+			var addr = new System.Net.Mail.MailAddress(email);
+			return addr.Address == email;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	private bool IsValidPhoneNumber(string phone)
+	{
+		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^(\+)?[\d\s-]{9,15}$");
+	}
+
+	private bool IsValidPostalCode(string postalCode)
+	{
+		return System.Text.RegularExpressions.Regex.IsMatch(postalCode, @"^\d{2}-\d{3}$");
+	}
+
+	private async Task OnValidSubmit()
+	{
+		_formSubmitted = true;
+		
+		if (!ValidateForm())
+		{
 			return;
 		}
 
@@ -317,11 +460,17 @@
 			List<int> addressIds = new();
 			if (!string.IsNullOrWhiteSpace(_adres.Ulica) || !string.IsNullOrWhiteSpace(_adres.Miasto))
 			{
+				int numerDomu = 0;
+				if (!string.IsNullOrEmpty(_adres.NumerDomu))
+				{
+					int.TryParse(_adres.NumerDomu, out numerDomu);
+				}
+
 				var adresResult = await ApiService.AdresyRepo.AdresPost(new ApiService.Models.AdresDto
 				{
 					Kraj = _adres.Kraj,
 					Ulica = _adres.Ulica,
-					NumerDomu = Convert.ToInt32(_adres.NumerDomu),
+					NumerDomu = numerDomu,
 					Miasto = _adres.Miasto,
 					KodPocztowy = _adres.KodPocztowy
 				});
@@ -337,11 +486,11 @@
 
 			_newUser.AdresEmailId = emailResult.Data.AdresEmailId;
 			_newUser.NumerTelefonuId = phoneId;
-			_newUser.AdresId = addressIds.First();
+			_newUser.AdresId = addressIds.FirstOrDefault();
 			_newUser.RolaUzytkownikaId = _selectedRoleId;
 			_newUser.CzyAktywny = true;
 
-	
+
 			var userResult = await ApiService.UzytkownicyRepo.UzytkownikPost(_newUser);
 
 			if (userResult.Error != null)

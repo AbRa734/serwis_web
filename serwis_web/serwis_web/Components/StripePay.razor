@@ -3,7 +3,7 @@
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 
-<MudButton Class="@($"payment-button {GetPaymentButtonClass()}")" OnClick="Pay">
+<MudButton Disabled="@(Amount <= 0)" Class="@($"payment-button {GetPaymentButtonClass()}")" OnClick="Pay">
     <MudIcon Icon="@GetPaymentIcon()" Class="mr-2" />
     <span class="button-text">Zapłać @Amount.ToString("0.00") zł</span>
 </MudButton>
@@ -41,7 +41,6 @@
         var baseUrl = Navigation.BaseUri.TrimEnd('/');
         var http = new HttpClient();
 
-        // Set payment method types based on selection
         List<string> paymentMethodTypes = new List<string>();
 
         switch (MetodaPlatnosci.ToLower())

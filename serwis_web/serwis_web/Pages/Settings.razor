@@ -149,6 +149,17 @@
 		border-radius: 4px;
 	}
 
+	.validation-message {
+		color: #F44336;
+		font-size: 12px;
+		margin-top: -5px;
+		margin-bottom: 10px;
+	}
+
+	.invalid-field {
+		border: 1px solid #F44336 !important;
+	}
+
 	@@media (max-width: 1366px) {
 	.settings-tab {
 		gap: 80px;
@@ -212,57 +223,89 @@
 	}
 
 	<div class="settings-back">
-		@* <h2>Dane kontaktowe</h2> *@
 		<div class="settings-tab">
-			<EditForm Model="@_userDataModel" OnValidSubmit="SaveUserData" class="settings-col">
+			<EditForm Model="@_userDataModel" OnSubmit="HandleFormSubmit" class="settings-col">
 				<DataAnnotationsValidator/>
-				<ValidationSummary/>
 				
-				<h4>Imię</h4>
-				<InputText @bind-Value="_userDataModel.Imie" placeholder="Imię użytkownika"/>
+				<h4>Imię <span style="color: #F44336">*</span></h4>
+				<InputText @bind-Value="_userDataModel.Imie" placeholder="Imię użytkownika" class="@(ValidationErrors.ContainsKey("Imie") ? "invalid-field" : "")" />
+				@if (ValidationErrors.ContainsKey("Imie"))
+				{
+					<div class="validation-message">@ValidationErrors["Imie"]</div>
+				}
 
-				<h4>Nazwisko</h4>
-				<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nazwisko użytkownika"/>
+				<h4>Nazwisko <span style="color: #F44336">*</span></h4>
+				<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nazwisko użytkownika" class="@(ValidationErrors.ContainsKey("Nazwisko") ? "invalid-field" : "")" />
+				@if (ValidationErrors.ContainsKey("Nazwisko"))
+				{
+					<div class="validation-message">@ValidationErrors["Nazwisko"]</div>
+				}
 
 				<div class="settings-row">
 					<div class="single-col">
 						<h4>Numer Telefonu</h4>
-						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu"/>
-						<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)"/>
+						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="@(ValidationErrors.ContainsKey("NumerTelefonu") ? "invalid-field" : "")" />
+						@if (ValidationErrors.ContainsKey("NumerTelefonu"))
+						{
+							<div class="validation-message">@ValidationErrors["NumerTelefonu"]</div>
+						}
 					</div>
 					<div class="single-col">
-						<h4>Adres Email</h4>
-						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" readonly/>
-						<ValidationMessage For="@(() => _userDataModel.Email)"/>
+						<h4>Adres Email <span style="color: #F44336">*</span></h4>
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" readonly class="@(ValidationErrors.ContainsKey("Email") ? "invalid-field" : "")" />
+						@if (ValidationErrors.ContainsKey("Email"))
+						{
+							<div class="validation-message">@ValidationErrors["Email"]</div>
+						}
 					</div>
 				</div>
 
 				<h4>Państwo</h4>
-				<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo"/>
+				<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" />
 
 				<div class="settings-row">
 					<div class="single-col">
 						<h4>Ulica</h4>
-						<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica"/>
+						<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" />
 					</div>
 					<div class="single-col">
 						<h4>Numer Domu</h4>
-						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu"/>
+						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" />
 					</div>
 				</div>
 
 				<div class="settings-row">
 					<div class="single-col">
 						<h4>Miasto</h4>
-						<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto"/>
+						<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" />
 					</div>
 					<div class="single-col">
 						<h4>Kod pocztowy</h4>
-						<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy"/>
+						<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="@(ValidationErrors.ContainsKey("KodPocztowy") ? "invalid-field" : "")" />
+						@if (ValidationErrors.ContainsKey("KodPocztowy"))
+						{
+							<div class="validation-message">@ValidationErrors["KodPocztowy"]</div>
+						}
 					</div>
 				</div>
 
-				<button type="submit" class="setting-btn">Zapisz zmiany</button>
+				@if (HasValidationErrors)
+				{
+					<div class="error-message">
+						Proszę poprawić błędy w formularzu przed zapisaniem zmian.
+					</div>
+				}
+
+				<button type="submit" class="setting-btn" disabled="@_isSaving">
+					@if (_isSaving)
+					{
+						<span>Zapisywanie...</span>
+					}
+					else 
+					{
+						<span>Zapisz zmiany</span>
+					}
+				</button>
 				
 				@if (_isSocialLogin)
 				{
@@ -302,8 +345,12 @@
 	private Adres? _currentAddress;
 
 	private bool _isSocialLogin = false;
-
 	private bool _isEmailSending = false;
+	private bool _isSaving = false;
+	
+	private Dictionary<string, string> ValidationErrors = new Dictionary<string, string>();
+	
+	public bool HasValidationErrors => ValidationErrors.Count > 0;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -316,14 +363,12 @@
 
 		await LoadUserData();
     
-		// Check if logged in with social platform
 		try {
 			var userEmail = await JSRuntime.InvokeAsync<string>("eval", 
 				"document.cookie.split(';').find(c => c.trim().startsWith('userEmail='))?.split('=')[1] || ''");
 			_isSocialLogin = !string.IsNullOrEmpty(userEmail);
 		}
 		catch {
-			// If any error accessing cookies, default to not social login
 			_isSocialLogin = false;
 		}
 	}
@@ -362,6 +407,8 @@
 			_userDataModel.Miasto = _currentAddress.Miasto;
 			_userDataModel.Kraj = _currentAddress.Kraj;
 		}
+		
+		ValidationErrors.Clear();
 	}
 	
 	private async Task LoadUser()
@@ -377,86 +424,158 @@
 		}
 	}
 
-	private async Task SaveUserData()
-{
-	try
+	private async Task HandleFormSubmit()
 	{
-		if (_currentUser == null)
+		ValidationErrors.Clear();
+		ValidateForm();
+		StateHasChanged();
+		if (!HasValidationErrors)
 		{
-			ShowError("Nie można zapisać zmian – użytkownik nie został załadowany.");
-			return;
+			await SaveUserData();
 		}
+	}
 
-		int adresEmailId = _currentUser.AdresEmailId;
-
-		int numerTelefonuId = _currentUser.NumerTelefonuId ?? 0;
-		if (!string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu))
+	private void ValidateForm()
+	{
+		if (string.IsNullOrWhiteSpace(_userDataModel.Imie))
 		{
-			var phoneDto = new NumerTelefonuDto { Numer = _userDataModel.NumerTelefonu };
+			ValidationErrors["Imie"] = "Imię jest wymagane";
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Nazwisko))
+		{
+			ValidationErrors["Nazwisko"] = "Nazwisko jest wymagane";
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Email))
+		{
+			ValidationErrors["Email"] = "Adres email jest wymagany";
+		}
+		else if (!IsValidEmail(_userDataModel.Email))
+		{
+			ValidationErrors["Email"] = "Nieprawidłowy format adresu email";
+		}
+		
+		if (!string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu) && !IsValidPhoneNumber(_userDataModel.NumerTelefonu))
+		{
+			ValidationErrors["NumerTelefonu"] = "Nieprawidłowy format numeru telefonu, powinien zawierać 9 cyfr";
+		}
+		
+		if (!string.IsNullOrWhiteSpace(_userDataModel.KodPocztowy) && !IsValidPostalCode(_userDataModel.KodPocztowy))
+		{
+			ValidationErrors["KodPocztowy"] = "Nieprawidłowy format kodu pocztowego (XX-XXX)";
+		}
+	}
+	
+	private bool IsValidEmail(string email)
+	{
+		try
+		{
+			var addr = new System.Net.Mail.MailAddress(email);
+			return addr.Address == email;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
-			var phoneResult = numerTelefonuId > 0
-				? await ApiService.NumeryTelefonuRepo.NumerTelefonuPut(numerTelefonuId, phoneDto)
-				: await ApiService.NumeryTelefonuRepo.NumerTelefonuPost(phoneDto);
+	private bool IsValidPhoneNumber(string phone)
+	{
+		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{9}$");
+	}
 
-			if (phoneResult.Error != null)
+	private bool IsValidPostalCode(string postalCode)
+	{
+		return System.Text.RegularExpressions.Regex.IsMatch(postalCode, @"^\d{2}-\d{3}$");
+	}
+
+	private async Task SaveUserData()
+	{
+		try
+		{
+			_isSaving = true;
+			
+			if (_currentUser == null)
 			{
-				ShowError("Błąd podczas zapisywania numeru telefonu.");
+				ShowError("Nie można zapisać zmian – użytkownik nie został załadowany.");
 				return;
 			}
 
-			numerTelefonuId = phoneResult.Data?.NumerTelefonuId ?? 0;
-		}
+			int adresEmailId = _currentUser.AdresEmailId;
 
-		int adresId = _currentAddress?.AdresId ?? 0;
-		if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
-		{
-			var adresDto = new AdresDto
+			int numerTelefonuId = _currentUser.NumerTelefonuId ?? 0;
+			if (!string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu))
 			{
-				Ulica = _userDataModel.Ulica,
-				NumerDomu = _userDataModel.NumerDomu,
-				NumerMieszkania = _userDataModel.NumerMieszkania,
-				KodPocztowy = _userDataModel.KodPocztowy,
-				Miasto = _userDataModel.Miasto,
-				Kraj = _userDataModel.Kraj
+				var phoneDto = new NumerTelefonuDto { Numer = _userDataModel.NumerTelefonu };
+
+				var phoneResult = numerTelefonuId > 0
+					? await ApiService.NumeryTelefonuRepo.NumerTelefonuPut(numerTelefonuId, phoneDto)
+					: await ApiService.NumeryTelefonuRepo.NumerTelefonuPost(phoneDto);
+
+				if (phoneResult.Error != null)
+				{
+					ShowError("Błąd podczas zapisywania numeru telefonu.");
+					return;
+				}
+
+				numerTelefonuId = phoneResult.Data?.NumerTelefonuId ?? 0;
+			}
+
+			int adresId = _currentAddress?.AdresId ?? 0;
+			if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
+			{
+				var adresDto = new AdresDto
+				{
+					Ulica = _userDataModel.Ulica,
+					NumerDomu = _userDataModel.NumerDomu,
+					NumerMieszkania = _userDataModel.NumerMieszkania,
+					KodPocztowy = _userDataModel.KodPocztowy,
+					Miasto = _userDataModel.Miasto,
+					Kraj = _userDataModel.Kraj
+				};
+
+				var adresResult = adresId > 0
+					? await ApiService.AdresyRepo.AdresPut(adresId, adresDto)
+					: await ApiService.AdresyRepo.AdresPost(adresDto);
+
+				if (adresResult.Error != null)
+				{
+					ShowError("Błąd podczas zapisywania adresu.");
+					return;
+				}
+
+				adresId = adresResult.Data?.AdresId ?? 0;
+			}
+
+			var updatedUser = new UzytkownikDto
+			{
+				Imie = _userDataModel.Imie,
+				Nazwisko = _userDataModel.Nazwisko,
+				AdresEmailId = adresEmailId,
+				NumerTelefonuId = numerTelefonuId,
+				AdresId = adresId,
 			};
 
-			var adresResult = adresId > 0
-				? await ApiService.AdresyRepo.AdresPut(adresId, adresDto)
-				: await ApiService.AdresyRepo.AdresPost(adresDto);
-
-			if (adresResult.Error != null)
+			var updateResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_currentUser.UzytkownikId, updatedUser);
+			if (updateResult.Error != null)
 			{
-				ShowError("Błąd podczas zapisywania adresu.");
+				ShowError("Błąd podczas zapisywania danych użytkownika.");
 				return;
 			}
 
-			adresId = adresResult.Data?.AdresId ?? 0;
+			ShowSuccess("Dane zostały zapisane poprawnie.");
+			await LoadUserData(); 
 		}
-
-		var updatedUser = new UzytkownikDto
+		catch (Exception ex)
 		{
-			Imie = _userDataModel.Imie,
-			Nazwisko = _userDataModel.Nazwisko,
-			AdresEmailId = adresEmailId,
-			NumerTelefonuId = numerTelefonuId,
-			AdresId = adresId,
-		};
-
-		var updateResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_currentUser.UzytkownikId, updatedUser);
-		if (updateResult.Error != null)
-		{
-			ShowError("Błąd podczas zapisywania danych użytkownika.");
-			return;
+			ShowError("Wystąpił błąd, spróbuj ponownie później.");
 		}
-
-		ShowSuccess("Dane zostały zapisane poprawnie.");
-		await LoadUserData(); 
+		finally
+		{
+			_isSaving = false;
+		}
 	}
-	catch (Exception ex)
-	{
-		ShowError("Wystąpił błąd, spróbuj ponownie później.");
-	}
-}
 
 
 	private async Task ChangePassword()
@@ -494,13 +613,8 @@
 	{
 		public string? Imie { get; set; }
 		public string? Nazwisko { get; set; }
-
-		[EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
 		public string? Email { get; set; }
-
-		[RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
 		public string? NumerTelefonu { get; set; }
-
 		public string? Ulica { get; set; }
 		public int NumerDomu { get; set; }
 		public int? NumerMieszkania { get; set; }

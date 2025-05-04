@@ -1,5 +1,6 @@
 @using ApiService
 @using ApiService.Models
+@using System.ComponentModel.DataAnnotations
 @using Color = MudBlazor.Color
 @using Colors = DesignSystem.Tokens.Colors
 @using DialogResult = MudBlazor.DialogResult
@@ -50,16 +51,26 @@
         background-color: #336ff5;
     }
 
+    .validation-message {
+        color: #ff5252;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
 </style>
+
 <MudDialog Class="container">
     <TitleContent>
         <MudText Class="tittle">Oceń wykonaną usługę</MudText>
     </TitleContent>
     <DialogContent>
-        <MudContainer>
-            <MudForm @ref="_ratingForm">
-                <MudSelect T="int" Label="Wybierz zamówienie" @bind-Value="SelectedOrderId"
-                         Required RequiredError="Wybór zamówienia jest wymagany" Class="mb-4">
+        <EditForm Model="@_model" OnValidSubmit="Submit">
+            <DataAnnotationsValidator />
+
+            <MudContainer>
+                <MudSelect T="int" Label="Wybierz zamówienie" @bind-Value="_model.OrderId"
+                           Validation="@(new Func<int, string>(ValidateOrderId))"
+                           For="@(() => _model.OrderId)"
+                           Class="mb-4">
                     @foreach (var order in Orders.Where(z => z.Status.Nazwa == "Zakończony"))
                     {
                         <MudSelectItem Value="@order.ZamowienieId">Zamówienie #@order.ZamowienieId.ToString("D5")</MudSelectItem>
@@ -67,14 +78,29 @@
                 </MudSelect>
 
                 <div class="d-flex flex-column align-center my-4">
-                    <MudRating @bind-SelectedValue="SelectedRatingValue" HoveredValueChanged="HandleHoveredValueChanged" Size="Size.Large" />
+                    <MudRating @bind-SelectedValue="_model.Rating"
+                               HoveredValueChanged="HandleHoveredValueChanged"
+                               Size="Size.Large" />
                     <MudText Typo="Typo.subtitle1" Class="mt-2" Style="color: #BA29FF">@RatingLabelText</MudText>
+                    @if (_activeRatingValue == 0 && _model.Rating == 0)
+                    {
+                        <div class="validation-message">Wybierz ocenę dla usługi</div>
+                    }
                 </div>
 
-                <MudTextField T="string" Label="Dodatkowy komentarz (opcjonalnie)" @bind-Value="RatingComment"
-                            Counter="300" MaxLength="300" Immediate="true" Lines="2"/>
-            </MudForm>
-        </MudContainer>
+                <MudTextField T="string" Label="Dodatkowy komentarz (opcjonalnie)"
+                              @bind-Value="_model.Comment"
+                              Validation="@(new Func<string, string>(ValidateComment))"
+                              For="@(() => _model.Comment)"
+                              Counter="300" MaxLength="300"
+                              Immediate="true" Lines="2"/>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-3">@_errorMessage</MudAlert>
+                }
+            </MudContainer>
+        </EditForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Class="cancel">Anuluj</MudButton>
@@ -84,16 +110,29 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
-    
+
     [Parameter] public List<Zamowienie> Orders { get; set; } = new();
-    [Parameter] public int SelectedOrderId { get; set; }
-    [Parameter] public int SelectedRatingValue { get; set; }
-    [Parameter] public string RatingComment { get; set; } = string.Empty;
-    
-    private MudForm _ratingForm = null!;
+
+    private string _errorMessage = string.Empty;
     private int? _activeRatingValue;
     private List<DicTypOceny> _typyOceny = new();
-    
+
+    private class RatingModel
+    {
+        [Required(ErrorMessage = "Wybierz zamówienie")]
+        [Range(1, int.MaxValue, ErrorMessage = "Wybierz prawidłowe zamówienie")]
+        public int OrderId { get; set; }
+
+        [Required(ErrorMessage = "Wybierz ocenę")]
+        [Range(1, 5, ErrorMessage = "Ocena musi być między 1 a 5")]
+        public int Rating { get; set; }
+
+        [StringLength(300, ErrorMessage = "Komentarz nie może przekraczać 300 znaków")]
+        public string Comment { get; set; } = string.Empty;
+    }
+
+    private RatingModel _model = new();
+
     protected override async Task OnInitializedAsync()
     {
         var result = await ApiService.TypyOcenyRepo.TypyOcenyGet();
@@ -101,42 +140,95 @@
         {
             _typyOceny = result.Data.OrderBy(t => t.Ocena).ToList();
         }
+
+        if (SelectedOrderId > 0)
+        {
+            _model.OrderId = SelectedOrderId;
+        }
+        else if (Orders.Any(z => z.Status.Nazwa == "Zakończony"))
+        {
+            _model.OrderId = Orders.First(z => z.Status.Nazwa == "Zakończony").ZamowienieId;
+        }
+
+        _model.Rating = SelectedRatingValue;
+        _model.Comment = RatingComment;
+
         await base.OnInitializedAsync();
     }
-    
+
     private void HandleHoveredValueChanged(int? val) => _activeRatingValue = val;
-    
+
     private string RatingLabelText
     {
         get
         {
-            int value = _activeRatingValue ?? SelectedRatingValue;
+            int value = _activeRatingValue ?? _model.Rating;
             var typ = _typyOceny.FirstOrDefault(t => t.Ocena == value);
             return typ?.Nazwa ?? "Oceń naszą usługę!";
         }
     }
-    
-    private bool IsFormValid() => SelectedRatingValue > 0 && SelectedOrderId > 0;
-    
+
+    private string ValidateOrderId(int id)
+    {
+        if (id <= 0)
+            return "Wybierz zamówienie";
+
+        if (!Orders.Any(o => o.ZamowienieId == id && o.Status.Nazwa == "Zakończony"))
+            return "Wybrane zamówienie nie jest zakończone";
+
+        return null;
+    }
+
+    private string ValidateComment(string comment)
+    {
+        if (comment != null && comment.Length > 300)
+            return "Komentarz nie może przekraczać 300 znaków";
+
+        return null;
+    }
+
+    private bool IsFormValid()
+    {
+        return _model.OrderId > 0 &&
+               _model.Rating > 0 &&
+               _model.Rating <= 5 &&
+               (string.IsNullOrEmpty(_model.Comment) || _model.Comment.Length <= 300);
+    }
+
     private void Submit()
     {
-        _ratingForm.Validate();
-        if (_ratingForm.IsValid)
+        _errorMessage = string.Empty;
+
+        if (!IsFormValid())
         {
-            var typ = _typyOceny.FirstOrDefault(t => t.Ocena == SelectedRatingValue);
+            _errorMessage = "Popraw błędy w formularzu przed zapisaniem";
+            return;
+        }
+
+        try
+        {
+            var typ = _typyOceny.FirstOrDefault(t => t.Ocena == _model.Rating);
             var result = new RatingDialogResult
             {
-                OrderId = SelectedOrderId,
-                Rating = SelectedRatingValue,
+                OrderId = _model.OrderId,
+                Rating = _model.Rating,
                 TypOcenyId = typ?.TypOcenyId ?? 0,
-                Comment = RatingComment
+                Comment = _model.Comment
             };
             MudDialog.Close(DialogResult.Ok(result));
         }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Wystąpił błąd: {ex.Message}";
+        }
     }
-    
+
     private void Cancel() => MudDialog.Cancel();
-    
+
+    [Parameter] public int SelectedOrderId { get; set; }
+    [Parameter] public int SelectedRatingValue { get; set; }
+    [Parameter] public string RatingComment { get; set; } = string.Empty;
+
     public class RatingDialogResult
     {
         public int OrderId { get; set; }

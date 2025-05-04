@@ -519,9 +519,8 @@
             <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" />
             @{
                 var metodaPlatnosciNazwa = _platnosci.FirstOrDefault(p => p.MetodaPlatnosciId == _orderDataModel.MetodaPlatnosciId)?.Nazwa?.ToLower() ?? "";
-                var metodaPlatnosciTyp = "stripe"; // Default payment method
+                var metodaPlatnosciTyp = "stripe"; 
 
-                // Map payment method name to appropriate type for StripePay component
                 metodaPlatnosciTyp = metodaPlatnosciNazwa switch {
                     var m when m.Contains("karta") => "karta",
                     var m when m.Contains("blik") => "blik",
@@ -531,7 +530,7 @@
                 };
             }
 
-            <StripePay Amount="@(_orderDataModel.Koszt100 / 100m)" MetodaPlatnosci="@metodaPlatnosciTyp" />
+            <StripePay Amount="@(_orderDataModel.Koszt100)" MetodaPlatnosci="@metodaPlatnosciTyp" />
             
             
             @if (_komentarze?.Any() == true)
@@ -898,7 +897,7 @@
                 var logDto = new LogDto
                 {
                     ZamowienieId = OrderId,
-                    StatusId = _orderDataModel.StatusId, // Maintain current status
+                    StatusId = _orderDataModel.StatusId,
                     Komentarz = commentText
                 };
 
@@ -1029,7 +1028,6 @@
 
                 if (userResult.Error != null || userResult.Data == null)
                 {
-                    // ShowError("Błąd podczas zapisywania uzytkownika.");
                     Snackbar.Add("Błąd podczas zapisywania danych klienta.");
                     return;
                 }
@@ -1142,8 +1140,8 @@
                 await ApiService.LogiRepo.LogPost(logDto);
 
                 Snackbar.Add("Zapisano zmiany", Severity.Success);
-            //     _orderDataModel = result.Data; Update the _orderDataModel with latest data
-            //     await GenerateOrderHistory(); Refresh history
+            //     _orderDataModel = result.Data; 
+            //     await GenerateOrderHistory();
             }
             else
             {

@@ -609,7 +609,10 @@
 
 	public class UserDataModel
 	{
+		[StringLength(50, ErrorMessage = "Imię nie może przekraczać 50 znaków")]
 		public string? Imie { get; set; }
+    
+		[StringLength(50, ErrorMessage = "Nazwisko nie może przekraczać 50 znaków")]
 		public string? Nazwisko { get; set; }
 
 		[EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
@@ -618,11 +621,21 @@
 		[RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
 		public string? NumerTelefonu { get; set; }
 
+		[StringLength(100, ErrorMessage = "Ulica nie może przekraczać 100 znaków")]
 		public string? Ulica { get; set; }
+    
+		[Range(1, 9999, ErrorMessage = "Podaj prawidłowy numer domu")]
 		public int NumerDomu { get; set; }
+    
 		public int? NumerMieszkania { get; set; }
+    
+		[RegularExpression(@"^\d{2}-\d{3}$", ErrorMessage = "Kod pocztowy powinien mieć format XX-XXX")]
 		public string? KodPocztowy { get; set; }
+    
+		[StringLength(100, ErrorMessage = "Miasto nie może przekraczać 100 znaków")]
 		public string? Miasto { get; set; }
+    
+		[StringLength(50, ErrorMessage = "Kraj nie może przekraczać 50 znaków")]
 		public string? Kraj { get; set; }
 	}
 

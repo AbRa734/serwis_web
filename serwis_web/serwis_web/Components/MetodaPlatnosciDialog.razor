@@ -1,14 +1,14 @@
 @using ApiService.Models
+@using System.ComponentModel.DataAnnotations
 @using Colors = DesignSystem.Tokens.Colors
 @using DialogResult = MudBlazor.DialogResult
 @rendermode InteractiveServer
 
-
 <style>
-    .container{
+    .container {
         border-radius: 15px;
         box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
-        padding: 10px 10px 15px 10px; 
+        padding: 10px 10px 15px 10px;
     }
 
     .tittle {
@@ -16,7 +16,7 @@
         font-weight: 600
     }
 
-    .cancel{
+    .cancel {
         background-color: #979797;
         color: #FFFFFF;
         padding: 10px 20px;
@@ -27,11 +27,12 @@
         border: none;
         border-radius: 10px;
     }
-    .cancel:hover{
-         background-color: #858383
+
+    .cancel:hover {
+        background-color: #858383
     }
 
-    .save{
+    .save {
         background-color: #4880FF;
         color: #FFFFFF;
         padding: 10px 20px;
@@ -42,33 +43,50 @@
         border: none;
         border-radius: 10px;
     }
-    .save:hover{
+
+    .save:hover {
         background-color: #336ff5;
     }
 
+    .validation-message {
+        color: #ff5252;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
 </style>
-
 
 <MudDialog Class="container">
     <TitleContent>
         <MudText Class="tittle">@DialogTitle</MudText>
     </TitleContent>
     <DialogContent>
-        <MudForm @ref="_form" Model="@Metoda">
+        <EditForm Model="@_model" OnValidSubmit="Submit">
+            <DataAnnotationsValidator />
+
             <MudGrid>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="Metoda.Nazwa" Label="Nazwa" Required="true"
-                                  RequiredError="Nazwa jest wymagana" />
+                    <MudTextField @bind-Value="_model.Nazwa" Label="Nazwa" Required="true"
+                                  Validation="@(new Func<string, string>(ValidateNazwa))"
+                                  For="@(() => _model.Nazwa)" />
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="Metoda.Opis" Label="Opis" Lines="1" />
+                    <MudTextField @bind-Value="_model.Opis" Label="Opis" Lines="1"
+                                  Validation="@(new Func<string, string>(ValidateOpis))"
+                                  For="@(() => _model.Opis)" />
                 </MudItem>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+                    </MudItem>
+                }
             </MudGrid>
-        </MudForm>
+        </EditForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Class="cancel">Anuluj</MudButton>
-        <MudButton OnClick="Submit" Class="save">Zapisz</MudButton>
+        <MudButton OnClick="Submit" Class="save" Disabled="@(!IsFormValid())">Zapisz</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -77,19 +95,84 @@
 
     [Parameter] public DicMetodaPlatnosciDto Metoda { get; set; } = new();
     [Parameter] public bool IsNew { get; set; }
-    
-    private MudForm _form = null!;
-    
+
+    private string _errorMessage = string.Empty;
     private string DialogTitle => IsNew ? "Dodaj nową metodę płatności" : "Edytuj metodę płatności";
-    
-    private void Submit()
+
+    private class MetodaPlatnosciModel
     {
-        _form.Validate();
-        if (_form.IsValid)
+        [Required(ErrorMessage = "Nazwa jest wymagana")]
+        [StringLength(100, ErrorMessage = "Nazwa nie może przekraczać 100 znaków")]
+        [MinLength(2, ErrorMessage = "Nazwa musi zawierać co najmniej 2 znaki")]
+        public string Nazwa { get; set; } = string.Empty;
+
+        [StringLength(250, ErrorMessage = "Opis nie może przekraczać 250 znaków")]
+        public string Opis { get; set; } = string.Empty;
+    }
+
+    private MetodaPlatnosciModel _model = new();
+
+    protected override void OnInitialized()
+    {
+        if (Metoda != null)
         {
-            MudDialog.Close(DialogResult.Ok(Metoda));
+            _model.Nazwa = Metoda.Nazwa ?? string.Empty;
+            _model.Opis = Metoda.Opis ?? string.Empty;
         }
     }
-    
+
+    private string ValidateNazwa(string nazwa)
+    {
+        if (string.IsNullOrWhiteSpace(nazwa))
+            return "Nazwa jest wymagana";
+
+        if (nazwa.Length < 2)
+            return "Nazwa musi zawierać co najmniej 2 znaki";
+
+        if (nazwa.Length > 100)
+            return "Nazwa nie może przekraczać 100 znaków";
+
+        return null;
+    }
+
+    private string ValidateOpis(string opis)
+    {
+        if (opis != null && opis.Length > 250)
+            return "Opis nie może przekraczać 250 znaków";
+
+        return null;
+    }
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(_model.Nazwa) &&
+               _model.Nazwa.Length >= 2 &&
+               _model.Nazwa.Length <= 100 &&
+               (string.IsNullOrEmpty(_model.Opis) || _model.Opis.Length <= 250);
+    }
+
+    private void Submit()
+    {
+        _errorMessage = string.Empty;
+
+        if (!IsFormValid())
+        {
+            _errorMessage = "Popraw błędy w formularzu przed zapisaniem";
+            return;
+        }
+
+        try
+        {
+            Metoda.Nazwa = _model.Nazwa;
+            Metoda.Opis = _model.Opis;
+
+            MudDialog.Close(DialogResult.Ok(Metoda));
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Wystąpił błąd: {ex.Message}";
+        }
+    }
+
     private void Cancel() => MudDialog.Cancel();
 }

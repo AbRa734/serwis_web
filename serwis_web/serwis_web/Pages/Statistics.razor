@@ -316,18 +316,14 @@
 
         if (ordersResult.Data != null)
         {
-            // Tablica do przechowywania liczby zamówień dla każdego dnia tygodnia
             var weekdayNewCount = new double[7];
             var weekdayCompletedCount = new double[7];
 
-            // Przetwarzanie danych zamówień
             foreach (var order in ordersResult.Data)
             {
-                // Dzień tygodnia z daty dodania (0 = poniedziałek, 6 = niedziela)
                 int dayOfWeekNew = ((int)order.DataDodania.DayOfWeek + 6) % 7;
                 weekdayNewCount[dayOfWeekNew]++;
 
-                // Dla zakończonych zamówień
                 if (order.Status?.Nazwa == "Zakończone" && order.DataAktualizacji.HasValue)
                 {
                     int dayOfWeekCompleted = ((int)order.DataAktualizacji.Value.DayOfWeek + 6) % 7;

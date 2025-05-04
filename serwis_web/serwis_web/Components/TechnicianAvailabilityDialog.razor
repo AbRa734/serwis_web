@@ -1,42 +1,141 @@
 @using ApiService.Models
+@using System.ComponentModel.DataAnnotations
 @using Color = MudBlazor.Color
 @using DialogResult = MudBlazor.DialogResult
 
-<MudDialog>
+<style>
+    .container {
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        padding: 10px 10px 15px 10px;
+    }
+
+    .title {
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+    .cancel {
+        background-color: #979797;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .cancel:hover {
+        background-color: #858383
+    }
+
+    .add {
+        background-color: #4880FF;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .add:hover {
+        background-color: #336ff5;
+    }
+
+    .validation-message {
+        color: #ff5252;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
+</style>
+
+<MudDialog Class="container">
+    <TitleContent>
+        <MudText Class="title">Dostępność serwisantów na @Date.ToString("dd.MM.yyyy")</MudText>
+    </TitleContent>
     <DialogContent>
-        @if (AvailableTechnicians.Any())
-        {
-            <MudText Typo="Typo.subtitle1" Color="Color.Success" Class="mt-3">Dostępni serwisanci:</MudText>
-            <MudList T="string" Dense="true">
-                @foreach (var technician in AvailableTechnicians)
+        <EditForm Model="@_model" OnValidSubmit="Submit">
+            <DataAnnotationsValidator />
+            
+            @if (AvailableTechnicians.Any())
+            {
+                <MudText Typo="Typo.subtitle1" Color="Color.Success" Class="mt-3">Dostępni serwisanci:</MudText>
+                <MudList T="string" Dense="true">
+                    @foreach (var technician in AvailableTechnicians)
+                    {
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            @technician
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+            else
+            {
+                <MudText Color="Color.Warning" Class="mt-3">Brak dostępnych serwisantów.</MudText>
+            }
+
+            @if (UnavailableTechnicians.Any())
+            {
+                <MudText Typo="Typo.subtitle1" Color="Color.Error" Class="mt-3">Niedostępni serwisanci:</MudText>
+                <MudList T="string" Dense="true">
+                    @foreach (var technician in UnavailableTechnicians)
+                    {
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Close">
+                            @technician
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+
+            @if (_showAvailabilityForm)
+            {
+                <MudDivider Class="my-4" />
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Dodaj nową dostępność</MudText>
+                
+                <MudSelect @bind-Value="_model.TechnicianId" Label="Wybierz serwisanta" Required="true"
+                           Validation="@(new Func<string, string>(ValidateTechnician))"
+                           For="@(() => _model.TechnicianId)">
+                    @foreach (var technician in UnavailableTechnicians)
+                    {
+                        <MudSelectItem Value="@technician">@technician</MudSelectItem>
+                    }
+                </MudSelect>
+                
+                <MudGrid Class="mt-3">
+                    <MudItem xs="6">
+                        <MudTimePicker @bind-Time="_model.StartTime" Label="Czas rozpoczęcia" Required="true"
+                                      Validation="@(new Func<TimeSpan?, string>(ValidateStartTime))"
+                                      For="@(() => _model.StartTime)" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudTimePicker @bind-Time="_model.EndTime" Label="Czas zakończenia" Required="true"
+                                      Validation="@(new Func<TimeSpan?, string>(ValidateEndTime))"
+                                      For="@(() => _model.EndTime)" />
+                    </MudItem>
+                </MudGrid>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
                 {
-                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
-                        @technician
-                    </MudListItem>
+                    <MudAlert Severity="Severity.Error" Class="mt-3">@_errorMessage</MudAlert>
                 }
-            </MudList>
+            }
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Class="cancel">Zamknij</MudButton>
+        @if (_showAvailabilityForm)
+        {
+            <MudButton OnClick="Submit" Class="add" Disabled="@(!IsFormValid())">Zapisz dostępność</MudButton>
         }
         else
         {
-            <MudText Color="Color.Warning" Class="mt-3">Brak dostępnych serwisantów.</MudText>
+            <MudButton OnClick="ShowAvailabilityForm" Class="add">Dodaj dostępność</MudButton>
         }
-
-        @if (UnavailableTechnicians.Any())
-        {
-            <MudText Typo="Typo.subtitle1" Color="Color.Error" Class="mt-3">Niedostępni serwisanci:</MudText>
-            <MudList T="string" Dense="true">
-                @foreach (var technician in UnavailableTechnicians)
-                {
-                    <MudListItem T="string" Icon="@Icons.Material.Filled.Close">
-                        @technician
-                    </MudListItem>
-                }
-            </MudList>
-        }
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel">Zamknij</MudButton>
-        <MudButton Color="Color.Primary" OnClick="AddAvailability">Dodaj dostępność</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -46,13 +145,113 @@
     [Parameter] public List<string> AvailableTechnicians { get; set; } = new();
     [Parameter] public List<string> UnavailableTechnicians { get; set; } = new();
     
+    private bool _showAvailabilityForm = false;
+    private string _errorMessage = string.Empty;
+    
+    private class AvailabilityModel
+    {
+        [Required(ErrorMessage = "Wybierz serwisanta")]
+        public string TechnicianId { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "Czas rozpoczęcia jest wymagany")]
+        public TimeSpan? StartTime { get; set; }
+        
+        [Required(ErrorMessage = "Czas zakończenia jest wymagany")]
+        public TimeSpan? EndTime { get; set; }
+    }
+    
+    private AvailabilityModel _model = new();
+    
+    private string ValidateTechnician(string technicianId)
+    {
+        if (string.IsNullOrWhiteSpace(technicianId))
+            return "Wybierz serwisanta";
+            
+        if (!UnavailableTechnicians.Contains(technicianId))
+            return "Wybrany serwisant nie jest na liście";
+            
+        return null;
+    }
+    
+    private string ValidateStartTime(TimeSpan? time)
+    {
+        if (time == null)
+            return "Czas rozpoczęcia jest wymagany";
+            
+        if (time.Value.Hours < 6 || time.Value.Hours > 21)
+            return "Czas rozpoczęcia musi być między 6:00 a 21:00";
+            
+        return null;
+    }
+    
+    private string ValidateEndTime(TimeSpan? time)
+    {
+        if (time == null)
+            return "Czas zakończenia jest wymagany";
+            
+        if (time.Value.Hours < 6 || time.Value.Hours > 22)
+            return "Czas zakończenia musi być między 6:00 a 22:00";
+            
+        if (_model.StartTime.HasValue && time.HasValue && time.Value <= _model.StartTime.Value)
+            return "Czas zakończenia musi być późniejszy niż czas rozpoczęcia";
+            
+        return null;
+    }
+    
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(_model.TechnicianId) &&
+               UnavailableTechnicians.Contains(_model.TechnicianId) &&
+               _model.StartTime.HasValue &&
+               _model.EndTime.HasValue &&
+               _model.EndTime.Value > _model.StartTime.Value &&
+               _model.StartTime.Value.Hours >= 6 && _model.StartTime.Value.Hours <= 21 &&
+               _model.EndTime.Value.Hours >= 6 && _model.EndTime.Value.Hours <= 22;
+    }
+    
+    private void ShowAvailabilityForm()
+    {
+        _showAvailabilityForm = true;
+    }
+    
+    private void Submit()
+    {
+        _errorMessage = string.Empty;
+        
+        if (!IsFormValid())
+        {
+            _errorMessage = "Popraw błędy w formularzu przed zapisaniem";
+            return;
+        }
+        
+        try
+        {
+            var result = new AvailabilityResult
+            {
+                TechnicianId = _model.TechnicianId,
+                Date = Date,
+                StartTime = _model.StartTime.Value,
+                EndTime = _model.EndTime.Value
+            };
+            
+            MudDialog.Close(DialogResult.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Wystąpił błąd: {ex.Message}";
+        }
+    }
+    
     private void Cancel()
     {
         MudDialog.Cancel();
     }
-
-    private void AddAvailability()
+    
+    public class AvailabilityResult
     {
-        MudDialog.Close(DialogResult.Ok("add"));
+        public string TechnicianId { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 }

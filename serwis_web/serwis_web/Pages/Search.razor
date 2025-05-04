@@ -187,12 +187,10 @@
         {
             currentUser = await ApiService.GetUzytkownik();
 
-            // Check user role
             if (currentUser.RolaUzytkownika.Nazwa == "Serwisant")
             {
                 isSerwisant = true;
 
-                // Find the Serwisant ID associated with this user
                 var serwisanci = await ApiService.SerwisanciRepo.SerwisanciGet();
                 if (serwisanci.Data != null)
                 {
@@ -207,7 +205,6 @@
             {
                 isKlient = true;
 
-                // Find the Klient ID associated with this user
                 var klienci = await ApiService.KlienciRepo.KlienciGet();
                 if (klienci.Data != null)
                 {
@@ -238,7 +235,6 @@
             var ordersResult = await ApiService.ZamowieniaRepo.ZamowieniaGet();
             var servicesResult = await ApiService.SerwisyRepo.SerwisyGet();
 
-            // Always filter users by search terms (no role-based restrictions)
             if (usersResult.Data != null)
             {
                 users = usersResult.Data.Where(u =>
@@ -251,24 +247,19 @@
                 ).ToList();
             }
 
-            // Filter orders based on user role and search terms
             if (ordersResult.Data != null)
             {
                 var filteredOrders = ordersResult.Data;
                 
-                // Filter by role first
                 if (isSerwisant && serwisantId.HasValue)
                 {
-                    // Technician can only see their own orders
                     filteredOrders = filteredOrders.Where(o => o.SerwisantId == serwisantId.Value).ToList();
                 }
                 else if (isKlient && klientId.HasValue)
                 {
-                    // Client can only see their own orders
                     filteredOrders = filteredOrders.Where(o => o.KlientId == klientId.Value).ToList();
                 }
                 
-                // Then filter by search terms
                 orders = filteredOrders.Where(o =>
                     searchTerms.Any(term =>
                         o.ZamowienieId.ToString() == term ||
@@ -280,7 +271,6 @@
                 ).ToList();
             }
 
-            // Services aren't filtered by role (everyone can see all services)
             if (servicesResult.Data != null)
             {
                 services = servicesResult.Data.Where(s =>
