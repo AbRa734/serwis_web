@@ -7,9 +7,9 @@
 
 <PageTitle>Statystyki</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudPaper Elevation="0" Class="pa-4">
-        <MudText Typo="Typo.h4" Class="mb-4" Style="color: #000000; font-weight: 700;">Statystyki serwisu</MudText>
+<div>
+    <div>
+        <h2>Statystyki serwisu</h2>
         
         @if (_isLoading)
         {
@@ -121,23 +121,23 @@
                         <MudCardHeader Class="pb-0">
                             <CardHeaderContent>
                                 <MudText Typo="Typo.h6" Color="Color.Primary">
-                                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Class="mr-2" /> Porównanie rok do roku
+                                    <MudIcon Icon="@Icons.Material.Filled.DateRange" Class="mr-2" /> Zamówienia według dnia tygodnia
                                 </MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent>
-                            <MudChart ChartType="ChartType.Line" 
+                            <MudChart ChartType="ChartType.Bar" 
                                      Width="100%" 
                                      Height="300px" 
-                                     ChartSeries="@_yearlyComparisonSeries" 
-                                     XAxisLabels="@_monthLabels" />
+                                     ChartSeries="@_weekdaySeries" 
+                                     XAxisLabels="@_weekdayLabels" />
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
             </MudGrid>
         }
-    </MudPaper>
-</MudContainer>
+    </div>
+</div>
 
 <style>
     .mud-card {
@@ -171,29 +171,12 @@
     private double[] _avgTimeData = { 3.5, 5.2, 7.1, 12.4 };
     private string[] _avgTimeLabels = { "Naprawa sprzętu", "Konserwacja", "Instalacja", "Diagnostyka" };
     
-    private List<ChartSeries> _yearlyComparisonSeries = new();
+    private List<ChartSeries> _weekdaySeries = new();
+    private string[] _weekdayLabels = { "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela" };
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
-        InitializeAdditionalCharts();
-    }
-
-    private void InitializeAdditionalCharts()
-    {
-        _yearlyComparisonSeries = new List<ChartSeries>
-        {
-            new ChartSeries() { 
-                Name = "2024", 
-                Data = new double[] { 42, 38, 55, 67, 73, 80, 95, 92, 85, 77, 63, 58 }, 
-                ShowDataMarkers = false
-            },
-            new ChartSeries() { 
-                Name = "2023", 
-                Data = new double[] { 35, 32, 48, 55, 65, 70, 82, 78, 70, 65, 52, 48 }, 
-                ShowDataMarkers = false
-            }
-        };
     }
 
     private async Task LoadData()
@@ -205,7 +188,8 @@
             await Task.WhenAll(
                 LoadOrderStatusData(),
                 LoadTechnicianWorkloadData(),
-                LoadMonthlyOrderData()
+                LoadMonthlyOrderData(),
+                LoadWeekdayOrderData()
             );
         }
         catch (Exception ex)
@@ -321,6 +305,47 @@
                     Name = "Zakończone", 
                     Data = monthlyCompletedOrders, 
                     ShowDataMarkers = true 
+                }
+            };
+        }
+    }
+
+    private async Task LoadWeekdayOrderData()
+    {
+        var ordersResult = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+
+        if (ordersResult.Data != null)
+        {
+            // Tablica do przechowywania liczby zamówień dla każdego dnia tygodnia
+            var weekdayNewCount = new double[7];
+            var weekdayCompletedCount = new double[7];
+
+            // Przetwarzanie danych zamówień
+            foreach (var order in ordersResult.Data)
+            {
+                // Dzień tygodnia z daty dodania (0 = poniedziałek, 6 = niedziela)
+                int dayOfWeekNew = ((int)order.DataDodania.DayOfWeek + 6) % 7;
+                weekdayNewCount[dayOfWeekNew]++;
+
+                // Dla zakończonych zamówień
+                if (order.Status?.Nazwa == "Zakończone" && order.DataAktualizacji.HasValue)
+                {
+                    int dayOfWeekCompleted = ((int)order.DataAktualizacji.Value.DayOfWeek + 6) % 7;
+                    weekdayCompletedCount[dayOfWeekCompleted]++;
+                }
+            }
+
+            _weekdaySeries = new List<ChartSeries>
+            {
+                new ChartSeries() {
+                    Name = "Nowe zamówienia",
+                    Data = weekdayNewCount,
+                    ShowDataMarkers = true
+                },
+                new ChartSeries() {
+                    Name = "Zakończone zamówienia",
+                    Data = weekdayCompletedCount,
+                    ShowDataMarkers = true
                 }
             };
         }
