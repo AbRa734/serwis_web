@@ -13,6 +13,48 @@
 
 <PageTitle>Raport zlecenia</PageTitle>
 
+<style>
+    .custom-pdf-button {
+        height: 40px;
+        font-size: 0.875rem;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .new-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 10px;
+        background-color: #4880FF;
+        border: none;
+        border-radius: 10px;
+        padding: 0 50px;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+    }
+
+    .new-button:hover {
+        background-color: #336ff5;
+    }
+
+    .pdf-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pdf-icon {
+        font-size: 26px;
+    }
+    
+</style>
+
 <div class="order-container">
     <h2>Raport zlecenia</h2>
 
@@ -190,24 +232,27 @@
                         <input type="text" value="@komentarz.Tresc" readonly/>
                     }
                 }
-
-                <MudButton Color="Color.Primary" 
-                           Variant="Variant.Filled" 
+                
+                <MudButton Class="new-button"
                            OnClick="DownloadPdf"
-                           Class="mt-4" 
-                           StartIcon="@Icons.Material.Filled.PictureAsPdf"
                            Disabled="@_generatingPdf"
                            Size="Size.Small">
                     @if (_generatingPdf)
                     {
-                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
-                        <span class="ms-2">Generowanie...</span>
+                        <div class="pdf-content">
+                            <MudProgressCircular Class="me-2" Size="Size.Small" Indeterminate="true" />
+                            <span>Generowanie...</span>
+                        </div>
                     }
                     else
                     {
-                        <span>Pobierz PDF</span>
+                        <div class="pdf-content">
+                            <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Class="pdf-icon me-2" />
+                            <span>Pobierz PDF</span>
+                        </div>
                     }
                 </MudButton>
+
             }
         </div>
     </div>
