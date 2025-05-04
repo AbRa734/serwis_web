@@ -1,8 +1,10 @@
+@using ApiService
 @using ApiService.Models
 @using Color = MudBlazor.Color
 @using Colors = DesignSystem.Tokens.Colors
 @using DialogResult = MudBlazor.DialogResult
 @using Size = MudBlazor.Size
+@inject ApiService ApiService
 
 <style>
     .container {
@@ -49,7 +51,6 @@
     }
 
 </style>
-
 <MudDialog Class="container">
     <TitleContent>
         <MudText Class="tittle">Oceń wykonaną usługę</MudText>
@@ -91,18 +92,29 @@
     
     private MudForm _ratingForm = null!;
     private int? _activeRatingValue;
+    private List<DicTypOceny> _typyOceny = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await ApiService.TypyOcenyRepo.TypyOcenyGet();
+        if (result.Data != null)
+        {
+            _typyOceny = result.Data.OrderBy(t => t.Ocena).ToList();
+        }
+        await base.OnInitializedAsync();
+    }
     
     private void HandleHoveredValueChanged(int? val) => _activeRatingValue = val;
     
-    private string RatingLabelText => (_activeRatingValue ?? SelectedRatingValue) switch
+    private string RatingLabelText
     {
-        1 => "Bardzo słabo",
-        2 => "Słabo",
-        3 => "Przeciętnie",
-        4 => "Dobrze",
-        5 => "Wspaniale!",
-        _ => "Oceń naszą usługę!"
-    };
+        get
+        {
+            int value = _activeRatingValue ?? SelectedRatingValue;
+            var typ = _typyOceny.FirstOrDefault(t => t.Ocena == value);
+            return typ?.Nazwa ?? "Oceń naszą usługę!";
+        }
+    }
     
     private bool IsFormValid() => SelectedRatingValue > 0 && SelectedOrderId > 0;
     
@@ -111,10 +123,12 @@
         _ratingForm.Validate();
         if (_ratingForm.IsValid)
         {
+            var typ = _typyOceny.FirstOrDefault(t => t.Ocena == SelectedRatingValue);
             var result = new RatingDialogResult
             {
                 OrderId = SelectedOrderId,
                 Rating = SelectedRatingValue,
+                TypOcenyId = typ?.TypOcenyId ?? 0,
                 Comment = RatingComment
             };
             MudDialog.Close(DialogResult.Ok(result));
@@ -127,6 +141,7 @@
     {
         public int OrderId { get; set; }
         public int Rating { get; set; }
-        public string Comment { get; set; } = null!;
+        public int TypOcenyId { get; set; }
+        public string Comment { get; set; } = string.Empty;
     }
 }
