@@ -5,6 +5,7 @@
 @using ApiService
 @using ApiService.Models
 @using ApiService.Repositories
+@using Size = MudBlazor.Size
 @inject IJSRuntime JSRuntime
 
 <style>
@@ -271,7 +272,17 @@
 				}
 				else
 				{
-					<button type="button" class="reset-password" @onclick="ChangePassword">Zrestartuj hasło</button>
+					<button type="button" class="reset-password" @onclick="ChangePassword" disabled="@(_isEmailSending)">
+						@if (_isEmailSending)
+						{
+							<MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+							<span class="ms-2">Resetowanie hasła...</span>
+						}
+						else
+						{
+							<span>Zrestartuj hasło</span>
+						}
+					</button>
 				}
 				
 			</EditForm>
@@ -291,6 +302,8 @@
 	private Adres? _currentAddress;
 
 	private bool _isSocialLogin = false;
+
+	private bool _isEmailSending = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -448,7 +461,9 @@
 
 	private async Task ChangePassword()
 	{
-		var result = await ApiService.AdministracjaRepo.RestartHaslaPost(ApiService.GetUzytkownik().Result.AdresEmail.Email);
+		_isEmailSending = true;
+		var email = await ApiService.GetUzytkownik();
+		var result = await ApiService.AdministracjaRepo.RestartHaslaPost(email.AdresEmail.Email);
 
 		if (result.Error == null && result.Data)
 		{
@@ -460,6 +475,7 @@
 		}
 
 		_passwordModel = new PasswordChangeModel();
+		_isEmailSending = false;
 	}
 
 	private void ShowSuccess(string message)
