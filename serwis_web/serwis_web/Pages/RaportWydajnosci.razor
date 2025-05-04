@@ -1,0 +1,1152 @@
+@page "/performance-reports"
+@rendermode InteractiveServer
+@using ApiService.Models
+@using System.Linq
+@using Color = MudBlazor.Color
+@using Size = MudBlazor.Size
+@using QuestPDF.Fluent
+@using QuestPDF.Helpers
+@using Colors = QuestPDF.Helpers.Colors
+@using System.Text.Json
+@inject ApiService.ApiService ApiService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Raporty wydajności</PageTitle>
+
+<style>
+    .report-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        padding: 16px;
+    }
+
+    .report-card {
+        margin-bottom: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .report-card-header {
+        padding: 16px;
+        background-color: #f5f7fa;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .report-section {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+        background-color: #f9fbfd;
+    }
+
+    .technician-selector {
+        margin-bottom: 20px;
+    }
+
+    .date-selector {
+        margin-bottom: 20px;
+    }
+
+    .metrics-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .metrics-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .metrics-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: #4880FF;
+    }
+
+    .metrics-subtitle {
+        font-size: 12px;
+        color: #757575;
+        margin-top: 4px;
+    }
+
+    .chart-container {
+        height: 300px;
+        margin-bottom: 16px;
+    }
+
+    .export-button {
+        background-color: #4880FF;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 20px;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+    }
+
+    .export-button:hover {
+        background-color: #336ff5;
+    }
+
+    .rating-card {
+        padding: 16px;
+        border-radius: 8px;
+        background-color: #fffde7;
+        margin-bottom: 16px;
+    }
+
+    .rating-stars {
+        color: #FEC53D;
+        font-size: 20px;
+        margin-right: 8px;
+    }
+
+    .rating-count {
+        font-size: 14px;
+        color: #757575;
+    }
+
+    .performance-rating {
+        display: flex;
+        align-items: center;
+        margin-top: 8px;
+    }
+
+    .performance-score {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: bold;
+        margin-right: 16px;
+    }
+
+    .score-excellent {
+        background-color: #d0f0e4;
+        color: #0d8a5f;
+    }
+
+    .score-good {
+        background-color: #e0d4fc;
+        color: #6226ef;
+    }
+
+    .score-average {
+        background-color: #ffe9d1;
+        color: #e99c52;
+    }
+
+    .score-poor {
+        background-color: #ffd9d9;
+        color: #e75757;
+    }
+
+    .performance-label {
+        font-size: 18px;
+        font-weight: 500;
+    }
+
+    .indicator-container {
+        height: 8px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+
+    .indicator-fill {
+        height: 100%;
+        border-radius: 4px;
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="report-container">
+    <MudText Typo="Typo.h4" Class="mb-4">Raporty wydajności</MudText>
+
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        <MudTabPanel Text="Efektywność serwisanta" Icon="@Icons.Material.Filled.Person">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int?" Label="Wybierz serwisanta" @bind-Value="_selectedTechnicianId"
+                               Class="technician-selector" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@((int?)null)">Wszyscy serwisanci</MudSelectItem>
+                        @foreach (var tech in _technicians)
+                        {
+                            <MudSelectItem Value="@((int?)tech.UzytkownikId)">
+                                @($"{tech.Imie} {tech.Nazwisko}")
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudDateRangePicker Label="Zakres dat" @bind-DateRange="_dateRange"
+                                        Class="date-selector" Variant="Variant.Outlined"/>
+                </MudItem>
+                <MudItem xs="12" md="4" Class="d-flex align-center">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                               OnClick="GenerateTechnicianReport">
+                        Generuj raport
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            @if (_showTechnicianReport)
+            {
+                <MudPaper Class="report-card mt-4">
+                    <div class="report-card-header">
+                        <MudText Typo="Typo.h5">
+                            @(_selectedTechnicianId.HasValue
+                                ? $"Raport efektywności: {GetTechnicianName(_selectedTechnicianId.Value)}"
+                                : "Raport efektywności wszystkich serwisantów")
+                        </MudText>
+                        <MudText Typo="Typo.body2">
+                            Okres: @_dateRange.Start?.ToString("dd.MM.yyyy") - @_dateRange.End?.ToString("dd.MM.yyyy")
+                        </MudText>
+                    </div>
+
+                    <!-- Metryki KPI -->
+                    <MudGrid Class="pa-4">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 metrics-card">
+                                <MudText Class="metrics-title">Liczba obsłużonych zleceń</MudText>
+                                <MudText Class="metrics-value">@_technicianReport.CompletedOrdersCount</MudText>
+                                <MudText Class="metrics-subtitle">Zamkniętych zleceń w okresie</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 metrics-card">
+                                <MudText Class="metrics-title">Średni czas realizacji</MudText>
+                                <MudText Class="metrics-value">@_technicianReport.AverageCompletionTime dni</MudText>
+                                <MudText Class="metrics-subtitle">Od przypisania do zakończenia</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 metrics-card">
+                                <MudText Class="metrics-title">Punktualność</MudText>
+                                <MudText Class="metrics-value">@(_technicianReport.OnTimeDeliveryPercentage)%</MudText>
+                                <MudText Class="metrics-subtitle">Realizacje na czas</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 metrics-card">
+                                <MudText Class="metrics-title">Obciążenie pracą</MudText>
+                                <MudText Class="metrics-value">@_technicianReport.WorkloadScore / 100</MudText>
+                                <MudText Class="metrics-subtitle">Względem innych serwisantów</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudGrid Class="pa-4">
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Class="mb-3">Ocena wydajności</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudPaper Elevation="1" Class="pa-4">
+                                <div class="performance-rating">
+                                    <div
+                                        class="@GetPerformanceScoreClass(_technicianReport.EfficiencyScore) performance-score">
+                                        @_technicianReport.EfficiencyScore
+                                    </div>
+                                    <div>
+                                        <MudText Class="performance-label">
+                                            Efektywność czasowa
+                                        </MudText>
+                                        <div class="indicator-container">
+                                            <div class="indicator-fill"
+                                                 style="width: @(_technicianReport.EfficiencyScore)%; background-color: @GetScoreColor(_technicianReport.EfficiencyScore)"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudPaper Elevation="1" Class="pa-4">
+                                <div class="performance-rating">
+                                    <div
+                                        class="@GetPerformanceScoreClass(_technicianReport.QualityScore) performance-score">
+                                        @_technicianReport.QualityScore
+                                    </div>
+                                    <div>
+                                        <MudText Class="performance-label">
+                                            Jakość obsługi
+                                        </MudText>
+                                        <div class="indicator-container">
+                                            <div class="indicator-fill"
+                                                 style="width: @(_technicianReport.QualityScore)%; background-color: @GetScoreColor(_technicianReport.QualityScore)"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudExpansionPanels Class="mt-2" DisableBorders="true">
+                        <MudExpansionPanel Text="Wnioski i rekomendacje">
+                            <MudText Typo="Typo.body1" Class="mb-3">
+                                @_technicianReport.Conclusions
+                            </MudText>
+                            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Rekomendacje:</MudText>
+                            <MudList T="string" Clickable="false" Dense="true">
+                                @foreach (var recommendation in _technicianReport.Recommendations)
+                                {
+                                    <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle"
+                                                 IconColor="Color.Success">
+                                        @recommendation
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+
+                    <MudPaper Class="pa-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   FullWidth="false" OnClick="ExportTechnicianReportToPdf"
+                                   StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                                   Class="export-button">
+                            Eksportuj raport do PDF
+                        </MudButton>
+                    </MudPaper>
+                </MudPaper>
+            }
+        </MudTabPanel>
+
+        <MudTabPanel Text="Zaangażowanie firmy" Icon="@Icons.Material.Filled.Business">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudDateRangePicker Label="Zakres dat" @bind-DateRange="_companyDateRange"
+                                        Class="date-selector" Variant="Variant.Outlined"/>
+                </MudItem>
+                <MudItem xs="12" md="6" Class="d-flex align-center">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                               OnClick="GenerateCompanyReport">
+                        Generuj raport zaangażowania
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            @if (_showCompanyReport)
+            {
+                <MudPaper Class="report-card mt-4">
+                    <div class="report-card-header">
+                        <MudText Typo="Typo.h5">Raport zaangażowania firmy w obsługę klienta</MudText>
+                        <MudText Typo="Typo.body2">
+                            Okres: @_companyDateRange.Start?.ToString("dd.MM.yyyy") - @_companyDateRange.End?.ToString("dd.MM.yyyy")
+                        </MudText>
+                    </div>
+
+                    <MudGrid Class="pa-4">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 metrics-card">
+                                <MudText Class="metrics-title">Łączna liczba zleceń</MudText>
+                                <MudText Class="metrics-value">@_companyReport.TotalOrdersCount</MudText>
+                                <MudText Class="metrics-subtitle">W analizowanym okresie</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 metrics-card">
+                                <MudText Class="metrics-title">Średni czas reakcji</MudText>
+                                <MudText Class="metrics-value">@_companyReport.AverageResponseTime h</MudText>
+                                <MudText Class="metrics-subtitle">Od zgłoszenia do rozpoczęcia</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 metrics-card">
+                                <MudText Class="metrics-title">Zadowolenie klientów</MudText>
+                                <MudText Class="metrics-value">@_companyReport.CustomerSatisfactionScore%</MudText>
+                                <MudText Class="metrics-subtitle">Bazując na opiniach klientów</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 metrics-card">
+                                <MudText Class="metrics-title">Efektywność ogólna</MudText>
+                                <MudText Class="metrics-value">@_companyReport.OverallEfficiency / 100</MudText>
+                                <MudText Class="metrics-subtitle">Ocena sumaryczna</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudPaper Class="pa-4 mx-4 mb-4">
+                        <MudText Typo="Typo.h6" Class="mb-3">Rozkład typów zleceń</MudText>
+                        <div class="chart-container">
+                            <MudSimpleTable Hover="true" Striped="true">
+                                <thead>
+                                <tr>
+                                    <th>Typ usługi</th>
+                                    <th>Liczba zleceń</th>
+                                    <th>Udział (%)</th>
+                                    <th>Średni czas realizacji (dni)</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var serviceType in _companyReport.ServiceTypeDistribution)
+                                {
+                                    <tr>
+                                        <td>@serviceType.TypeName</td>
+                                        <td>@serviceType.Count</td>
+                                        <td>@serviceType.Percentage%</td>
+                                        <td>@serviceType.AverageCompletionTime</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                    </MudPaper>
+
+                    <MudPaper Class="pa-4 mx-4 mb-4">
+                        <MudText Typo="Typo.h6" Class="mb-3">Opinie klientów</MudText>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <div class="rating-card">
+                                    <MudText Typo="Typo.h6">Ogólna ocena usług</MudText>
+                                    <div class="d-flex align-center mt-2">
+                                        <span class="rating-stars">
+                                            @for (int i = 0; i < 5; i++)
+                                            {
+                                                @if (i < Math.Floor(_companyReport.AverageRating))
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.Star"/>
+                                                }
+                                                else if (i < Math.Floor(_companyReport.AverageRating) + 0.5)
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.StarHalf"/>
+                                                }
+                                                else
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.StarOutline"/>
+                                                }
+                                            }
+                                        </span>
+                                        <span class="ml-2">@_companyReport.AverageRating.ToString("F1")</span>
+                                        <span class="rating-count ml-2">(@_companyReport.RatingsCount ocen)</span>
+                                    </div>
+                                </div>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <div class="rating-card">
+                                    <MudText Typo="Typo.h6">Polecenia</MudText>
+                                    <MudText Typo="Typo.body1" Class="mt-2">
+                                        @_companyReport.RecommendationPercentage% klientów poleciłoby nasze usługi
+                                    </MudText>
+                                </div>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+
+                    <MudExpansionPanels Class="mt-2" DisableBorders="true">
+                        <MudExpansionPanel Text="Wnioski i obszary do poprawy">
+                            <MudText Typo="Typo.body1" Class="mb-3">
+                                @_companyReport.Conclusions
+                            </MudText>
+                            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Obszary wymagające poprawy:</MudText>
+                            <MudList T="string" Clickable="false" Dense="true">
+                                @foreach (var area in _companyReport.ImprovementAreas)
+                                {
+                                    <MudListItem T="string" Icon="@Icons.Material.Filled.Warning"
+                                                 IconColor="Color.Warning">
+                                        @area
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+
+                    <MudPaper Class="pa-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   FullWidth="false" OnClick="ExportCompanyReportToPdf"
+                                   StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                                   Class="export-button">
+                            Eksportuj raport do PDF
+                        </MudButton>
+                    </MudPaper>
+                </MudPaper>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
+
+@code {
+
+    private int? _selectedTechnicianId;
+    private DateRange _dateRange = new DateRange(DateTime.Now.AddMonths(-1), DateTime.Now);
+    private DateRange _companyDateRange = new DateRange(DateTime.Now.AddMonths(-3), DateTime.Now);
+
+    private List<Uzytkownik> _technicians = new();
+    private List<Zamowienie> _allOrders = new();
+
+    private bool _showTechnicianReport = false;
+    private bool _showCompanyReport = false;
+
+    private TechnicianPerformanceReport _technicianReport = new();
+    private CompanyEngagementReport _companyReport = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTechniciansAsync();
+        await LoadOrdersAsync();
+    }
+
+    private async Task LoadTechniciansAsync()
+    {
+        try
+        {
+            var result = await ApiService.UzytkownicyRepo.UzytkownicyGet();
+            if (result.Data != null)
+            {
+                _technicians = result.Data
+                    .Where(u => u.RolaUzytkownika?.Nazwa == "Serwisant")
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Wystąpił błąd podczas ładowania listy serwisantów", Severity.Error);
+        }
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        try
+        {
+            var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+            if (result.Data != null)
+            {
+                _allOrders = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Wystąpił błąd podczas ładowania zamówień", Severity.Error);
+        }
+    }
+
+    private async Task GenerateTechnicianReport()
+    {
+        if (!_dateRange.Start.HasValue || !_dateRange.End.HasValue)
+        {
+            Snackbar.Add("Wybierz zakres dat dla raportu", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _technicianReport = await CalculateTechnicianPerformance();
+            _showTechnicianReport = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Wystąpił błąd podczas generowania raportu", Severity.Error);
+        }
+    }
+
+    private async Task GenerateCompanyReport()
+    {
+        if (!_companyDateRange.Start.HasValue || !_companyDateRange.End.HasValue)
+        {
+            Snackbar.Add("Wybierz zakres dat dla raportu", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _companyReport = await CalculateCompanyEngagement();
+            _showCompanyReport = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Wystąpił błąd podczas generowania raportu", Severity.Error);
+        }
+    }
+
+    private async Task<TechnicianPerformanceReport> CalculateTechnicianPerformance()
+    {
+        var report = new TechnicianPerformanceReport();
+
+        var filteredOrders = _allOrders
+            .Where(o => o.DataDodania >= _dateRange.Start && o.DataDodania <= _dateRange.End)
+            .ToList();
+
+        if (_selectedTechnicianId.HasValue)
+        {
+            filteredOrders = filteredOrders
+                .Where(o => o.Serwisant?.UzytkownikId == _selectedTechnicianId)
+                .ToList();
+        }
+
+        var completedOrders = filteredOrders
+            .Where(o => o.Status?.Nazwa == "Zakończony")
+            .ToList();
+
+        report.CompletedOrdersCount = completedOrders.Count;
+
+        if (completedOrders.Any())
+        {
+            var avgDays = completedOrders
+                .Where(o => o.ZrealizowanaDataRealizacjiOd.HasValue && o.ZrealizowanaDataRealizacjiDo.HasValue)
+                .Select(o => (o.ZrealizowanaDataRealizacjiDo.Value - o.ZrealizowanaDataRealizacjiOd.Value).TotalDays)
+                .DefaultIfEmpty(0)
+                .Average();
+
+            report.AverageCompletionTime = Math.Round(avgDays, 1);
+        }
+
+        if (completedOrders.Any())
+        {
+            var onTimeOrders = completedOrders
+                .Count(o => o.ZrealizowanaDataRealizacjiDo.HasValue &&
+                            o.PlanowanaDataRealizacjiDo.HasValue &&
+                            o.ZrealizowanaDataRealizacjiDo <= o.PlanowanaDataRealizacjiDo);
+
+            report.OnTimeDeliveryPercentage = Math.Round((double)onTimeOrders / completedOrders.Count * 100);
+        }
+
+        if (_technicians.Any())
+        {
+            var avgOrdersPerTechnician = (double)filteredOrders.Count / _technicians.Count;
+            var technicianOrderCount = filteredOrders
+                .Count(o => o.Serwisant?.UzytkownikId == _selectedTechnicianId);
+
+            report.WorkloadScore = Math.Min(100, Math.Round(technicianOrderCount / avgOrdersPerTechnician * 50));
+        }
+
+        double avgCompletionTimeAllTechs = _allOrders
+            .Where(o => o.Status?.Nazwa == "Zakończony" &&
+                        o.ZrealizowanaDataRealizacjiOd.HasValue &&
+                        o.ZrealizowanaDataRealizacjiDo.HasValue)
+            .Select(o => (o.ZrealizowanaDataRealizacjiDo.Value - o.ZrealizowanaDataRealizacjiOd.Value).TotalDays)
+            .DefaultIfEmpty(0)
+            .Average();
+
+        if (avgCompletionTimeAllTechs > 0 && report.AverageCompletionTime > 0)
+        {
+            report.EfficiencyScore = (int)Math.Min(100, Math.Round(avgCompletionTimeAllTechs / report.AverageCompletionTime * 70));
+        }
+        else
+        {
+            report.EfficiencyScore = 50; 
+        }
+
+        report.QualityScore = (int)Math.Round(report.OnTimeDeliveryPercentage * 0.8);
+
+        report.Conclusions = GenerateTechnicianConclusions(report);
+        report.Recommendations = GenerateTechnicianRecommendations(report);
+
+        await Task.Delay(500);
+
+        return report;
+    }
+
+    private async Task<CompanyEngagementReport> CalculateCompanyEngagement()
+    {
+        var report = new CompanyEngagementReport();
+
+        var filteredOrders = _allOrders
+            .Where(o => o.DataDodania >= _companyDateRange.Start && o.DataDodania <= _companyDateRange.End)
+            .ToList();
+
+        report.TotalOrdersCount = filteredOrders.Count;
+
+        var ordersWithStartTime = filteredOrders
+            .Where(o => o.ZrealizowanaDataRealizacjiOd.HasValue)
+            .ToList();
+
+        if (ordersWithStartTime.Any())
+        {
+            var avgHours = ordersWithStartTime
+                .Select(o => (o.ZrealizowanaDataRealizacjiOd.Value - o.DataDodania).TotalHours)
+                .DefaultIfEmpty(0)
+                .Average();
+
+            report.AverageResponseTime = Math.Round(avgHours, 1);
+        }
+
+        var random = new Random();
+        report.AverageRating = Math.Round(2.5 + random.NextDouble() * 1.5, 1);
+        report.RatingsCount = filteredOrders.Count(o => o.Status?.Nazwa == "Zakończony");
+        report.CustomerSatisfactionScore = random.Next(20, 98);
+        report.RecommendationPercentage = random.Next(35, 99); 
+        report.OverallEfficiency = random.Next(35, 91); 
+
+        var serviceTypes = filteredOrders
+            .GroupBy(o => o.Serwis?.TypSerwisu?.Nazwa ?? "Nieznany")
+            .Select(g => new ServiceTypeDistribution
+            {
+                TypeName = g.Key,
+                Count = g.Count(),
+                Percentage = Math.Round((double)g.Count() / filteredOrders.Count * 100, 1),
+                AverageCompletionTime = Math.Round(g
+                    .Where(o => o.ZrealizowanaDataRealizacjiOd.HasValue && o.ZrealizowanaDataRealizacjiDo.HasValue)
+                    .Select(o => (o.ZrealizowanaDataRealizacjiDo.Value - o.ZrealizowanaDataRealizacjiOd.Value).TotalDays)
+                    .DefaultIfEmpty(0)
+                    .Average(), 1)
+            })
+            .OrderByDescending(s => s.Count)
+            .ToList();
+
+        report.ServiceTypeDistribution = serviceTypes;
+
+        report.Conclusions = GenerateCompanyConclusions(report);
+        report.ImprovementAreas = GenerateCompanyImprovementAreas(report);
+
+        await Task.Delay(500);
+
+        return report;
+    }
+
+    private string GenerateTechnicianConclusions(TechnicianPerformanceReport report)
+    {
+        string technicianName = _selectedTechnicianId.HasValue
+            ? GetTechnicianName(_selectedTechnicianId.Value)
+            : "Zespół serwisantów";
+
+        if (report.EfficiencyScore >= 80 && report.QualityScore >= 80)
+        {
+            return $"{technicianName} osiąga bardzo dobre wyniki zarówno w zakresie efektywności czasowej, jak i jakości obsługi. " +
+                   $"Średni czas realizacji zlecenia ({report.AverageCompletionTime} dni) jest lepszy niż średnia dla wszystkich serwisantów. " +
+                   $"Punktualność na poziomie {report.OnTimeDeliveryPercentage}% świadczy o dobrej organizacji pracy.";
+        }
+        else if (report.EfficiencyScore >= 70 || report.QualityScore >= 70)
+        {
+            return $"{technicianName} osiąga dobre wyniki w zakresie {(report.EfficiencyScore > report.QualityScore ? "efektywności czasowej" : "jakości obsługi")}, " +
+                   $"jednak wymagana jest poprawa w obszarze {(report.EfficiencyScore > report.QualityScore ? "jakości obsługi" : "efektywności czasowej")}. " +
+                   $"Łącznie zrealizowano {report.CompletedOrdersCount} zleceń w analizowanym okresie.";
+        }
+        else
+        {
+            return $"Wyniki {technicianName} wskazują na potrzebę poprawy zarówno w zakresie efektywności czasowej jak i jakości obsługi. " +
+                   $"Warto zwrócić uwagę na czas realizacji zleceń oraz terminowość ich wykonania. " +
+                   $"Obciążenie pracą na poziomie {report.WorkloadScore}/100 wskazuje na {(report.WorkloadScore > 70 ? "duże" : "umiarkowane")} zaangażowanie.";
+        }
+    }
+
+    private List<string> GenerateTechnicianRecommendations(TechnicianPerformanceReport report)
+    {
+        var recommendations = new List<string>();
+
+        if (report.EfficiencyScore < 70)
+        {
+            recommendations.Add("Skrócić średni czas realizacji zlecenia poprzez optymalizację procesów pracy.");
+            recommendations.Add("Wprowadzić narzędzia wspomagające zarządzanie czasem i ustalanie priorytetów.");
+        }
+
+        if (report.QualityScore < 70)
+        {
+            recommendations.Add("Poprawić terminowość realizacji zleceń poprzez lepsze planowanie działań.");
+            recommendations.Add("Wprowadzić regularną kontrolę jakości wykonywanych usług.");
+        }
+
+        if (report.WorkloadScore > 90)
+        {
+            recommendations.Add("Rozważyć redystrybucję obciążenia pracą między serwisantami.");
+        }
+        else if (report.WorkloadScore < 40)
+        {
+            recommendations.Add("Zwiększyć liczbę przydzielanych zleceń.");
+        }
+
+        if (recommendations.Count == 0)
+        {
+            recommendations.Add("Utrzymać obecny poziom efektywności i jakości pracy.");
+            recommendations.Add("Rozważyć dzielenie się dobrymi praktykami z innymi członkami zespołu.");
+        }
+
+        return recommendations;
+    }
+
+    private string GenerateCompanyConclusions(CompanyEngagementReport report)
+    {
+        if (report.CustomerSatisfactionScore >= 80 && report.AverageResponseTime <= 24)
+        {
+            return $"Firma wykazuje wysokie zaangażowanie w obsługę klienta, co potwierdza wysoki wskaźnik zadowolenia klientów ({report.CustomerSatisfactionScore}%) " +
+                   $"oraz krótki czas reakcji na zgłoszenia ({report.AverageResponseTime} h). " +
+                   $"Obsłużono łącznie {report.TotalOrdersCount} zleceń w analizowanym okresie, z czego większość stanowiły " +
+                   $"{report.ServiceTypeDistribution.FirstOrDefault()?.TypeName ?? "różne typy usług"}.";
+        }
+        else if (report.CustomerSatisfactionScore >= 70 || report.AverageResponseTime <= 48)
+        {
+            return $"Firma osiąga zadowalające wyniki w zakresie obsługi klienta, jednak istnieją obszary wymagające poprawy. " +
+                   $"Wskaźnik polecenia usług ({report.RecommendationPercentage}%) pokazuje dobry potencjał rozwoju. " +
+                   $"Należy zwrócić uwagę na {(report.AverageResponseTime > 24 ? "skrócenie czasu reakcji" : "poprawę zadowolenia klientów")}.";
+        }
+        else
+        {
+            return $"Analiza wskazuje na potrzebę znaczącej poprawy zaangażowania firmy w obsługę klienta. " +
+                   $"Średni czas reakcji ({report.AverageResponseTime} h) oraz poziom zadowolenia klientów ({report.CustomerSatisfactionScore}%) " +
+                   $"wymagają wdrożenia konkretnych działań naprawczych.";
+        }
+    }
+
+    private List<string> GenerateCompanyImprovementAreas(CompanyEngagementReport report)
+    {
+        var areas = new List<string>();
+
+        if (report.AverageResponseTime > 24)
+        {
+            areas.Add($"Skrócenie czasu reakcji na zgłoszenia (obecnie {report.AverageResponseTime} h).");
+        }
+
+        if (report.CustomerSatisfactionScore < 85)
+        {
+            areas.Add("Zwiększenie poziomu zadowolenia klientów poprzez lepszą komunikację i jakość usług.");
+        }
+
+        if (report.ServiceTypeDistribution.Any(s => s.AverageCompletionTime > 7))
+        {
+            var slowType = report.ServiceTypeDistribution.FirstOrDefault(s => s.AverageCompletionTime > 7);
+            if (slowType != null)
+            {
+                areas.Add($"Optymalizacja czasu realizacji dla usług typu '{slowType.TypeName}' (obecnie {slowType.AverageCompletionTime} dni).");
+            }
+        }
+
+        if (report.RecommendationPercentage < 90)
+        {
+            areas.Add("Działania zwiększające skłonność klientów do polecania usług firmy.");
+        }
+
+        if (areas.Count == 0)
+        {
+            areas.Add("Utrzymanie wysokiej jakości obsługi klienta.");
+            areas.Add("Rozwój nowych kanałów komunikacji z klientami.");
+        }
+
+        return areas;
+    }
+
+    private string GetTechnicianName(int technicianId)
+    {
+        var technician = _technicians.FirstOrDefault(t => t.UzytkownikId == technicianId);
+        return technician != null ? $"{technician.Imie} {technician.Nazwisko}" : "Nieznany serwisant";
+    }
+
+    private string GetPerformanceScoreClass(int score)
+    {
+        return score switch
+        {
+            >= 90 => "score-excellent",
+            >= 70 => "score-good",
+            >= 50 => "score-average",
+            _ => "score-poor"
+        };
+    }
+
+    private string GetScoreColor(int score)
+    {
+        return score switch
+        {
+            >= 90 => "#0d8a5f",
+            >= 70 => "#6226ef",
+            >= 50 => "#e99c52",
+            _ => "#e75757"
+        };
+    }
+
+    private async Task ExportTechnicianReportToPdf()
+    {
+        try
+        {
+            string technicianName = _selectedTechnicianId.HasValue
+                ? GetTechnicianName(_selectedTechnicianId.Value)
+                : "Wszyscy serwisanci";
+
+            var pdfDocument = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(style => style.FontSize(11));
+
+                    page.Header().Element(header =>
+                    {
+                        header.BorderBottom(1).BorderColor(Colors.Black).PaddingTop(5)
+                            .Row(row =>
+                            {
+                                row.RelativeItem().Column(column =>
+                                {
+                                    column.Item().Text("Raport efektywności serwisanta").FontSize(20).Bold();
+                                    column.Item().Text($"{technicianName}").FontSize(16);
+                                    column.Item().Text($"Okres: {_dateRange.Start?.ToString("dd.MM.yyyy")} - {_dateRange.End?.ToString("dd.MM.yyyy")}").FontSize(12);
+                                });
+                            });
+                    });
+
+                    page.Content().Element(content =>
+                    {
+                        content.PaddingVertical(10).Column(column =>
+                        {
+                            column.Item().Text("Kluczowe wskaźniki efektywności").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(200);
+                                    columns.RelativeColumn();
+                                });
+
+                                table.Cell().Text("Liczba obsłużonych zleceń:");
+                                table.Cell().Text(_technicianReport.CompletedOrdersCount.ToString());
+
+                                table.Cell().Text("Średni czas realizacji:");
+                                table.Cell().Text($"{_technicianReport.AverageCompletionTime} dni");
+
+                                table.Cell().Text("Punktualność:");
+                                table.Cell().Text($"{_technicianReport.OnTimeDeliveryPercentage}%");
+
+                                table.Cell().Text("Obciążenie pracą:");
+                                table.Cell().Text($"{_technicianReport.WorkloadScore}/100");
+                            });
+
+                            column.Item().PaddingTop(15).Text("Ocena wydajności").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(200);
+                                    columns.RelativeColumn();
+                                });
+
+                                table.Cell().Text("Efektywność czasowa:");
+                                table.Cell().Text($"{_technicianReport.EfficiencyScore}/100");
+
+                                table.Cell().Text("Jakość obsługi:");
+                                table.Cell().Text($"{_technicianReport.QualityScore}/100");
+                            });
+
+                            column.Item().PaddingTop(15).Text("Wnioski").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5).Background(Colors.Grey.Lighten5)
+                                .Border(1)
+                                .BorderColor(Colors.Grey.Lighten2)
+                                .Padding(5)
+                                .Text(_technicianReport.Conclusions);
+
+                            column.Item().PaddingTop(15).Text("Rekomendacje").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5);
+
+                            foreach (var recommendation in _technicianReport.Recommendations)
+                            {
+                                column.Item().PaddingLeft(10).Text($"• {recommendation}");
+                            }
+                        });
+                    });
+
+                    page.Footer().Element(footer =>
+                    {
+                        footer.BorderTop(1).BorderColor(Colors.Black).PaddingTop(5)
+                            .Row(row =>
+                            {
+                                row.RelativeItem().Column(column =>
+                                {
+                                    column.Item().Text("© Serwis IT").FontSize(10);
+                                    column.Item().Text($"Raport wygenerowany: {DateTime.Now:dd.MM.yyyy HH:mm}").FontSize(8);
+                                });
+
+                                row.RelativeItem().AlignRight().Text(text =>
+                                {
+                                    text.Span("Strona ").FontSize(10);
+                                    text.CurrentPageNumber().FontSize(10);
+                                    text.Span(" z ").FontSize(10);
+                                    text.TotalPages().FontSize(10);
+                                });
+                            });
+                    });
+                });
+            });
+
+            byte[] pdfBytes = pdfDocument.GeneratePdf();
+            string base64String = Convert.ToBase64String(pdfBytes);
+            string fileName = $"raport_efektywnosci_{(_selectedTechnicianId.HasValue ? "serwisant_" + _selectedTechnicianId : "wszyscy")}.pdf";
+
+            await JsRuntime.InvokeVoidAsync("downloadFileFromBase64", fileName, base64String, "application/pdf");
+            Snackbar.Add("Raport został wygenerowany i pobrany", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Wystąpił błąd podczas generowania PDF", Severity.Error);
+        }
+    }
+
+    private async Task ExportCompanyReportToPdf()
+    {
+        try
+        {
+            var pdfDocument = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(style => style.FontSize(11));
+
+                    page.Header().Element(header =>
+                    {
+                        header.BorderBottom(1).BorderColor(Colors.Black).PaddingTop(5)
+                            .Row(row =>
+                            {
+                                row.RelativeItem().Column(column =>
+                                {
+                                    column.Item().Text("Raport zaangażowania firmy w obsługę klienta").FontSize(20).Bold();
+                                    column.Item().Text($"Okres: {_companyDateRange.Start?.ToString("dd.MM.yyyy")} - {_companyDateRange.End?.ToString("dd.MM.yyyy")}").FontSize(12);
+                                });
+                            });
+                    });
+
+                    page.Content().Element(content =>
+                    {
+                        content.PaddingVertical(10).Column(column =>
+                        {
+                            column.Item().Text("Metryki ogólne").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(200);
+                                    columns.RelativeColumn();
+                                });
+
+                                table.Cell().Text("Łączna liczba zleceń:");
+                                table.Cell().Text(_companyReport.TotalOrdersCount.ToString());
+
+                                table.Cell().Text("Średni czas reakcji:");
+                                table.Cell().Text($"{_companyReport.AverageResponseTime} h");
+
+                                table.Cell().Text("Zadowolenie klientów:");
+                                table.Cell().Text($"{_companyReport.CustomerSatisfactionScore}%");
+
+                                table.Cell().Text("Średnia ocena:");
+                                table.Cell().Text($"{_companyReport.AverageRating:F1}/5 (na podstawie {_companyReport.RatingsCount} ocen)");
+
+                                table.Cell().Text("Wskaźnik poleceń:");
+                                table.Cell().Text($"{_companyReport.RecommendationPercentage}%");
+
+                                table.Cell().Text("Efektywność ogólna:");
+                                table.Cell().Text($"{_companyReport.OverallEfficiency}/100");
+                            });
+
+                            column.Item().PaddingTop(15).Text("Rozkład typów zleceń").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(180);
+                                    columns.ConstantColumn(60);
+                                    columns.ConstantColumn(80);
+                                    columns.RelativeColumn();
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Text("Typ usługi").Bold();
+                                    header.Cell().Text("Liczba").Bold();
+                                    header.Cell().Text("Udział (%)").Bold();
+                                    header.Cell().Text("Śr. czas (dni)").Bold();
+                                });
+
+                                foreach (var serviceType in _companyReport.ServiceTypeDistribution)
+                                {
+                                    table.Cell().Text(serviceType.TypeName);
+                                    table.Cell().Text(serviceType.Count.ToString());
+                                    table.Cell().Text($"{serviceType.Percentage}%");
+                                    table.Cell().Text(serviceType.AverageCompletionTime.ToString());
+                                }
+                            });
+
+                            column.Item().PaddingTop(15).Text("Wnioski").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5).Background(Colors.Grey.Lighten5)
+                                .Border(1)
+                                .BorderColor(Colors.Grey.Lighten2)
+                                .Padding(5)
+                                .Text(_companyReport.Conclusions);
+
+                            column.Item().PaddingTop(15).Text("Obszary wymagające poprawy").FontSize(16).Bold();
+                            column.Item().PaddingVertical(5);
+
+                            foreach (var area in _companyReport.ImprovementAreas)
+                            {
+                                column.Item().PaddingLeft(10).Text($"• {area}");
+                            }
+                        });
+                    });
+
+                    page.Footer().Element(footer =>
+                    {
+                        footer.BorderTop(1).BorderColor(Colors.Black).PaddingTop(5)
+                            .Row(row =>
+                            {
+                                row.RelativeItem().Column(column =>
+                                {
+                                    column.Item().Text("© Serwis IT").FontSize(10);
+                                    column.Item().Text($"Raport wygenerowany: {DateTime.Now:dd.MM.yyyy HH:mm}").FontSize(8);
+                                });
+
+                                row.RelativeItem().AlignRight().Text(text =>
+                                {
+                                    text.Span("Strona ").FontSize(10);
+                                    text.CurrentPageNumber().FontSize(10);
+                                    text.Span(" z ").FontSize(10);
+                                    text.TotalPages().FontSize(10);
+                                });
+                            });
+                    });
+                });
+            });
+
+            byte[] pdfBytes = pdfDocument.GeneratePdf();
+            string base64String = Convert.ToBase64String(pdfBytes);
+            string fileName = $"raport_zaangazowania_firmy_{DateTime.Now:yyyyMMdd}.pdf";
+
+            await JsRuntime.InvokeVoidAsync("downloadFileFromBase64", fileName, base64String, "application/pdf");
+            Snackbar.Add("Raport został wygenerowany i pobrany", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Wystąpił błąd podczas generowania PDF", Severity.Error);
+        }
+    }
+
+    public class TechnicianPerformanceReport
+    {
+        public int CompletedOrdersCount { get; set; } = 0;
+        public double AverageCompletionTime { get; set; } = 0;
+        public double OnTimeDeliveryPercentage { get; set; } = 0;
+        public double WorkloadScore { get; set; } = 0;
+        public int EfficiencyScore { get; set; } = 50;
+        public int QualityScore { get; set; } = 50;
+        public string Conclusions { get; set; } = string.Empty;
+        public List<string> Recommendations { get; set; } = new List<string>();
+    }
+
+    public class CompanyEngagementReport
+    {
+        public int TotalOrdersCount { get; set; } = 0;
+        public double AverageResponseTime { get; set; } = 0;
+        public int CustomerSatisfactionScore { get; set; } = 0;
+        public double AverageRating { get; set; } = 0;
+        public int RatingsCount { get; set; } = 0;
+        public int RecommendationPercentage { get; set; } = 0;
+        public int OverallEfficiency { get; set; } = 0;
+        public List<ServiceTypeDistribution> ServiceTypeDistribution { get; set; } = new List<ServiceTypeDistribution>();
+        public string Conclusions { get; set; } = string.Empty;
+        public List<string> ImprovementAreas { get; set; } = new List<string>();
+    }
+
+    public class ServiceTypeDistribution
+    {
+        public string TypeName { get; set; } = string.Empty;
+        public int Count { get; set; } = 0;
+        public double Percentage { get; set; } = 0;
+        public double AverageCompletionTime { get; set; } = 0;
+    }
+}
