@@ -73,7 +73,7 @@
         <MudPaper Class="mud-width-full" Style="margin: 20px 0; background-color: #f9f9f9;">
             <MudCarousel Class="mud-width-full" Style="height: 300px;"
                          ShowArrows="true"
-                         ShowBullets="@(_ocenySerwisu.Count <= 5)"
+                         ShowBullets="false"
                          EnableSwipeGesture="true"
                          AutoCycle="true"
                          TimerInterval="10000"
@@ -120,7 +120,6 @@
         </MudAlert>
     }
 </div>
-
 @code {
     private bool _loading = true;
     private List<Zamowienie> _zamowienia = new();
