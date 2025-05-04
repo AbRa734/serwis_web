@@ -354,7 +354,9 @@
 	private AdresEmail? _currentEmail;
 	private NumerTelefonu? _currentPhone;
 	private Adres? _currentAddress;
-
+	private List<Serwisant> _serwisants = new();
+	private Serwisant? _serwisant;
+	
 	private string? _message;
 	private string _messageClass = "success-message";
 
@@ -429,6 +431,12 @@
 			_roles = rolesResult.Data;
 		}
 
+		var servicemenResult = await ApiService.SerwisanciRepo.SerwisanciGet();
+		if (servicemenResult.Data != null)
+		{
+			_serwisants = servicemenResult.Data;
+			_serwisant = _serwisants.FirstOrDefault(s => s.UzytkownikId == UserId);
+		}
 	}
 
 	private async Task SaveUserData()
@@ -502,38 +510,60 @@
 			}
 			
 			var userRole = _roles.FirstOrDefault(role => role.RolaUzytkownikaId == _userDataModel.RoleId)?.Nazwa;
-			// var previousUserRole = _roles.FirstOrDefault(role => role.RolaUzytkownikaId == _userDataModel.PreviousRolId)?.Nazwa;
+			var previousUserRole = _roles.FirstOrDefault(role => role.RolaUzytkownikaId == _userDataModel.PreviousRolId)?.Nazwa;
 
-			if (userRole == "Serwisant")
+			if (_serwisant != null)
 			{
-				var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPost(new SerwisantDto
+				if (userRole == "Serwisant" && previousUserRole != "Serwisant")
 				{
-					UzytkownikId = UserId,
-					SerwisyIds = new List<int>(),
-					CzyAktywny = true
-				});
+					var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPut(_serwisant.SerwisantId,new SerwisantDto
+					{
+						UzytkownikId = UserId,
+						SerwisyIds = new List<int>(),
+						CzyAktywny = true
+					});
 
-				if (servicemenResult.Error != null)
+					if (servicemenResult.Error != null)
+					{
+						Snackbar.Add("Błąd podczas tworzenia serwisanta.");
+						return;
+					}
+				}
+				else if (userRole != "Serwisant" && previousUserRole == "Serwisant")
 				{
-					Snackbar.Add("Błąd podczas tworzenia serwisanta.");
-					return;
+					var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPut(_serwisant.SerwisantId,new SerwisantDto
+					{
+						UzytkownikId = UserId,
+						SerwisyIds = new List<int>(),
+						CzyAktywny = false
+					});
+
+					if (servicemenResult.Error != null)
+					{
+						Snackbar.Add("Błąd podczas tworzenia serwisanta.");
+						return;
+					}
 				}
 			}
 			else
 			{
-				var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPost(new SerwisantDto
+				if (userRole == "Serwisant" && previousUserRole != "Serwisant")
 				{
-					UzytkownikId = UserId,
-					SerwisyIds = new List<int>(),
-					CzyAktywny = false
-				});
+					var servicemenResult = await ApiService.SerwisanciRepo.SerwisantPost(new SerwisantDto
+					{
+						UzytkownikId = UserId,
+						SerwisyIds = new List<int>(),
+						CzyAktywny = true
+					});
 
-				if (servicemenResult.Error != null)
-				{
-					Snackbar.Add("Błąd podczas tworzenia serwisanta.");
-					return;
+					if (servicemenResult.Error != null)
+					{
+						Snackbar.Add("Błąd podczas tworzenia serwisanta.");
+						return;
+					}
 				}
 			}
+			
 			
 			Snackbar.Add("Dane zostały zaktualizowane pomyślnie", Severity.Success);
 
