@@ -108,10 +108,24 @@
             var commentResult = (CommentDialog.CommentDialogResult)result.Data;
             try
             {
-                // TODO: dodać logikę zapisu komentarza
-                // await ApiService.AddComment(commentResult.OrderId, commentResult.Comment);
+                var logDto = new LogDto
+                {
+                    ZamowienieId = commentResult.OrderId,
+                    StatusId = null,
+                    Komentarz = commentResult.Comment
+                };
 
-                Snackbar.Add("Komentarz został dodany pomyślnie", Severity.Success);
+                var apiResult = await ApiService.LogiRepo.LogPost(logDto);
+
+                if (apiResult.Data != null)
+                {
+                    Snackbar.Add("Komentarz został dodany pomyślnie", Severity.Success);
+                    await LoadServicesAsync(); 
+                }
+                else
+                {
+                    Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
+                }
             }
             catch (Exception ex)
             {
