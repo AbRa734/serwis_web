@@ -255,9 +255,9 @@
                 {
                     filteredOrders = filteredOrders.Where(o => o.SerwisantId == serwisantId.Value).ToList();
                 }
-                else if (isKlient && klientId.HasValue)
+                else if (isKlient)
                 {
-                    filteredOrders = filteredOrders.Where(o => o.KlientId == klientId.Value).ToList();
+                    filteredOrders = filteredOrders.Where(o => o.KlientId == currentUser!.UzytkownikId).ToList();
                 }
                 
                 orders = filteredOrders.Where(o =>

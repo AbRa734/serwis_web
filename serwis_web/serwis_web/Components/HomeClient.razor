@@ -137,9 +137,12 @@
         try
         {
             var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+
+            var user = await ApiService.GetUzytkownik();
+            
             if (result.Data != null)
             {
-                _zamowienia = result.Data;
+                _zamowienia = result.Data.Where((x)=>x.Klient.UzytkownikId == user.UzytkownikId).ToList();
             }
             else
             {

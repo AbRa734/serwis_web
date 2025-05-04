@@ -62,6 +62,16 @@ else
             </div>
         </a>
     </div>
+    
+    <div class="add-comment" @onclick="OpenCommentDialog">
+        <div class="comment-top">
+            <div class="comment-box">
+                <i class="fa-regular fa-keyboard" style="color: #BA29FF; font-size: 32px;"></i>
+            </div>
+            <h3>Dodaj uwagi do wykonywanego zlecenia</h3>
+        </div>
+        <p>Opisz przebieg zlecenia, czy podczas jego wykonywania wystąpiły jakieś problemy? Czy klient zgłasza jakieś uwagi?</p>
+    </div>
 
     <div class="chart-container">
         <MudPaper Class="pa-4 my-4">
@@ -111,6 +121,7 @@ else
         {
             await LoadOrdersAsync();
             await LoadUsersAsync();
+            await LoadServicesAsync();
             InitializeChartOptions();
         }
         catch (Exception ex)
@@ -313,5 +324,79 @@ else
         }
 
         StateHasChanged();
+    }
+    
+    private async Task LoadServicesAsync()
+    {
+        try
+        {
+            var result = await ApiService.ZamowieniaRepo.ZamowieniaGet();
+
+            if (result.Data != null)
+            {
+                _zamowienia = result.Data;
+                
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania zleceń.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
+        }
+    }
+    
+    private async Task OpenCommentDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["Orders"] = _zamowienia,
+            ["CommentText"] = string.Empty,
+            ["SelectedOrderId"] = 0
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
+
+        var dialog = await DialogService.ShowAsync<CommentDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var commentResult = (CommentDialog.CommentDialogResult)result.Data;
+            try
+            {
+                var logDto = new LogDto
+                {
+                    ZamowienieId = commentResult.OrderId,
+                    StatusId = null,
+                    Komentarz = commentResult.Comment
+                };
+
+                var apiResult = await ApiService.LogiRepo.LogPost(logDto);
+
+                if (apiResult.Data != null)
+                {
+                    Snackbar.Add("Komentarz został dodany pomyślnie", Severity.Success);
+                    await LoadServicesAsync(); 
+                }
+                else
+                {
+                    Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
+            }
+        }
     }
 }

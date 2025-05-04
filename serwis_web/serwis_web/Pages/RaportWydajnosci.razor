@@ -239,7 +239,7 @@
                         <MudItem xs="12" sm="6" md="3">
                             <MudPaper Elevation="0" Class="pa-4 metrics-card">
                                 <MudText Class="metrics-title">Obciążenie pracą</MudText>
-                                <MudText Class="metrics-value">@_technicianReport.WorkloadScore / 100</MudText>
+                                <MudText Class="metrics-value">@(!double.IsNaN(_technicianReport.WorkloadScore) ? _technicianReport.WorkloadScore : 0) / 100</MudText>
                                 <MudText Class="metrics-subtitle">Względem innych serwisantów</MudText>
                             </MudPaper>
                         </MudItem>
@@ -725,7 +725,7 @@
         {
             return $"Wyniki {technicianName} wskazują na potrzebę poprawy zarówno w zakresie efektywności czasowej jak i jakości obsługi. " +
                    $"Warto zwrócić uwagę na czas realizacji zleceń oraz terminowość ich wykonania. " +
-                   $"Obciążenie pracą na poziomie {report.WorkloadScore}/100 wskazuje na {(report.WorkloadScore > 70 ? "duże" : "umiarkowane")} zaangażowanie.";
+                   $"Obciążenie pracą na poziomie {(Double.IsNaN(report.WorkloadScore) ? '0' : report.WorkloadScore)}/100 wskazuje na {(report.WorkloadScore > 70 ? "duże" : "umiarkowane")} zaangażowanie.";
         }
     }
 
