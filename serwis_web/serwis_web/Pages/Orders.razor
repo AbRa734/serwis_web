@@ -30,7 +30,7 @@
 
     .order-header-search-button {
         margin: 0 0 25px 0;
-        padding: 0 40px 0 0;
+        /*padding: 0 40px 0 0;*/
         width: 100%;
         justify-content: space-between
     }
@@ -284,9 +284,11 @@
             gap: 10px;
         }
     }
+
+   
 </style>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="order-container">
+<MudContainer Class="order-container">
 
     <MudCardHeader Class="order-header">
         <MudText Class="order-header-tittle">Lista zleceń</MudText>
@@ -441,7 +443,7 @@
                  FilterMode="DataGridFilterMode.ColumnFilterMenu"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
                  FixedHeader="true" Pagination="true" Height="auto"
-                 RowsPerPage="10"
+                 RowsPerPage="10" HorizontalScrollbar="true"
                  Bordered="false" Dense="false" Class="order-grid">
 
         <Columns>
