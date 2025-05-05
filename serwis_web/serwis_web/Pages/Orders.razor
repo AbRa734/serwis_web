@@ -361,19 +361,19 @@
                         <MudSelect T="int?" Label="Serwisant" @bind-Value="_selectedTechnicianId"
                                    Class="filter-group" Clearable="true">
                             <MudSelectItem Value="@((int?)null)">Wszyscy</MudSelectItem>
-                            @foreach (var tech in _technicians)
+                            @foreach (var serwisant in _serwisants)
                             {
                                 <MudSelectItem
-                                    Value="@((int?)tech.UzytkownikId)">@($"{tech.Imie} {tech.Nazwisko}")</MudSelectItem>
+                                    Value="@((int?)serwisant.SerwisantId)">@($"{serwisant.Uzytkownik.Imie} {serwisant.Uzytkownik.Nazwisko}")</MudSelectItem>
                             }
                         </MudSelect>
                         <MudSelect T="int?" Label="Klient" @bind-Value="_selectedClientId"
                                    Class="filter-group" Clearable="true">
                             <MudSelectItem Value="@((int?)null)">Wszyscy</MudSelectItem>
-                            @foreach (var client in _clients)
+                            @foreach (var klient in _clients)
                             {
                                 <MudSelectItem
-                                    Value="@((int?)client.UzytkownikId)">@($"{client.Imie} {client.Nazwisko}")</MudSelectItem>
+                                    Value="@((int?)klient.KlientId)">@($"{klient.Uzytkownik.Imie} {klient.Uzytkownik.Nazwisko}")</MudSelectItem>
                             }
                         </MudSelect>
                     }
@@ -385,10 +385,10 @@
                         <MudSelect T="int?" Label="Serwisant" @bind-Value="_selectedTechnicianId"
                                    Class="filter-group" Clearable="true">
                             <MudSelectItem Value="@((int?)null)">Wszyscy</MudSelectItem>
-                            @foreach (var tech in _technicians)
+                            @foreach (var serwisant in _serwisants)
                             {
                                 <MudSelectItem
-                                    Value="@((int?)tech.UzytkownikId)">@($"{tech.Imie} {tech.Nazwisko}")</MudSelectItem>
+                                    Value="@((int?)serwisant.SerwisantId)">@($"{serwisant.Uzytkownik.Imie} {serwisant.Uzytkownik.Nazwisko}")</MudSelectItem>
                             }
                         </MudSelect>
                     }
@@ -464,7 +464,7 @@
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
-
+            
             <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Serwisant != null ? x.Serwisant.Uzytkownik.Imie : string.Empty"
                             Title="Serwisant" HeaderClass="order-category"
                             Visible="@(GetUserRole() == "Administrator" || GetUserRole() == "Serwisant")">
@@ -490,7 +490,6 @@
                 </CellTemplate>
             </PropertyColumn>
             
-
             <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Priorytet.Nazwa" Title="Priorytet"
                             HeaderClass="order-category">
                 <CellTemplate>
@@ -534,8 +533,8 @@
     private List<Zamowienie> _zamowienia = new();
     private List<Zamowienie> _filteredZamówienia = new();
     private Uzytkownik? _uzytkownik;
-    private List<Uzytkownik> _technicians = new();
-    private List<Uzytkownik> _clients = new();
+    private List<Serwisant> _serwisants = new();
+    private List<Klient> _clients = new();
     private List<DicTypSerwisu> _serwisy = new();
 
     // Filtrowanie
@@ -560,7 +559,7 @@
         _completionDateRange = new DateRange(null, null);
 
         await LoadOrdersAsync();
-        await LoadUsersAsync();
+        await LoadServicemenAndClientAsync();
         await LoadServiceTypes();
     }
 
@@ -612,21 +611,22 @@
         }
     }
 
-    private async Task LoadUsersAsync()
+    private async Task LoadServicemenAndClientAsync()
     {
         try
         {
-            var result = await ApiService.UzytkownicyRepo.UzytkownicyGet();
-            if (result.Data != null)
+            var serwisantResult = await ApiService.SerwisanciRepo.SerwisanciGet();
+            if (serwisantResult.Data != null)
             {
-                _technicians = result.Data
-                    .Where(u => u.RolaUzytkownika?.Nazwa == "Serwisant")
-                    .ToList();
-
-                _clients = result.Data
-                    .Where(u => u.RolaUzytkownika?.Nazwa == "Klient")
-                    .ToList();
+                _serwisants = serwisantResult.Data;
             }
+            
+            var klientResult = await ApiService.KlienciRepo.KlienciGet();
+            if (klientResult.Data != null)
+            {
+                _clients = klientResult.Data;
+            }
+            
         }
         catch (Exception ex)
         {
@@ -675,7 +675,6 @@
                 s.ZamowienieId.ToString().Contains(searchLower) ||
                 (s.Serwisant?.Uzytkownik?.Imie?.ToLower().Contains(searchLower) ?? false) ||
                 (s.Serwisant?.Uzytkownik?.Nazwisko?.ToLower().Contains(searchLower) ?? false) ||
-                // (s.Serwis?.TypSerwisu?.Nazwa?.ToLower().Contains(searchLower) ?? false) ||
                 GetSerwisName(s.Serwis?.SerwisId ?? 0).ToLower().Contains(searchLower) ||
                 s.DataDodania.ToString("dd MMMM yyyy").ToLower().Contains(searchLower) ||
                 (s.Priorytet?.Nazwa?.ToLower().Contains(searchLower) ?? false) ||
@@ -719,21 +718,25 @@
         {
             filtered = filtered.Where(s => _selectedServiceTypes.Contains(GetSerwisName(s.Serwis?.SerwisId ?? 0)));
         }
-
+        
         if (_selectedTechnicianId.HasValue)
         {
-            filtered = filtered.Where(s => s.Serwisant?.UzytkownikId == _selectedTechnicianId.Value);
+            filtered = filtered
+                .Where(z => z.Serwisant != null && z.Serwisant.SerwisantId == _selectedTechnicianId.Value)
+                .ToList();
         }
-
+        
         if (_selectedClientId.HasValue)
         {
-            filtered = filtered.Where(s => s.Klient?.UzytkownikId == _selectedClientId.Value);
+            filtered = filtered
+                .Where(z => z.Klient.KlientId == _selectedClientId.Value)
+                .ToList();
         }
 
-        if (GetUserRole() == "Serwisant" && _showOnlyMyOrders)
-        {
-            filtered = filtered.Where(s => s.Serwisant?.UzytkownikId == _uzytkownik?.UzytkownikId);
-        }
+        // if (GetUserRole() == "Serwisant" && _showOnlyMyOrders)
+        // {
+        //     filtered = filtered.Where(s => s.Serwisant?.UzytkownikId == _uzytkownik?.UzytkownikId);
+        // }
 
         _filteredZamówienia = filtered.ToList();
         _showSummary = _filteredZamówienia.Any();
