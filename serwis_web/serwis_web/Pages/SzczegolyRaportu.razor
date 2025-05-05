@@ -240,12 +240,66 @@
 
                 <h4>Data utworzenia zlecenia</h4>
                 <input type="text" value="@_selectedOrder.DataDodania.ToString("dd.MM.yyyy")" readonly/>
+                
+                <h4>Status zlecenia</h4>
+                <input type="text" value="@_selectedOrder.Status?.Nazwa" readonly/>
 
                 <h4>Priorytet</h4>
                 <input type="text" value="@_selectedOrder.Priorytet?.Nazwa" readonly/>
+                
+                <h4>Metoda Płatności</h4>
+                <input type="text" value="@_selectedOrder.MetodaPlatnosci?.Nazwa" readonly/>
 
+                <h4>Kwota do zapłaty</h4>
+                <input type="text" value="@_selectedOrder.Koszt100 zł" readonly/>
+                
+                @if (_selectedOrder.Serwisant != null && _selectedOrder.Serwisant?.Uzytkownik != null)
+                {
+                    <h4>Serwisant</h4>
+                    <input type="text" value="@GetTechnicianFullName()" readonly/>
+                    
+                    <div class="order-row">
+                        <div class="single-col">
+                            <h4>Adres Email Serwisanta</h4>
+                            <input type="email" value="@GetServicemenEmail(_selectedOrder.Serwisant.Uzytkownik.AdresEmailId)" readonly/>
+                            
+                        </div>
+                        <div class="single-col">
+                            <h4>Numer Telefonu Serwisanta</h4>
+                            <input type="number" value="@GetServicemenPhoneNumber(_selectedOrder?.Serwisant.Uzytkownik.NumerTelefonuId)" readonly/>
+                        </div>
+                    </div>
+                }   
+                
                 <h4>Opis</h4>
                 <textarea readonly>@_selectedOrder.Opis</textarea>
+                
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Planowana Data Realizacji</h4>
+                        <input type="text" value="@FormatDate(_selectedOrder.PlanowanaDataRealizacjiOd)" readonly/>
+                    </div>
+                    <div class="single-col">
+                        <h4>Planowana Data Zakończenia</h4>
+                        <input type="text" value="@FormatDate(_selectedOrder.PlanowanaDataRealizacjiDo)" readonly/>
+                    </div>
+                </div>
+
+                <div class="order-row">
+                    <div class="single-col">
+                        <h4>Data Rozpoczęcia Realizacji</h4>
+                        <input type="text" value="@FormatDate(_selectedOrder.ZrealizowanaDataRealizacjiOd)" readonly
+                               style="font-weight: bold"/>
+                    </div>
+                    <div class="single-col">
+                        <h4>Data Zakończenia Realizacji</h4>
+                        <input type="text" value="@FormatDate(_selectedOrder.ZrealizowanaDataRealizacjiDo)" readonly
+                               style="font-weight: bold"/>
+                    </div>
+                </div>
+
+                <h4>Czas realizacji</h4>
+                <input type="text" value="@GetImplementationTime()" readonly/>
 
                 <h4>Klient</h4>
                 <input type="text" value="@GetClientFullName()" readonly/>
@@ -288,65 +342,7 @@
                         </div>
                     </div>
                 }
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Planowana Data Realizacji</h4>
-                        <input type="text" value="@FormatDate(_selectedOrder.PlanowanaDataRealizacjiOd)" readonly/>
-                    </div>
-                    <div class="single-col">
-                        <h4>Planowana Data Zakończenia</h4>
-                        <input type="text" value="@FormatDate(_selectedOrder.PlanowanaDataRealizacjiDo)" readonly/>
-                    </div>
-                </div>
-
-                <div class="order-row">
-                    <div class="single-col">
-                        <h4>Data Rozpoczęcia Realizacji</h4>
-                        <input type="text" value="@FormatDate(_selectedOrder.ZrealizowanaDataRealizacjiOd)" readonly
-                               style="font-weight: bold"/>
-                    </div>
-                    <div class="single-col">
-                        <h4>Data Zakończenia Realizacji</h4>
-                        <input type="text" value="@FormatDate(_selectedOrder.ZrealizowanaDataRealizacjiDo)" readonly
-                               style="font-weight: bold"/>
-                    </div>
-                </div>
-
-                <h4>Czas realizacji</h4>
-                <input type="text" value="@GetImplementationTime()" readonly/>
-
-                @if (_selectedOrder.Serwisant != null && _selectedOrder.Serwisant.Uzytkownik != null)
-                {
-                    <h4>Serwisant</h4>
-                    <input type="text" value="@GetTechnicianFullName()" readonly/>
-
-                    @if (_selectedOrder.Serwisant.Uzytkownik.AdresEmail != null || _selectedOrder.Serwisant.Uzytkownik.NumerTelefonu != null)
-                    {
-                        <div class="order-row">
-                            <div class="single-col">
-                                <h4>Adres Email Serwisanta</h4>
-                                <input type="email" value="@_selectedOrder.Serwisant.Uzytkownik.AdresEmail?.Email"
-                                       readonly/>
-                            </div>
-                            <div class="single-col">
-                                <h4>Numer Telefonu Serwisanta</h4>
-                                <input type="text" value="@_selectedOrder.Serwisant.Uzytkownik.NumerTelefonu?.Numer"
-                                       readonly/>
-                            </div>
-                        </div>
-                    }
-                }
-
-                <h4>Status zlecenia</h4>
-                <span class="@GetStatusClass(_selectedOrder.Status?.Nazwa ?? "")">@_selectedOrder.Status?.Nazwa</span>
-
-                <h4>Metoda Płatności</h4>
-                <input type="text" value="@_selectedOrder.MetodaPlatnosci?.Nazwa" readonly/>
-
-                <h4>Kwota do zapłaty</h4>
-                <input type="text" value="@_selectedOrder.Koszt100 zł" readonly/>
-
+                
                 @if (_selectedOrder.Status?.Nazwa == "Zakończony")
                 {
                     <h4>Oceń Wykonaną Usługę</h4>
@@ -406,6 +402,10 @@
     private bool _isKlient = false;
     private int? _serwisantId = null;
     private int? _klientId = null;
+    public List<NumerTelefonu> _NumerTelefonu = new();
+    public List<AdresEmail> _adresyEmail = new();
+    public NumerTelefonu? _currentPhoneSerwisant;
+    public AdresEmail? _currentEmailSerwisantt;
 
     private string _searchText = string.Empty;
     private MudCarousel<object> _carousel;
@@ -446,6 +446,19 @@
         var serwis = _serwisy.FirstOrDefault(s => s.TypSerwisuId == serwisId);
         return serwis?.Nazwa ?? "Nie znaleziono";
     }
+
+    private string GetServicemenEmail(int emailId)
+    {
+        var email = _adresyEmail.FirstOrDefault(e => e.AdresEmailId == emailId);
+        return email?.Email ?? "Nie znaleziono";
+    }
+    
+    private string GetServicemenPhoneNumber(int? phoneId)
+    {
+        var phone = _NumerTelefonu.FirstOrDefault(n => n.NumerTelefonuId == phoneId);
+        return phone?.Numer ?? "Nie znaleziono";
+    }
+
 
     private Color GetStatusColor(string status)
     {
@@ -544,6 +557,18 @@
                 if (serviceResult.Data != null)
                 {
                     _serwisy = serviceResult.Data;
+                }
+                
+                var emailResult = await ApiService.AdresyEmailRepo.AdresyEmailGet();
+                if (emailResult.Data != null)
+                {
+                    _adresyEmail = emailResult.Data;
+                }
+                
+                var phoneResult = await ApiService.NumeryTelefonuRepo.NumeryTelefonuGet();
+                if (phoneResult.Data != null)
+                {
+                    _NumerTelefonu = phoneResult.Data;
                 }
             }
             else
@@ -716,6 +741,29 @@
                                 table.Cell().Text("Kwota do zapłaty:");
                                 table.Cell().Text($"{_selectedOrder.Koszt100} zł");
                             });
+                            
+                            if (_selectedOrder.Serwisant != null && _selectedOrder.Serwisant.Uzytkownik != null)
+                            {
+                                column.Item().PaddingTop(15).Text("Serwisant").FontSize(14).Bold();
+                                column.Item().PaddingVertical(5).Table(table =>
+                                {
+                                    table.ColumnsDefinition(columns =>
+                                    {
+                                        columns.ConstantColumn(150);
+                                        columns.RelativeColumn();
+                                    });
+
+                                    table.Cell().Text("Imię i nazwisko:");
+                                    table.Cell().Text(GetTechnicianFullName());
+
+                                    table.Cell().Text("Numer telefonu:");
+                                    table.Cell().Text(@GetServicemenPhoneNumber(_selectedOrder?.Serwisant.Uzytkownik.NumerTelefonuId));
+
+                                    table.Cell().Text("Adres email:");
+                                    table.Cell().Text(@GetServicemenEmail(_selectedOrder.Serwisant.Uzytkownik.AdresEmailId));
+                                    
+                                });
+                            }
 
                             column.Item().PaddingTop(10).Text("Opis").FontSize(14).Bold();
                             column.Item().Background(Colors.Grey.Lighten5)
@@ -787,34 +835,6 @@
 
                                     table.Cell().Text("Kraj:");
                                     table.Cell().Text(_selectedOrder.Adres.Kraj);
-                                });
-                            }
-
-                            if (_selectedOrder.Serwisant != null && _selectedOrder.Serwisant.Uzytkownik != null)
-                            {
-                                column.Item().PaddingTop(15).Text("Serwisant").FontSize(14).Bold();
-                                column.Item().PaddingVertical(5).Table(table =>
-                                {
-                                    table.ColumnsDefinition(columns =>
-                                    {
-                                        columns.ConstantColumn(150);
-                                        columns.RelativeColumn();
-                                    });
-
-                                    table.Cell().Text("Imię i nazwisko:");
-                                    table.Cell().Text(GetTechnicianFullName());
-
-                                    if (_selectedOrder.Serwisant.Uzytkownik.NumerTelefonu != null)
-                                    {
-                                        table.Cell().Text("Numer telefonu:");
-                                        table.Cell().Text(_selectedOrder.Serwisant.Uzytkownik.NumerTelefonu.Numer);
-                                    }
-
-                                    if (_selectedOrder.Serwisant.Uzytkownik.AdresEmail != null)
-                                    {
-                                        table.Cell().Text("Adres email:");
-                                        table.Cell().Text(_selectedOrder.Serwisant.Uzytkownik.AdresEmail.Email);
-                                    }
                                 });
                             }
 

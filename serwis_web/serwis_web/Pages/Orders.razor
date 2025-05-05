@@ -618,7 +618,7 @@
             var serwisantResult = await ApiService.SerwisanciRepo.SerwisanciGet();
             if (serwisantResult.Data != null)
             {
-                _serwisants = serwisantResult.Data.Where(s => s.CzyAktywny).ToList();
+                _serwisants = serwisantResult.Data;
             }
             
             var klientResult = await ApiService.KlienciRepo.KlienciGet();
