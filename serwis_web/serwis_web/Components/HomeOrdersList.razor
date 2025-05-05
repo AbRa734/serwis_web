@@ -283,12 +283,12 @@
                         .Where(z => z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
                         .ToList();
                 }
-                else if (GetUserRole() == "Serwisant")
-                {
-                    _zamowienia = _zamowienia
-                        .Where(z => z.Serwisant?.UzytkownikId == _uzytkownik?.UzytkownikId || z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
-                        .ToList();
-                }
+                // else if (GetUserRole() == "Serwisant")
+                // {
+                //     _zamowienia = _zamowienia
+                //         .Where(z => z.Serwisant?.UzytkownikId == _uzytkownik?.UzytkownikId || z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
+                //         .ToList();
+                // }
                 
                 _latestZamowienia = _zamowienia.Take(3).ToList();
 

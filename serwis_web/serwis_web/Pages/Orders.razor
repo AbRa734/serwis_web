@@ -56,8 +56,8 @@
     }
 
     .filter-button {
-        background-color: #f1f4f9;
-        border: 1px solid #e0e0e0;
+        /*background-color: #f1f4f9;*/
+        /*border: 1px solid #e0e0e0;*/
         border-radius: 10px;
         padding: 12px 20px;
         color: #424242;
@@ -246,11 +246,22 @@
         font-weight: bold;
         color: #4880FF;
     }
+    
+    .order-filter-new-order
+    {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
 
     @@media (max-width: 1024px) {
+        .order-header {
+            margin-bottom: 15px;
+        }
         .order-header-search-button {
             padding: 0;
             flex-direction: column;
+            align-items: flex-start;
         }
 
         .order-search {
@@ -265,6 +276,12 @@
 
         .filter-panel {
             padding: 15px 10px;
+        }
+        .order-filter-new-order
+        {
+            flex-direction: column;
+            width: 100%;
+            gap: 10px;
         }
     }
 </style>
@@ -287,16 +304,17 @@
                           OnDebounceIntervalElapsed="ApplySearch"
                           Class="order-search"></MudTextField>
         </MudItem>
-        <MudStack Row="true" Spacing="2">
+        <div class="order-filter-new-order">
             <MudButton OnClick="@ToggleFilterPanel"
-                       Class="@(_showFilters ? "filter-button filter-active" : "filter-button")">
-                <MudIcon Icon="@Icons.Material.Filled.FilterList" Class="mr-2"/>
+                       Class="@(_showFilters ? "filter-button filter-active" : "filter-button")"
+                       Style="@(!_showFilters ? "background-color: #f1f4f9; border: 1px solid #e0e0e0;" : null)">
+                <MudIcon Icon="@Icons.Material.Filled.FilterList" Class="mr-2" />
                 Filtry
             </MudButton>
             <MudButton Href="/services" Class="new-button">
                 Nowe zlecenie
             </MudButton>
-        </MudStack>
+        </div>
     </MudCardHeader>
 
     @if (_showFilters)
@@ -307,8 +325,16 @@
                     <MudText Typo="Typo.subtitle1" Class="mb-2">Filtry czasowe</MudText>
                     <MudDateRangePicker Label="Data utworzenia" @bind-DateRange="_creationDateRange"
                                         Class="filter-group" Clearable="true" AutoClose="true"/>
-                    <MudDateRangePicker Label="Data realizacji" @bind-DateRange="_completionDateRange"
-                                        Class="filter-group" Clearable="true" AutoClose="true"/>
+                    @* <MudDateRangePicker Label="Data realizacji" @bind-DateRange="_completionDateRange" *@
+                    @*                     Class="filter-group" Clearable="true" AutoClose="true"/> *@
+                    <MudSelect T="string" Label="Priorytet" MultiSelection="true" @bind-SelectedValues="_selectedPrioritises"
+                               Class="filter-group" Clearable="true">
+                        @foreach (var priorytet in _availablePrioritises)
+                        {
+                            <MudSelectItem Value="@priorytet">@priorytet</MudSelectItem>
+                        }
+                    </MudSelect>
+                    
                 </MudItem>
                 <MudItem xs="12" md="4">
                     <MudText Typo="Typo.subtitle1" Class="mb-2">Filtry statusu i typu</MudText>
@@ -319,7 +345,7 @@
                             <MudSelectItem Value="@status">@status</MudSelectItem>
                         }
                     </MudSelect>
-                    <MudSelect T="string" Label="Typ usługi" MultiSelection="true"
+                    <MudSelect T="string" Label="Rodzaj" MultiSelection="true"
                                @bind-SelectedValues="_selectedServiceTypes"
                                Class="filter-group" Clearable="true">
                         @foreach (var type in _availableServiceTypes)
@@ -353,8 +379,18 @@
                     }
                     else if (GetUserRole() == "Serwisant")
                     {
-                        <MudCheckBox T="bool" @bind-Checked="_showOnlyMyOrders" Color="Color.Primary"
-                                     Label="Tylko moje zlecenia" Class="filter-group"/>
+                        @* <MudCheckBox T="bool" @bind-Checked="_showOnlyMyOrders" Color="Color.Primary" *@
+                        @*              Label="Tylko moje zlecenia" Class="filter-group"/> *@
+                        
+                        <MudSelect T="int?" Label="Serwisant" @bind-Value="_selectedTechnicianId"
+                                   Class="filter-group" Clearable="true">
+                            <MudSelectItem Value="@((int?)null)">Wszyscy</MudSelectItem>
+                            @foreach (var tech in _technicians)
+                            {
+                                <MudSelectItem
+                                    Value="@((int?)tech.UzytkownikId)">@($"{tech.Imie} {tech.Nazwisko}")</MudSelectItem>
+                            }
+                        </MudSelect>
                     }
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="ApplyFilters"
                                Class="mt-4">
@@ -419,17 +455,6 @@
                 </CellTemplate>
             </PropertyColumn>
 
-            <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Serwis.TypSerwisu.Nazwa" Title="Rodzaj"
-                            HeaderClass="order-category">
-                <CellTemplate Context="context">
-                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                        <MudText Class="order-category-single-item">
-                            @GetServiceName(context.Item)
-                        </MudText>
-                    </MudChip>
-                </CellTemplate>
-            </PropertyColumn>
-
             <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.DataDodania"
                             Title="Data utworzenia" HeaderClass="order-category">
                 <CellTemplate>
@@ -440,13 +465,37 @@
                 </CellTemplate>
             </PropertyColumn>
 
-
-            <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo"
-                            Title="Data Wykonania" HeaderClass="order-category">
+            <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Serwisant != null ? x.Serwisant.Uzytkownik.Imie : string.Empty"
+                            Title="Serwisant" HeaderClass="order-category"
+                            Visible="@(GetUserRole() == "Administrator" || GetUserRole() == "Serwisant")">
                 <CellTemplate>
                     <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                        <MudText
-                            Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>
+                        <MudText Class="order-category-single-item">
+                            @(context.Item.Serwisant != null
+                                ? $"{context.Item.Serwisant.Uzytkownik?.Imie} {context.Item.Serwisant.Uzytkownik?.Nazwisko}"
+                                : "Nie przypisano")
+                        </MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Serwis.TypSerwisu.Nazwa" Title="Rodzaj"
+                            HeaderClass="order-category">
+                <CellTemplate Context="context">
+                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                        <MudText Class="order-category-single-item">
+                            @GetSerwisName(context.Item.Serwis.SerwisId)
+                        </MudText>
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            
+
+            <PropertyColumn T="Zamowienie" TProperty="string" Property="x => x.Priorytet.Nazwa" Title="Priorytet"
+                            HeaderClass="order-category">
+                <CellTemplate>
+                    <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
+                        <MudText Class="order-category-single-item">@context.Item.Priorytet.Nazwa</MudText>
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
@@ -468,22 +517,6 @@
                     </MudChip>
                 </CellTemplate>
             </PropertyColumn>
-
-            @if (GetUserRole() == "Administrator" || GetUserRole() == "Serwisant")
-            {
-                <PropertyColumn T="Zamowienie" TProperty="string" Title="Serwisant" HeaderClass="order-category">
-                    <CellTemplate>
-                        <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
-                            <MudText Class="order-category-single-item">
-                                @(context.Item.Serwisant != null
-                                    ? $"{context.Item.Serwisant.Uzytkownik?.Imie} {context.Item.Serwisant.Uzytkownik?.Nazwisko}"
-                                    : "Nie przypisano")
-                            </MudText>
-                        </MudChip>
-                    </CellTemplate>
-                </PropertyColumn>
-            }
-
         </Columns>
         <PagerContent>
             <MudDataGridPager T="Zamowienie" RowsPerPageString="Wierszy na stronę"
@@ -503,6 +536,7 @@
     private Uzytkownik? _uzytkownik;
     private List<Uzytkownik> _technicians = new();
     private List<Uzytkownik> _clients = new();
+    private List<DicTypSerwisu> _serwisy = new();
 
     // Filtrowanie
     private bool _showFilters = false;
@@ -511,11 +545,13 @@
     private DateRange _completionDateRange;
     private IEnumerable<string> _selectedStatuses = new List<string>();
     private IEnumerable<string> _selectedServiceTypes = new List<string>();
+    private IEnumerable<string> _selectedPrioritises = new List<string>();
     private int? _selectedTechnicianId;
     private int? _selectedClientId;
     private bool _showOnlyMyOrders = false;
 
     private List<string> _availableStatuses = new List<string> { "Nowy", "Oczekujący", "W realizacji", "Zakończony", "Anulowany" };
+    private List<string> _availablePrioritises = new List<string> { "Niski", "Normalny", "Wysoki", "Krytyczny"};
     private List<string> _availableServiceTypes = new List<string> { "Naprawa", "Przegląd", "Instalacja", "Konserwacja", "Wymiana" };
 
     protected override async Task OnInitializedAsync()
@@ -546,12 +582,12 @@
                         .Where(z => z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
                         .ToList();
                 }
-                else if (GetUserRole() == "Serwisant")
-                {
-                    _zamowienia = _zamowienia
-                        .Where(z => z.Serwisant?.UzytkownikId == _uzytkownik?.UzytkownikId || z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
-                        .ToList();
-                }
+                // else if (GetUserRole() == "Serwisant")
+                // {
+                //     _zamowienia = _zamowienia
+                //         .Where(z => z.Serwisant?.UzytkownikId == _uzytkownik?.UzytkownikId || z.Klient.UzytkownikId == _uzytkownik?.UzytkownikId)
+                //         .ToList();
+                // }
 
                 _filteredZamówienia = _zamowienia;
 
@@ -609,6 +645,8 @@
                     .Select(t => t.Nazwa)
                     .Where(n => !string.IsNullOrEmpty(n))
                     .ToList();
+                
+                _serwisy = result.Data;
             }
         }
         catch (Exception ex)
@@ -620,6 +658,7 @@
     private void ToggleFilterPanel()
     {
         _showFilters = !_showFilters;
+        _showSummary = false;
         StateHasChanged();
     }
 
@@ -636,9 +675,10 @@
                 s.ZamowienieId.ToString().Contains(searchLower) ||
                 (s.Serwisant?.Uzytkownik?.Imie?.ToLower().Contains(searchLower) ?? false) ||
                 (s.Serwisant?.Uzytkownik?.Nazwisko?.ToLower().Contains(searchLower) ?? false) ||
-                (s.Serwis?.TypSerwisu?.Nazwa?.ToLower().Contains(searchLower) ?? false) ||
+                // (s.Serwis?.TypSerwisu?.Nazwa?.ToLower().Contains(searchLower) ?? false) ||
+                GetSerwisName(s.Serwis?.SerwisId ?? 0).ToLower().Contains(searchLower) ||
                 s.DataDodania.ToString("dd MMMM yyyy").ToLower().Contains(searchLower) ||
-                (s.ZrealizowanaDataRealizacjiDo.HasValue && s.ZrealizowanaDataRealizacjiDo.Value.ToString("dd MMMM yyyy").ToLower().Contains(searchLower)) ||
+                (s.Priorytet?.Nazwa?.ToLower().Contains(searchLower) ?? false) ||
                 s.Koszt100.ToString().Contains(searchLower) ||
                 (s.Status?.Nazwa?.ToLower().Contains(searchLower) ?? false)
             );
@@ -654,16 +694,20 @@
             filtered = filtered.Where(s => s.DataDodania <= _creationDateRange.End.Value);
         }
 
-        if (_completionDateRange.Start.HasValue)
+        // if (_completionDateRange.Start.HasValue)
+        // {
+        //     filtered = filtered.Where(s => s.ZrealizowanaDataRealizacjiDo.HasValue &&
+        //                                    s.ZrealizowanaDataRealizacjiDo.Value >= _completionDateRange.Start.Value);
+        // }
+        //
+        // if (_completionDateRange.End.HasValue)
+        // {
+        //     filtered = filtered.Where(s => s.ZrealizowanaDataRealizacjiDo.HasValue &&
+        //                                    s.ZrealizowanaDataRealizacjiDo.Value <= _completionDateRange.End.Value);
+        // }
+        if (_selectedPrioritises.Any())
         {
-            filtered = filtered.Where(s => s.ZrealizowanaDataRealizacjiDo.HasValue &&
-                                           s.ZrealizowanaDataRealizacjiDo.Value >= _completionDateRange.Start.Value);
-        }
-
-        if (_completionDateRange.End.HasValue)
-        {
-            filtered = filtered.Where(s => s.ZrealizowanaDataRealizacjiDo.HasValue &&
-                                           s.ZrealizowanaDataRealizacjiDo.Value <= _completionDateRange.End.Value);
+            filtered = filtered.Where(s => s.Priorytet != null && _selectedPrioritises.Contains(s.Priorytet.Nazwa));
         }
 
         if (_selectedStatuses.Any())
@@ -673,8 +717,7 @@
 
         if (_selectedServiceTypes.Any())
         {
-            filtered = filtered.Where(s => s.Serwis?.TypSerwisu?.Nazwa != null &&
-                                           _selectedServiceTypes.Contains(s.Serwis.TypSerwisu.Nazwa));
+            filtered = filtered.Where(s => _selectedServiceTypes.Contains(GetSerwisName(s.Serwis?.SerwisId ?? 0)));
         }
 
         if (_selectedTechnicianId.HasValue)
@@ -741,15 +784,23 @@
                 s.ZamowienieId.ToString().Contains(searchLower) ||
                 (s.Serwisant?.Uzytkownik?.Imie?.ToLower().Contains(searchLower) ?? false) ||
                 (s.Serwisant?.Uzytkownik?.Nazwisko?.ToLower().Contains(searchLower) ?? false) ||
-                (s.Serwis?.TypSerwisu?.Nazwa?.ToLower().Contains(searchLower) ?? false) ||
+                // (s.Serwis?.TypSerwisu?.Nazwa?.ToLower().Contains(searchLower) ?? false) ||
+                GetSerwisName(s.Serwis?.SerwisId ?? 0).ToLower().Contains(searchLower) ||
                 s.DataDodania.ToString("dd MMMM yyyy").ToLower().Contains(searchLower) ||
-                (s.ZrealizowanaDataRealizacjiDo.HasValue && s.ZrealizowanaDataRealizacjiDo.Value.ToString("dd MMMM yyyy").ToLower().Contains(searchLower)) ||
+                (s.Priorytet?.Nazwa?.ToLower().Contains(searchLower) ?? false) || 
                 s.Koszt100.ToString().Contains(searchLower) ||
                 (s.Status?.Nazwa?.ToLower().Contains(searchLower) ?? false)
             ).ToList();
         }
 
-        _showSummary = _filteredZamówienia.Any();
+        if (_searchString == "")
+        {
+            _showSummary = false;
+        }
+        else
+        {
+            _showSummary = _filteredZamówienia.Any();
+        }
         StateHasChanged();
     }
 
@@ -774,21 +825,10 @@
         return _uzytkownik.RolaUzytkownika.Nazwa;
     }
 
-
-    private string GetServiceName(Zamowienie zamowienie)
+    private string GetSerwisName(int serwisId)
     {
-        if (zamowienie.Serwis == null)
-            return "Nie przypisano";
-
-        if (zamowienie.Serwis.TypSerwisu == null)
-            return "Nie przypisano";
-
-        string nazwaSerwisu = zamowienie.Serwis.TypSerwisu.Nazwa ?? "";
-
-        if (string.IsNullOrWhiteSpace(nazwaSerwisu))
-            return "Nie przypisano";
-
-        return nazwaSerwisu;
+        var serwis = _serwisy.FirstOrDefault(s => s.TypSerwisuId == serwisId);
+        return serwis?.Nazwa ?? "Nie znaleziono";
     }
 
     private string GetStatusStyle(string status)
