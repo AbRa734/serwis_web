@@ -174,7 +174,7 @@
                                                             #@zamowienie.ZamowienieId.ToString("D5")
                                                         </MudText>
                                                         <MudText Typo="Typo.caption" Style="font-size: 13px;">
-                                                            @(zamowienie.Serwis?.Nazwa?.Length > 20 ? zamowienie.Serwis?.Nazwa?.Substring(0, 20) + "..." : zamowienie.Serwis?.Nazwa)
+                                                            @GetSerwisName(zamowienie.Serwis.SerwisId)
                                                         </MudText>
                                                     </CardHeaderContent>
                                                     <CardHeaderActions>
@@ -234,7 +234,7 @@
                     </div>
                     <div class="single-col">
                         <h4>Rodzaj zlecenia</h4>
-                        <input type="text" value="@_selectedOrder.Serwis?.Nazwa" readonly/>
+                        <input type="text" value="@GetSerwisName(_selectedOrder.Serwis.SerwisId)" readonly />
                     </div>
                 </div>
 
@@ -263,6 +263,9 @@
 
                 @if (_selectedOrder.Adres != null)
                 {
+                    <h4>Państwo</h4>
+                    <input type="text" value="@_selectedOrder.Adres.Kraj" readonly/>
+                    
                     <div class="order-row">
                         <div class="single-col">
                             <h4>Ulica</h4>
@@ -284,9 +287,6 @@
                             <input type="text" value="@_selectedOrder.Adres.KodPocztowy" readonly/>
                         </div>
                     </div>
-
-                    <h4>Państwo</h4>
-                    <input type="text" value="@_selectedOrder.Adres.Kraj" readonly/>
                 }
 
                 <div class="order-row">
@@ -345,7 +345,7 @@
                 <input type="text" value="@_selectedOrder.MetodaPlatnosci?.Nazwa" readonly/>
 
                 <h4>Kwota do zapłaty</h4>
-                <input type="text" value="@(_selectedOrder.Koszt100 / 100.0) zł" readonly/>
+                <input type="text" value="@_selectedOrder.Koszt100 zł" readonly/>
 
                 @if (_selectedOrder.Status?.Nazwa == "Zakończony")
                 {
@@ -398,6 +398,7 @@
     private List<Zamowienie> _filteredZamowienia = new();
     private Zamowienie? _selectedOrder;
     private int? _selectedOrderId;
+    private List<DicTypSerwisu> _serwisy = new();
     private bool _isLoading = false;
     private bool _generatingPdf = false;
     private Uzytkownik _currentUser;
@@ -438,6 +439,12 @@
             var group = filteredList.Skip(i).Take(3).ToArray();
             _carouselItems.Add(group);
         }
+    }
+    
+    private string GetSerwisName(int serwisId)
+    {
+        var serwis = _serwisy.FirstOrDefault(s => s.TypSerwisuId == serwisId);
+        return serwis?.Nazwa ?? "Nie znaleziono";
     }
 
     private Color GetStatusColor(string status)
@@ -531,6 +538,12 @@
                 else
                 {
                     _filteredZamowienia = _zamowienia;
+                }
+                
+                var serviceResult = await ApiService.TypySerwisuRepo.TypySerwisuGet();
+                if (serviceResult.Data != null)
+                {
+                    _serwisy = serviceResult.Data;
                 }
             }
             else
@@ -686,7 +699,7 @@
                                 });
 
                                 table.Cell().Text("Rodzaj zlecenia:");
-                                table.Cell().Text(_selectedOrder.Serwis?.Nazwa ?? "-");
+                                table.Cell().Text(GetSerwisName(_selectedOrder.Serwis.SerwisId) ?? "-");
 
                                 table.Cell().Text("Data utworzenia:");
                                 table.Cell().Text(_selectedOrder.DataDodania.ToString("dd.MM.yyyy"));
@@ -701,7 +714,7 @@
                                 table.Cell().Text(_selectedOrder.MetodaPlatnosci?.Nazwa ?? "-");
 
                                 table.Cell().Text("Kwota do zapłaty:");
-                                table.Cell().Text($"{_selectedOrder.Koszt100 / 100.0:0.00} zł");
+                                table.Cell().Text($"{_selectedOrder.Koszt100} zł");
                             });
 
                             column.Item().PaddingTop(10).Text("Opis").FontSize(14).Bold();
