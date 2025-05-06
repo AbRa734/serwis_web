@@ -49,3 +49,17 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.high-contrast {
+    background-color: black;
+    color: white;
+}
+
+.high-contrast button {
+    background-color: #333;
+    color: yellow;
+}
+
+.high-contrast a {
+    color: #00ff00;
+}

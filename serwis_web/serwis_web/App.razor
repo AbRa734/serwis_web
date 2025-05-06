@@ -47,6 +47,14 @@
         link.download = fileName;
         link.click();
     }
+    window.toggleBodyClass = function(className, enabled) {
+        if (enabled) {
+            document.body.classList.add(className);
+        } else {
+            document.body.classList.remove(className);
+        }
+    };
+
 </script>
 </body>
 
