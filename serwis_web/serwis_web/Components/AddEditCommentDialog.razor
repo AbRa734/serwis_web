@@ -1,0 +1,198 @@
+﻿@using ApiService.Models
+@using System.ComponentModel.DataAnnotations
+@using ApiService
+@inject ApiService ApiService
+@using ApiService.Repositories
+@using Color = MudBlazor.Color
+@using Colors = DesignSystem.Tokens.Colors
+@using DialogResult = MudBlazor.DialogResult
+
+<style>
+    .container {
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        padding: 10px 10px 15px 10px;
+    }
+
+    .tittle {
+        font-size: 24px;
+        font-weight: 600
+    }
+
+    .cancel {
+        background-color: #979797;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .cancel:hover {
+        background-color: #858383
+    }
+
+    .save {
+        background-color: #4880FF;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .save:hover {
+        background-color: #336ff5;
+    }
+
+    .validation-message {
+        color: #ff5252;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
+</style>
+
+<MudDialog Class="container">
+    <TitleContent>
+        <MudText Class="tittle">@TitleText</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 500px; overflow-y: scroll">
+            <EditForm Model="@_model" OnValidSubmit="Submit">
+                <DataAnnotationsValidator />
+
+                <MudTextField T="string" Label="Komentarz" @bind-Value="_model.Comment"
+                            Validation="@(new Func<string, string>(ValidateComment))"
+                            For="@(() => _model.Comment)"
+                            Counter="500" MaxLength="500" Immediate="true"
+                            Lines="4" Class="mt-3" />
+                
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-3">@_errorMessage</MudAlert>
+                }
+            </EditForm>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Class="cancel">Anuluj</MudButton>
+        <MudButton OnClick="Submit" Disabled="@(!IsFormValid())" Class="save">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    
+    [Parameter] public string TitleText { get; set; } = string.Empty;
+    [Parameter] public int SelectedOrderId { get; set; }
+    [Parameter] public Uzytkownik User{ get; set; }
+    [Parameter] public bool IsNewComment { get; set; }
+    [Parameter] public int CommentId { get; set; }
+    [Parameter] public string Comment { get; set; }
+    
+    private string _errorMessage = string.Empty;
+    
+    
+    private class CommentModel
+    {
+        [Required(ErrorMessage = "Wybór zamówienia jest wymagany")]
+        [Range(1, int.MaxValue, ErrorMessage = "Wybierz prawidłowe zamówienie")]
+        public int OrderId { get; set; }
+        
+        [Required(ErrorMessage = "Komentarz jest wymagany")]
+        [StringLength(500, ErrorMessage = "Komentarz nie może przekraczać 500 znaków")]
+        [MinLength(2, ErrorMessage = "Komentarz musi zawierać co najmniej 2 znaki")]
+        public string Comment { get; set; } = string.Empty;
+    }
+    
+    private CommentModel _model = new();
+    
+    protected override void OnInitialized()
+    {
+        _model.OrderId = SelectedOrderId;
+        _model.Comment = Comment;
+    }
+    
+    
+    private string ValidateComment(string comment)
+    {
+        if (string.IsNullOrWhiteSpace(comment))
+            return "Komentarz jest wymagany";
+            
+        if (comment.Length < 2)
+            return "Komentarz musi zawierać co najmniej 2 znaki";
+            
+        if (comment.Length > 500)
+            return "Komentarz nie może przekraczać 500 znaków";
+            
+        return null;
+    }
+    
+    private bool IsFormValid()
+    {
+        return _model.OrderId > 0 && 
+               !string.IsNullOrWhiteSpace(_model.Comment) && 
+               _model.Comment.Length >= 2 && 
+               _model.Comment.Length <= 500;
+    }
+    
+    private async Task Submit()
+    {
+        _errorMessage = string.Empty;
+        
+        if (!IsFormValid())
+        {
+            _errorMessage = "Popraw błędy w formularzu przed zapisaniem";
+            return;
+        }
+        
+        try
+        {
+            var comDto = new KomentarzDto
+            {
+                Tresc = _model.Comment,
+                UzytkownikId = User.UzytkownikId
+            };
+            if (IsNewComment)
+            {
+                var commentResult = await ApiService.KomentarzeRepo.KomentarzPost(comDto);
+            
+                var result = new CommentDialogResult
+                {
+                    CommentId = commentResult.Data.KomentarzId
+                };
+                
+                MudDialog.Close(DialogResult.Ok(result));
+            }
+            else
+            {
+                var commentResult = await ApiService.KomentarzeRepo.KomentarzPut(CommentId,comDto);
+            
+                var result = new CommentDialogResult
+                {
+                    CommentId = commentResult.Data.KomentarzId
+                };
+                
+                MudDialog.Close(DialogResult.Ok(result));
+            }
+
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Wystąpił błąd: {ex.Message}";
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+    
+    public class CommentDialogResult
+    {
+        public int CommentId { get; set; }
+    }
+}

@@ -516,7 +516,25 @@
 				_errorMessage = $"Błąd podczas tworzenia zlecenia: {createResult.Error}";
 				return;
 			}
+			else
+			{
+				var logDto = new LogDto
+				{
+					ZamowienieId = createResult.Data.ZamowienieId,
+					StatusId = 0,
+					Komentarz = "Utworzono nowe zlecenie"
+				};
 
+				var logResult = await ApiService.LogiRepo.LogPost(logDto);
+
+				if (logResult.Data == null)
+				{
+					_errorMessage = $"Błąd podczas tworzenia nowego loga: {logResult.Error}";
+					return;
+				}
+			}
+			
+			
 			Snackbar.Add("Zlecenie zostało pomyślnie utworzone!", Severity.Success);
 			NavigationManager.NavigateTo("/orders");
 		}
