@@ -1,8 +1,67 @@
 @using Color = MudBlazor.Color
 
-<MudDialog>
+<style>
+    .container {
+        border-radius: 15px;
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+        padding-bottom: 10px;
+    }
+    .mud-dialog-content
+    {
+        padding: 0 10px !important;
+    }
+    .mud-typography-h6
+    {
+        font-size: 24px;
+        font-weight: 600
+    }
+    .tittle {
+        font-size: 24px;
+        font-weight: 600
+    }
+
+    .cancel {
+        background-color: #979797;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .cancel:hover {
+        background-color: #858383
+    }
+
+    .save {
+        background-color: #4880FF;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .save:hover {
+        background-color: #336ff5;
+    }
+
+    .validation-message {
+        color: #ff5252;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
+</style>
+
+<MudDialog Class="container">
     <DialogContent>
-        <MudContainer Style="max-height: 400px; overflow-y: auto;">
+        <MudContainer Style="max-height: 450px; overflow-y: auto; padding: 0;">
             @if (OrderChanges != null && OrderChanges.Any())
             {
                 <MudList T="string" Clickable="false">
@@ -10,10 +69,20 @@
                     {
                         <MudListItem T="string">
                             <MudPaper Elevation="2" Class="pa-3 mb-3">
-                                <MudText><strong>Data:</strong> @(GetPropertyValue(change, "Date") as DateTime?)?.ToString("dd.MM.yyyy HH:mm")</MudText>
-                                <MudText><strong>Użytkownik:</strong> @GetPropertyValue(change, "User")</MudText>
+                                <MudText>
+                                    <strong>Data: </strong>
+                                    @if (GetPropertyValue(change, "Date") is DateTime date)
+                                    {
+                                        @date.ToString("dd.MM.yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <em>Brak daty</em>
+                                    }
+                                </MudText>
+                                <MudText><strong>Rola użytownika:</strong> @GetPropertyValue(change, "UserRole")</MudText>
+                                <MudText><strong>Imie i Nazwisko:</strong> @GetPropertyValue(change, "UserName")</MudText>
                                 <MudText><strong>Status:</strong> @GetPropertyValue(change, "Status")</MudText>
-                                <MudText><strong>Uwaga:</strong> @GetPropertyValue(change, "Note")</MudText>
                             </MudPaper>
                         </MudListItem>
                     }
@@ -31,38 +100,38 @@
                 <MudAlert Severity="Severity.Info">Brak historii zmian dla tego zlecenia</MudAlert>
             }
             
-            @if (IsAdmin && !showAddChangeForm)
-            {
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => showAddChangeForm = true)" Class="mt-3">
-                    Dodaj nową zmianę
-                </MudButton>
-            }
-            
-            @if (IsAdmin && showAddChangeForm)
-            {
-                <MudPaper Elevation="3" Class="pa-3 mt-4">
-                    <MudText Typo="Typo.h6" Class="mb-3">Dodaj nową zmianę</MudText>
-                    <MudForm @ref="form">
-                        <MudSelect T="string" Label="Status" @bind-Value="newStatus" Required="true">
-                            <MudSelectItem Value="@("Nowe")">Nowe</MudSelectItem>
-                            <MudSelectItem Value="@("Oczekujące")">Oczekujące</MudSelectItem>
-                            <MudSelectItem Value="@("Realizacja")">Realizacja</MudSelectItem>
-                            <MudSelectItem Value="@("Zakończone")">Zakończone</MudSelectItem>
-                            <MudSelectItem Value="@("Anulowane")">Anulowane</MudSelectItem>
-                        </MudSelect>
-                        
-                        <MudTextField T="string" Label="Komentarz" @bind-Value="newNote" 
-                                    Required="true" Class="mt-3" />
-                        
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                                OnClick="AddNewChange" Class="mt-3">Dodaj</MudButton>
-                    </MudForm>
-                </MudPaper>
-            }
+            @* @if (IsAdmin && !showAddChangeForm) *@
+            @* { *@
+            @*     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => showAddChangeForm = true)" Class="mt-3"> *@
+            @*         Dodaj nową zmianę *@
+            @*     </MudButton> *@
+            @* } *@
+            @* *@
+            @* @if (IsAdmin && showAddChangeForm) *@
+            @* { *@
+            @*     <MudPaper Elevation="3" Class="pa-3 mt-4"> *@
+            @*         <MudText Typo="Typo.h6" Class="mb-3">Dodaj nową zmianę</MudText> *@
+            @*         <MudForm @ref="form"> *@
+            @*             <MudSelect T="string" Label="Status" @bind-Value="newStatus" Required="true"> *@
+            @*                 <MudSelectItem Value="@("Nowe")">Nowe</MudSelectItem> *@
+            @*                 <MudSelectItem Value="@("Oczekujące")">Oczekujące</MudSelectItem> *@
+            @*                 <MudSelectItem Value="@("Realizacja")">Realizacja</MudSelectItem> *@
+            @*                 <MudSelectItem Value="@("Zakończone")">Zakończone</MudSelectItem> *@
+            @*                 <MudSelectItem Value="@("Anulowane")">Anulowane</MudSelectItem> *@
+            @*             </MudSelect> *@
+            @*              *@
+            @*             <MudTextField T="string" Label="Komentarz" @bind-Value="newNote"  *@
+            @*                         Required="true" Class="mt-3" /> *@
+            @*              *@
+            @*             <MudButton Variant="Variant.Filled" Color="Color.Primary"  *@
+            @*                     OnClick="AddNewChange" Class="mt-3">Dodaj</MudButton> *@
+            @*         </MudForm> *@
+            @*     </MudPaper> *@
+            @* } *@
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Cancel">Zamknij</MudButton>
+        <MudButton OnClick="Cancel" Class="save">Zamknij</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -93,7 +162,8 @@
         var newChange = new DefaultChangeHistory
         {
             Date = DateTime.Now,
-            User = "Admin", 
+            UserRole = "Admin", 
+            UserName = "Uzytkownik", 
             Status = newStatus,
             Note = newNote
         };
@@ -107,7 +177,8 @@
     public interface IChangeHistory
     {
         DateTime Date { get; set; }
-        string User { get; set; }
+        string UserRole { get; set; }
+        string UserName { get; set; }
         string Status { get; set; }
         string Note { get; set; }
     }
@@ -115,7 +186,8 @@
     public class DefaultChangeHistory : IChangeHistory
     {
         public DateTime Date { get; set; }
-        public string User { get; set; }
+        public string UserRole { get; set; }
+        public string UserName { get; set; }
         public string Status { get; set; }
         public string Note { get; set; }
     }

@@ -279,12 +279,12 @@
     }
 
     .comments-section {
-        max-height: 300px;
+        max-height: 295px;
         overflow-y: auto;
         border-radius: 8px;
         background-color: #f9f9f9;
         padding: 10px;
-        margin-bottom: 20px;
+        margin-bottom: 5px;
     }
 
     .comment {
@@ -294,12 +294,35 @@
         margin-bottom: 10px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-
-    .comment-content p {
-        margin-top: 0;
-        margin-bottom: 8px;
-        font-size: 14px;
-        line-height: 1.4;
+    .comment p {
+        margin: 0 0 7px 0;
+        padding: 0;
+    }
+    .comment-edit
+    {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .comment-edit-icons
+    {
+        margin-right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+    .comment-edit-icons i {
+        font-size: 18px;
+    }
+    
+    .comment-role-user
+    {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .comment-user, .comment-text {
+        font-weight: 500;
     }
 
     .comment-meta {
@@ -541,11 +564,16 @@
                     {
                         <div class="comment">
                             <div class="comment-content">
-                                <p>@comment.Tresc</p>
-                                <div class="comment-meta">
-                                    <span class="comment-date">@FormatDate(comment.DataDodania)</span>
-                                    <span class="comment-user">@comment.Uzytkownik?.Imie @comment.Uzytkownik?.Nazwisko</span>
+                                <div class="comment-edit">
+                                    <p><strong>Data: </strong>@FormatDate(comment.DataDodania)</p>
+                                    <div class="comment-edit-icons">
+                                        <i class="fa-solid fa-pen-to-square" style="color: #4880ff; cursor: pointer;" @onclick="() => EditComment(comment.KomentarzId, comment.Tresc)"></i>
+                                        <i class="fa-solid fa-trash" style="color: #ff0000; cursor: pointer;" @onclick="() => DeleteComment(comment.KomentarzId)"></i>
+                                    </div>
                                 </div>
+                                <p><strong>Rola użytkownika: </strong>@GetCommentUserRole(comment.UzytkownikId)</p>
+                                <p><strong>Imie i Nazwisko: </strong>@GetUserComment(comment.UzytkownikId)</p>
+                                <p><strong>Komentarz: </strong>@comment.Tresc</p>
                             </div>
                         </div>
                     }
@@ -556,11 +584,7 @@
             {
                 <button type="submit">Zapisz zmiany</button>
             }
-            else
-            {
-                <button >Dodaj komentarz</button>
-            }
-
+            <button type="button" @onclick="OpenCommentDialog">Dodaj komentarz</button>
         </div>
 
     </div>
@@ -588,6 +612,7 @@
     private List<DicMetodaPlatnosci> _platnosci = new();
     private List<DicStatus> _statusy = new();
     private ICollection<Komentarz> _komentarze;
+    private List<Uzytkownik> _uzytkownicy = new();
 
     public NumerTelefonu? _currentPhoneKlient;
     public AdresEmail? _currentEmailKlient;
@@ -702,6 +727,7 @@
             _orderDataModel.MetodaPlatnosciId = _order.MetodaPlatnosciId;
             _orderDataModel.Koszt100 = _order.Koszt100;
             _orderDataModel.StatusId = _order.StatusId;
+            _orderDataModel.PreviousStatusId = _order.StatusId;
             
             _orderDataModel.DataDodania = _order.DataDodania;
             _orderDataModel.DataAktualizacji = _order.DataAktualizacji;
@@ -760,7 +786,18 @@
             }
 
             _komentarze = _order.Komentarze;
+            _orderDataModel.KomentarzeIds = _komentarze
+                .Select(k => k.KomentarzId)
+                .ToList();
+            
             _orderDataModel.Status = _order.Status;
+            
+            var usersResult = await ApiService.UzytkownicyRepo.UzytkownicyGet();
+            if (usersResult.Data != null)
+            {
+                _uzytkownicy = usersResult.Data;
+            }
+            
         }
         catch (Exception ex)
         {
@@ -830,7 +867,6 @@
             {
                 orderLogs = logsResult.Data
                     .Where(log => log.ZamowienieId == OrderId)
-                    .OrderByDescending(log => log.DataDodania)
                     .ToList();
             }
             else
@@ -848,19 +884,21 @@
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
 
         var convertedChanges = orderLogs.Select(log => new HistoryDialog.DefaultChangeHistory
-            {
-                Date = log.DataDodania,
-                User = GetUserFromLog(log),
-                Status = log.Status?.Nazwa ?? "Aktualizacja",
-                Note = log.Komentarz ?? "Zmieniono status zlecenia"
-            }).ToList<HistoryDialog.IChangeHistory>();
+        {
+            Date = log.DataDodania,
+            UserRole = GetUserRole(),
+            UserName = $"{_uzytkownikZalogowany?.Imie} {_uzytkownikZalogowany?.Nazwisko}",
+            Status = log.Status?.Nazwa ?? "Aktualizacja",
+            Note = log.Komentarz ?? "Zmieniono status zlecenia"
+        }).ToList<HistoryDialog.IChangeHistory>();
 
         if (!convertedChanges.Any())
         {
             convertedChanges.Add(new HistoryDialog.DefaultChangeHistory
             {
                 Date = _orderDataModel.DataDodania,
-                User = "System",
+                UserRole = "Uzytownik",
+                UserName = "Uzytownik",
                 Status = _orderDataModel.Status?.Nazwa ?? "Nowe",
                 Note = "Utworzono zlecenie"
             });
@@ -873,63 +911,159 @@
             }, options);
         var result = await dialog.Result;
     }
-
-    private string GetUserFromLog(Log log)
-    {
-        return "Administrator systemu";
-    }
-
-    private async Task AddComment()
+    
+    private async Task OpenCommentDialog()
     {
         var parameters = new DialogParameters
-            {
-                ["Title"] = "Dodaj komentarz do zlecenia"
-            };
+        {
+            ["TitleText"] = "Dodaj komentarz do zlecenia",
+            ["SelectedOrderId"] = OrderId,
+            ["User"] = _uzytkownikZalogowany,
+            ["IsNewComment"] = true,
+            ["CommentId"] = 0,
+            ["Comment"] = ""
+        };
 
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
-        var dialog = await DialogService.ShowAsync<CommentDialog>("Dodaj komentarz", parameters, options);
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
+
+        var dialog = await DialogService.ShowAsync<AddEditCommentDialog>("", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is string commentText && !string.IsNullOrWhiteSpace(commentText))
+        if (!result.Canceled)
         {
+            var commentResult = (AddEditCommentDialog.CommentDialogResult)result.Data;
+            
             try
             {
-                var logDto = new LogDto
+                _orderDataModel.KomentarzeIds.Add(commentResult.CommentId);
+                
+                var zamowienieDto = new ZamowienieDto
                 {
-                    ZamowienieId = OrderId,
+                    SerwisantId = _orderDataModel.SerwisantId,
+                    KlientId = _orderDataModel.KlientId,
+                    SerwisId = _orderDataModel.SerwisId,
                     StatusId = _orderDataModel.StatusId,
-                    Komentarz = commentText
+                    PriorytetId = _orderDataModel.PriorytetId,
+                    MetodaPlatnosciId = _orderDataModel.MetodaPlatnosciId,
+                    KomentarzeIds = _orderDataModel.KomentarzeIds,
+                    NumerTelefonuId = _orderDataModel.NumerTelefonuId,
+                    AdresEmailId = _orderDataModel.AdresEmailId,
+                    Koszt100 = _orderDataModel.Koszt100,
+                    Opis = _orderDataModel.Opis,
+                    AdresId = _orderDataModel.AdresId,
+                    PlanowanaDataRealizacjiOd = _orderDataModel.PlanowanaDataRealizacjiOd,
+                    PlanowanaDataRealizacjiDo = _orderDataModel.PlanowanaDataRealizacjiDo,
+                    ZrealizowanaDataRealizacjiOd = _orderDataModel.ZrealizowanaDataRealizacjiOd,
+                    ZrealizowanaDataRealizacjiDo = _orderDataModel.ZrealizowanaDataRealizacjiDo
                 };
 
-                var logResult = await ApiService.LogiRepo.LogPost(logDto);
-
-                if (logResult.Data != null)
+                var resultOrder = await ApiService.ZamowieniaRepo.ZamowieniePut(OrderId, zamowienieDto);
+                if (resultOrder.Data != null)
                 {
-                    Snackbar.Add("Dodano komentarz", Severity.Success);
-
+                    Snackbar.Add("Komentarz został dodany pomyślnie", Severity.Success);
                     await LoadOrderData();
                 }
                 else
                 {
-                    Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
+                    Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
                 }
+                
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
+                Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
+            }
+        }
+    }
+    
+    private async Task EditComment(int commentId, string Comment)
+    {
+        var parameters = new DialogParameters
+        {
+            ["TitleText"] = "Edytuj komentarz do zlecenia",
+            ["SelectedOrderId"] = OrderId,
+            ["User"] = _uzytkownikZalogowany,
+            ["IsNewComment"] = false,
+            ["CommentId"] = commentId,
+            ["Comment"] = Comment
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
+
+        var dialog = await DialogService.ShowAsync<AddEditCommentDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Komentarz został edytowany pomyślnie", Severity.Success);
+            await LoadOrderData();
+        }
+    }
+
+    private async Task DeleteComment(int commentId)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = "Czy na pewno chcesz usunąć ten komentarz?"
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Potwierdź usunięcie", parameters, options);
+        var dialogResult = await dialog.Result;
+        
+
+        if (dialogResult != null && !dialogResult.Canceled)
+        {
+            var result = await ApiService.KomentarzeRepo.KomentarzDelete(commentId);
+            if (result.Data)
+            {
+                await LoadOrderData();
+                Snackbar.Add("Komentarz został usunięty", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas usuwania komentarza", Severity.Error);
             }
         }
     }
 
     private async Task DeleteOrder()
     {
-        bool confirmed = await DialogService.ShowMessageBox(
-            "Potwierdzenie",
-            "Czy na pewno chcesz usunąć to zlecenie?",
-            yesText: "Tak",
-            noText: "Nie") ?? false;
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = "Czy na pewno chcesz usunąć to zlecenie?"
+        };
 
-        if (confirmed)
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Potwierdź usunięcie", parameters, options);
+        var dialogResult = await dialog.Result;
+        
+
+        if (dialogResult != null && !dialogResult.Canceled)
         {
             var result = await ApiService.ZamowieniaRepo.ZamowienieDelete(OrderId);
 
@@ -940,7 +1074,7 @@
             }
             else
             {
-                Snackbar.Add($"Błąd podczas usuwania.", Severity.Error);
+                Snackbar.Add($"Błąd podczas usuwania zlecenia", Severity.Error);
             }
         }
     }
@@ -1127,21 +1261,21 @@
             };
 
             var result = await ApiService.ZamowieniaRepo.ZamowieniePut(OrderId, zamowienieDto);
-
-            if (result.Data != null)
+            
+            if (result.Data != null )
             {
-                var logDto = new LogDto
+                if (_orderDataModel.PreviousStatusId != _orderDataModel.StatusId)
+                {
+                    var logDto = new LogDto
                     {
                         ZamowienieId = OrderId,
                         StatusId = _orderDataModel.StatusId,
                         Komentarz = "Aktualizacja danych zlecenia"
                     };
-
-                await ApiService.LogiRepo.LogPost(logDto);
-
+                    await ApiService.LogiRepo.LogPost(logDto);
+                    await LoadOrderLogs();
+                }
                 Snackbar.Add("Zapisano zmiany", Severity.Success);
-            //     _orderDataModel = result.Data; 
-            //     await GenerateOrderHistory();
             }
             else
             {
@@ -1171,6 +1305,12 @@
         return date?.ToString("dd.MM.yyyy HH:mm") ?? "Nie określono";
     }
 
+    private string GetUserComment(int userId)
+    {
+        var user = _uzytkownicy.FirstOrDefault(s => s.UzytkownikId == userId);
+        return $"{user.Imie} {user.Nazwisko}";
+    }
+
     private string GetStatusClass(string status)
     {
         return status switch
@@ -1195,6 +1335,12 @@
 
         return _uzytkownikZalogowany.RolaUzytkownika.Nazwa;
     }
+    
+    private string GetCommentUserRole(int userId)
+    {
+        var user = _uzytkownicy.FirstOrDefault(s => s.UzytkownikId == userId);
+        return user.RolaUzytkownika.Nazwa;
+    }
 
 
     public class OrderDataModel
@@ -1204,6 +1350,7 @@
         public int KlientId { get; set; }
         public int SerwisId { get; set; }
         public int StatusId { get; set; }
+        public int PreviousStatusId { get; set; }
         public int PriorytetId { get; set; }
         public int MetodaPlatnosciId { get; set; }
         public List<int>? KomentarzeIds { get; set; }
