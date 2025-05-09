@@ -214,7 +214,7 @@
 						
 						<h4>Planowana Data Realizacji</h4>
 						<InputDate @bind-Value="_userDataModel.PlanowanaDataRealizacjiOd" min="@DateTime.Today.ToString("yyyy-MM-dd")" placeholder="" class="@(_formSubmitted &&!string.IsNullOrEmpty(_planowanaDataRealizacjiValidationMessage) ? "form-input invalid-field" : "form-input")" />
-						@if (_formSubmitted && _userDataModel.PlanowanaDataRealizacjiOd == null)
+						@if (_formSubmitted && !string.IsNullOrEmpty(_planowanaDataRealizacjiValidationMessage))
 						{
 							<div class="validation-message">@_planowanaDataRealizacjiValidationMessage</div>
 						}

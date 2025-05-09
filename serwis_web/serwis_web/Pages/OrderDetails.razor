@@ -98,22 +98,36 @@
         width: 100%;
     }
 
-    .textarea, .form-input, select, option {
-        background-color: #F5F6FA;
-        border: solid 1px #D5D5D5;
+    .form-textarea, .form-input, select, option {
+        background-color: #F5F6FA !important;
+        border: solid 1px #D5D5D5 !important;
         width: 100%;
         padding: 15px;
         border-radius: 5px;
-        color: #A6A6A6;
+        color: #A6A6A6 !important;
         font-size: 14px;
     }
-
-    .textarea {
+    
+    select:disabled {
+        background-color: #F5F6FA;
+        border: solid 1px #D5D5D5;
+        color: #A6A6A6;
+        cursor: not-allowed;
+    }
+    
+    .form-textarea {
         height: 145px;
         margin-top: 5px;
         margin-bottom: 12px;
     }
 
+    textarea:disabled, .textarea-disabled {
+        background-color: #F5F6FA;
+        border: solid 1px #D5D5D5;
+        color: #A6A6A6;
+        cursor: not-allowed;
+    }
+    
     .form-input, select, option {
         height: 50px;
         margin-bottom: 10px;
@@ -189,7 +203,17 @@
         color: #ba29ff;
         border: none;
     }
+    
+    .validation-message {
+        color: #F44336;
+        font-size: 12px;
+        margin-top: -5px;
+        margin-bottom: 10px;
+    }
 
+    .invalid-field {
+        border: 1px solid #F44336 !important;
+    }
 
     @@media (max-width: 1536px) {
     .order-container {
@@ -210,7 +234,7 @@
         gap: 10px;
     }
 
-    .textarea, .form-input, select {
+    .form-textarea, .form-input, select {
         margin-bottom: 25px;
     }
 
@@ -227,7 +251,7 @@
         font-size: 34px;
     }
 
-    .textarea {
+    .form-textarea {
         height: 220px;
         margin-top: 5px;
     }
@@ -397,7 +421,7 @@
                 </div>
                 <div class="single-col">
                     <h4>Rodzaj zlecenia</h4>
-                    <select @bind="_orderDataModel.SerwisId">
+                    <select @bind="_orderDataModel.SerwisId" disabled="@(GetUserRole() == "Klient")">
                         @foreach (var serwis in _serwisy)
                         {
                             <option value="@serwis.TypSerwisuId">@serwis.Nazwa</option>
@@ -418,53 +442,96 @@
             </div>
 
             <h4>Opis zlecenia</h4>
-            <Textarea @bind-Value="_orderDataModel.Opis" placeholder="Opis zlecenia" class="textarea" required/>
+            <Textarea @bind-Value="_orderDataModel.Opis" placeholder="Opis zlecenia" class="@(_formSubmitted && !string.IsNullOrEmpty(_opisValidationMessage) ? "form-textarea invalid-field" : "form-textarea")" IsDisabled="@(GetUserRole() != "Administrator")" ></Textarea>
+            @if (_formSubmitted && !string.IsNullOrEmpty(_opisValidationMessage))
+            {
+                <div class="validation-message">@_opisValidationMessage</div>
+            }
 
             <div class="order-row">
                 <div class="single-col">
                     <h4>Imie klienta</h4>
-                    <InputText @bind-Value="_orderDataModel.ImieKlienta" placeholder="Imie" class="form-input" required />
+                    <InputText @bind-Value="_orderDataModel.ImieKlienta" placeholder="Imie" class="@(_formSubmitted && !string.IsNullOrEmpty(_imieKlientaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_imieKlientaValidationMessage))
+                    {
+                        <div class="validation-message">@_imieKlientaValidationMessage</div>
+                    }
                 </div>
+                
                 <div class="single-col">
                     <h4>Nazwisko klienta</h4>
-                    <InputText @bind-Value="_orderDataModel.NazwiskoKlienta" placeholder="Nazwisko" class="form-input" required />
+                    <InputText @bind-Value="_orderDataModel.NazwiskoKlienta" placeholder="Nazwisko" class="@(_formSubmitted && !string.IsNullOrEmpty(_nazwiskoKlientaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_nazwiskoKlientaValidationMessage))
+                    {
+                        <div class="validation-message">@_nazwiskoKlientaValidationMessage</div>
+                    }
                 </div>
             </div>
 
             <div class="order-row">
                 <div class="single-col">
                     <h4>Numer telefonu klienta</h4>
-                    <InputText @bind-Value="_orderDataModel.NumerTelefonuKlienta" placeholder="NumerTelefonu" class="form-input" required />
+                    <InputText @bind-Value="_orderDataModel.NumerTelefonuKlienta" placeholder="NumerTelefonu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuKlientaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuKlientaValidationMessage))
+                    {
+                        <div class="validation-message">@_numerTelefonuKlientaValidationMessage</div>
+                    }
                 </div>
+                
                 <div class="single-col">
                     <h4>Adres email klienta</h4>
-                    <InputText @bind-Value="_orderDataModel.EmailKlienta" placeholder="Email" class="form-input" required />
+                    <InputText @bind-Value="_orderDataModel.EmailKlienta" placeholder="Email" class="@(_formSubmitted && !string.IsNullOrEmpty(_emailKlientaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_emailKlientaValidationMessage))
+                    {
+                        <div class="validation-message">@_emailKlientaValidationMessage</div>
+                    }
                 </div>
             </div>
 
             <h4>Państwo</h4>
-            <InputText @bind-Value="_orderDataModel.Kraj" placeholder="Państwo" class="form-input" required />
+            <InputText @bind-Value="_orderDataModel.Kraj" placeholder="Państwo" class="@(_formSubmitted && !string.IsNullOrEmpty(_panstwoValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+            @if (_formSubmitted && !string.IsNullOrEmpty(_panstwoValidationMessage))
+            {
+                <div class="validation-message">@_panstwoValidationMessage</div>
+            }
 
             <div class="order-row">
                 <div class="single-col">
                     <h4>Ulica</h4>
-                    <InputText @bind-Value="_orderDataModel.Ulica" placeholder="Ulica" class="form-input" required />
-
+                    <InputText @bind-Value="_orderDataModel.Ulica" placeholder="Ulica" class="@(_formSubmitted && !string.IsNullOrEmpty(_ulicaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_ulicaValidationMessage))
+                    {
+                        <div class="validation-message">@_ulicaValidationMessage</div>
+                    }
                 </div>
+                
                 <div class="single-col">
                     <h4>Numer domu</h4>
-                    <InputNumber @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="form-input" required />
+                    <InputNumber @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage))
+                    {
+                        <div class="validation-message">@_numerDomuValidationMessage</div>
+                    }
                 </div>
             </div>
 
             <div class="order-row">
                 <div class="single-col">
                     <h4>Miasto</h4>
-                    <InputText @bind-Value="_orderDataModel.Miasto" placeholder="Miasto" class="form-input" required />
+                    <InputText @bind-Value="_orderDataModel.Miasto" placeholder="Miasto" class="@(_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage))
+                    {
+                        <div class="validation-message">@_miastoValidationMessage</div>
+                    }
                 </div>
+                
                 <div class="single-col">
                     <h4>Kod pocztowy</h4>
-                    <InputText @bind-Value="_orderDataModel.KodPocztowy" placeholder="Kod pocztowy" class="form-input" required />
+                    <InputText @bind-Value="_orderDataModel.KodPocztowy" placeholder="Kod pocztowy" class="@(_formSubmitted && !string.IsNullOrEmpty(_kodPocztowyValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_kodPocztowyValidationMessage))
+                    {
+                        <div class="validation-message">@_kodPocztowyValidationMessage</div>
+                    }
                 </div>
             </div>
         </div>
@@ -485,17 +552,25 @@
             <div class="order-row">
                 <div class="single-col">
                     <h4>Data Rozpoczęcia Realizacji</h4>
-                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiOd" placeholder="Data" class="form-input" style="font-weight: bold" />
-
+                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiOd" style="font-weight: bold" min="@DateTime.Today.ToString("yyyy-MM-dd")" placeholder="" class="@(_formSubmitted &&!string.IsNullOrEmpty(_zrealizowanoDataRealizacjiValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() == "Klient")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_zrealizowanoDataRealizacjiValidationMessage))
+                    {
+                        <div class="validation-message">@_zrealizowanoDataRealizacjiValidationMessage</div>
+                    }
                 </div>
+                
                 <div class="single-col">
                     <h4>Data Zakończenia Realizacji</h4>
-                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiDo" placeholder="Data" class="form-input" style="font-weight: bold" />
+                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiDo" style="font-weight: bold"  min="@DateTime.Today.ToString("yyyy-MM-dd")" placeholder="" class="@(_formSubmitted && !string.IsNullOrEmpty(_zrealizowanoDataZakonczeniaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() == "Klient")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_zrealizowanoDataZakonczeniaValidationMessage))
+                    {
+                        <div class="validation-message">@_zrealizowanoDataZakonczeniaValidationMessage</div>
+                    }
                 </div>
             </div>
 
             <h4>Serwisant</h4>
-            <select value="@_orderDataModel.SerwisantId" @onchange="HandleSerwisantChange">
+            <select value="@_orderDataModel.SerwisantId" @onchange="HandleSerwisantChange" disabled="@(GetUserRole() != "Administrator")">
                 @foreach (var serwisant in _serwisanci)
                 {
                     <option value="@serwisant.SerwisantId">@serwisant.Uzytkownik.Imie @serwisant.Uzytkownik.Nazwisko</option>
@@ -506,16 +581,25 @@
             <div class="order-row"> 
                 <div class="single-col"> 
                     <h4>Adres Email Serwisanta</h4>
-                    <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="form-input" required />
+                    <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="@(_formSubmitted && !string.IsNullOrEmpty(_emailSerwisantaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() == "Klient")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_emailSerwisantaValidationMessage))
+                    {
+                        <div class="validation-message">@_emailSerwisantaValidationMessage</div>
+                    }
                 </div> 
+                
                 <div class="single-col">
                     <h4>Numer Telefonu Serwisanta</h4>
-                    <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="form-input" required />
+                    <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuSerwisantaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() == "Klient")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuSerwisantaValidationMessage))
+                    {
+                        <div class="validation-message">@_numerTelefonuSerwisantaValidationMessage</div>
+                    }
                 </div>
             </div>
 
             <h4>Priorytet</h4>
-            <select @bind="_orderDataModel.PriorytetId">
+            <select @bind="_orderDataModel.PriorytetId" disabled="@(GetUserRole() != "Administrator")">
                 @foreach (var priorytet in _priorytety)
                 {
                     <option value="@priorytet.PriorytetId">@priorytet.Nazwa</option>
@@ -523,7 +607,7 @@
             </select>
 
             <h4>Metoda Płatności</h4>
-            <select @bind="_orderDataModel.MetodaPlatnosciId">
+            <select @bind="_orderDataModel.MetodaPlatnosciId" disabled="@(GetUserRole() != "Administrator")">
                 @foreach (var platnosc in _platnosci)
                 {
                     <option value="@platnosc.MetodaPlatnosciId">@platnosc.Nazwa</option>
@@ -531,7 +615,7 @@
             </select>
 
             <h4>Status zlecenia</h4>
-            <select @bind="_orderDataModel.StatusId" class="@GetStatusClass(GetSelectedStatusName())">
+            <select @bind="_orderDataModel.StatusId" class="@GetStatusClass(GetSelectedStatusName())" disabled="@(GetUserRole() == "Klient")">
                 @foreach (var status in _statusy)
                 {
                     <option value="@status.StatusId">@status.Nazwa</option>
@@ -539,7 +623,7 @@
             </select>
 
             <h4>Kwota do zapłaty</h4>
-            <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" />
+            <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" disabled="@(GetUserRole() == "Klient")"/>
             @{
                 var metodaPlatnosciNazwa = _platnosci.FirstOrDefault(p => p.MetodaPlatnosciId == _orderDataModel.MetodaPlatnosciId)?.Nazwa?.ToLower() ?? "";
                 var metodaPlatnosciTyp = "stripe"; 
@@ -566,10 +650,13 @@
                             <div class="comment-content">
                                 <div class="comment-edit">
                                     <p><strong>Data: </strong>@FormatDate(comment.DataDodania)</p>
-                                    <div class="comment-edit-icons">
-                                        <i class="fa-solid fa-pen-to-square" style="color: #4880ff; cursor: pointer;" @onclick="() => EditComment(comment.KomentarzId, comment.Tresc)"></i>
-                                        <i class="fa-solid fa-trash" style="color: #ff0000; cursor: pointer;" @onclick="() => DeleteComment(comment.KomentarzId)"></i>
-                                    </div>
+                                    @if (GetUserRole() == "Administrator")
+                                    {
+                                        <div class="comment-edit-icons">
+                                            <i class="fa-solid fa-pen-to-square" style="color: #4880ff; cursor: pointer;" @onclick="() => EditComment(comment.KomentarzId, comment.Tresc)" ></i>
+                                            <i class="fa-solid fa-trash" style="color: #ff0000; cursor: pointer;" @onclick="() => DeleteComment(comment.KomentarzId)"></i>
+                                        </div>
+                                    }
                                 </div>
                                 <p><strong>Rola użytkownika: </strong>@GetCommentUserRole(comment.UzytkownikId)</p>
                                 <p><strong>Imie i Nazwisko: </strong>@GetUserComment(comment.UzytkownikId)</p>
@@ -619,7 +706,23 @@
 
     public NumerTelefonu? _currentPhoneSerwisant;
     public AdresEmail? _currentEmailSerwisantt;
-
+    
+    private bool _formSubmitted = false;
+    
+    private string _opisValidationMessage = string.Empty;
+    private string _numerTelefonuKlientaValidationMessage = string.Empty;
+    private string _emailKlientaValidationMessage = string.Empty;
+    private string _panstwoValidationMessage = string.Empty;
+    private string _ulicaValidationMessage = string.Empty;
+    private string _numerDomuValidationMessage = string.Empty;
+    private string _miastoValidationMessage = string.Empty;
+    private string _kodPocztowyValidationMessage = string.Empty;
+    private string _imieKlientaValidationMessage = string.Empty;
+    private string _nazwiskoKlientaValidationMessage = string.Empty;
+    private string _zrealizowanoDataRealizacjiValidationMessage = string.Empty;
+    private string _zrealizowanoDataZakonczeniaValidationMessage = string.Empty;
+    private string _numerTelefonuSerwisantaValidationMessage = string.Empty;
+    private string _emailSerwisantaValidationMessage = string.Empty;
     
     private string? _message;
     private string _messageClass = "success-message";
@@ -1082,6 +1185,13 @@
 
     private async Task SaveOrderData()
     {
+        _formSubmitted = true;
+		
+        if (!ValidateForm())
+        {
+            return;
+        }
+        
         try
         {
             int adresEmailId = _orderDataModel.AdresEmailId ?? 0;
@@ -1287,6 +1397,144 @@
             Snackbar.Add($"Wystąpił nieoczekiwany błąd, spróbuj ponownie później.", Severity.Error);
         }
     }
+    
+    	private bool IsValidEmail(string email)
+	{
+		try
+		{
+			var addr = new System.Net.Mail.MailAddress(email);
+			return addr.Address == email;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	private bool IsValidPhoneNumber(string phone)
+	{
+		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^(\+)?[\d\s-]{9,15}$");
+	}
+
+	private bool IsValidPostalCode(string postalCode)
+	{
+		return System.Text.RegularExpressions.Regex.IsMatch(postalCode, @"^\d{2}-\d{3}$");
+	}
+	
+	
+	private bool ValidateForm()
+	{
+		bool isValid = true;
+		
+        _opisValidationMessage = string.Empty;
+        _numerTelefonuKlientaValidationMessage = string.Empty;
+        _emailKlientaValidationMessage = string.Empty;
+        _panstwoValidationMessage = string.Empty;
+        _ulicaValidationMessage = string.Empty;
+        _numerDomuValidationMessage = string.Empty;
+        _miastoValidationMessage = string.Empty;
+        _kodPocztowyValidationMessage = string.Empty;
+        
+        _imieKlientaValidationMessage = string.Empty;
+        _nazwiskoKlientaValidationMessage = string.Empty;
+        _zrealizowanoDataRealizacjiValidationMessage = string.Empty;
+        _zrealizowanoDataZakonczeniaValidationMessage = string.Empty;
+        _numerTelefonuSerwisantaValidationMessage = string.Empty;
+        _emailSerwisantaValidationMessage = string.Empty;
+        
+
+		if (string.IsNullOrWhiteSpace(_orderDataModel.Opis) || _orderDataModel.Opis.Length > 500 || _orderDataModel.Opis.Length < 15)
+		{
+			_opisValidationMessage = "Opis musi mieć od 15 do 500 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_orderDataModel.NumerTelefonuKlienta) || !IsValidPhoneNumber(_orderDataModel.NumerTelefonuKlienta))
+		{
+			_numerTelefonuKlientaValidationMessage = "Nieprawidłowy format numeru telefonu";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_orderDataModel.EmailKlienta))
+		{
+			_emailKlientaValidationMessage = "Adres email jest wymagany";
+			isValid = false;
+		}
+		
+		else if (!IsValidEmail(_orderDataModel.EmailKlienta))
+		{
+            _emailKlientaValidationMessage = "Nieprawidłowy format adresu email";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_orderDataModel.Kraj) || _orderDataModel.Kraj.Length > 64 || _orderDataModel.Kraj.Length < 2)
+		{
+			_panstwoValidationMessage = "Państwo musi mieć od 2 do 64 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_orderDataModel.Ulica) || _orderDataModel.Ulica.Length > 100 || _orderDataModel.Ulica.Length < 2)
+		{
+			_ulicaValidationMessage = "Ulica musi mieć od 2 do 100 znaków";
+			isValid = false;
+		}
+		
+		if (_orderDataModel.NumerDomu < 1 || _orderDataModel.NumerDomu > 1000)
+		{
+			_numerDomuValidationMessage = "Numer domu musi być z przedzialu od 0 do 1000";
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(_orderDataModel.Miasto) || _orderDataModel.Miasto.Length > 85 || _orderDataModel.Miasto.Length < 2)
+		{
+			_miastoValidationMessage = "Miasto musi mieć od 2 do 85 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_orderDataModel.KodPocztowy) || !IsValidPostalCode(_orderDataModel.KodPocztowy))
+		{
+			_kodPocztowyValidationMessage = "Kod pocztowy powinien mieć format XX-XXX";
+			isValid = false;
+		}
+        
+        if (string.IsNullOrWhiteSpace(_orderDataModel.ImieKlienta) || _orderDataModel.ImieKlienta.Length < 1)
+        {
+            _imieKlientaValidationMessage = "Wprodzadz prawidlowe format imienia";
+            isValid = false;
+        }
+        
+        if (string.IsNullOrWhiteSpace(_orderDataModel.NazwiskoKlienta) || _orderDataModel.NazwiskoKlienta.Length < 1)
+        {
+            _nazwiskoKlientaValidationMessage = "Wprodzadz prawidlowe format nazwiska";
+            isValid = false;
+        }
+        
+        if (_orderDataModel.ZrealizowanaDataRealizacjiDo < _orderDataModel.ZrealizowanaDataRealizacjiOd)
+        {
+            _zrealizowanoDataZakonczeniaValidationMessage = "Data zakończenia musi być późniejsza lub równa wzgledem daty realizacji";
+            isValid = false;
+        }
+        
+        if (string.IsNullOrWhiteSpace(_orderDataModel.NumerTelefonuSerwisanta) || !IsValidPhoneNumber(_orderDataModel.NumerTelefonuSerwisanta))
+        {
+            _numerTelefonuSerwisantaValidationMessage = "Nieprawidłowy format numeru telefonu";
+            isValid = false;
+        }
+		
+        if (string.IsNullOrWhiteSpace(_orderDataModel.EmailSerwisanta))
+        {
+            _emailSerwisantaValidationMessage = "Adres email jest wymagany";
+            isValid = false;
+        }
+		
+        else if (!IsValidEmail(_orderDataModel.EmailSerwisanta))
+        {
+            _emailSerwisantaValidationMessage = "Nieprawidłowy format adresu email";
+            isValid = false;
+        }
+        
+		return isValid;
+	}
 
     private void ShowSuccess(string message)
     {
@@ -1368,16 +1616,16 @@
         public DicStatus Status { get; set; }
 
 
-        [EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
+        // [EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
         public string? EmailKlienta { get; set; }
 
-        [RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
+        // [RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
         public string? NumerTelefonuKlienta { get; set; }
 
-        [EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
+        // [EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
         public string? EmailSerwisanta { get; set; }
 
-        [RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
+        // [RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
         public string? NumerTelefonuSerwisanta { get; set; }
 
         public string? ImieKlienta { get; set; }
