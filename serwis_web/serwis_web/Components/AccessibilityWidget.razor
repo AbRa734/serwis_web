@@ -1,30 +1,69 @@
 @inject IJSRuntime Js
 @rendermode InteractiveServer
+@using serwis_web.Services
 @using Color = MudBlazor.Color
+@using Console = System.Console
 @using Placement = MudBlazor.Placement
 @using Size = MudBlazor.Size
+@implements IAsyncDisposable
+@inject AccessibilityService AccessibilityService
 
-<MudTooltip Text="Narzędzia WCAG" Placement="Placement.Top">
-    <MudFab Color="Color.Primary"
-            StartIcon="@Icons.Material.Filled.Help"
-            Size="Size.Small"
-            OnClick="ToggleMenu" />
-</MudTooltip>
-
-@if (showMenu)
+@if (isPrerendering)
 {
-    <MudPaper Class="pa-2 d-flex flex-column gap-2"
-              Style="position: fixed; bottom: 76px; right: 16px; z-index: 1000;">
-        <MudButton Variant="Variant.Text" OnClick="IncreaseFont">🔎 Powiększ czcionkę</MudButton>
-        <MudButton Variant="Variant.Text" OnClick="DecreaseFont">🔍 Zmniejsz czcionkę</MudButton>
-        <MudButton Variant="Variant.Text" OnClick="ToggleContrast">🌗 Tryb kontrastu</MudButton>
-    </MudPaper>
+    <button class="wcag-button" aria-label="Narzędzia WCAG">
+        <span class="wcag-icon" aria-hidden="true">?</span>
+    </button>
+}
+else
+{
+    <MudTooltip Text="Narzędzia WCAG" Placement="Placement.Top">
+        <MudFab Color="Color.Primary"
+                StartIcon="@Icons.Material.Filled.Help"
+                Size="Size.Small"
+                OnClick="ToggleMenu" />
+    </MudTooltip>
+
+    @if (showMenu)
+    {
+        <MudPaper Class="pa-3 d-flex flex-column gap-2"
+                  Style="position: fixed; bottom: 76px; right: 16px; z-index: 1100; min-width: 220px;">
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       OnClick="IncreaseFont" 
+                       StartIcon="@Icons.Material.Filled.ZoomIn">
+                Powiększ czcionkę
+            </MudButton>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       OnClick="DecreaseFont" 
+                       StartIcon="@Icons.Material.Filled.ZoomOut">
+                Zmniejsz czcionkę
+            </MudButton>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       OnClick="ToggleContrast" 
+                       StartIcon="@Icons.Material.Filled.Contrast">
+                @(AccessibilityService.IsHighContrast ? "Wyłącz kontrast" : "Włącz kontrast")
+            </MudButton>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       OnClick="ResetSettings" 
+                       StartIcon="@Icons.Material.Filled.Refresh">
+                Resetuj ustawienia
+            </MudButton>
+        </MudPaper>
+    }
 }
 
 @code {
     private bool showMenu = false;
-    private int fontSize = 16;
-    private bool isHighContrast = false;
+    private bool isPrerendering = true;
+    private bool jsInitialized = false;
+    
+    protected override void OnInitialized()
+    {
+        AccessibilityService.OnChange += StateHasChanged;
+    }
 
     private void ToggleMenu()
     {
@@ -34,31 +73,142 @@
 
     private async Task IncreaseFont()
     {
-        fontSize += 2;
-        await SetFontSize();
+        if (AccessibilityService.FontSize == null)
+        {
+            AccessibilityService.FontSize = 16;
+        }
+        AccessibilityService.FontSize += 2;
+        await ApplyFontSize();
+        AccessibilityService.NotifyStateChanged();
     }
 
     private async Task DecreaseFont()
     {
-        fontSize = Math.Max(12, fontSize - 2);
-        await SetFontSize();
+        if (AccessibilityService.FontSize == null)
+        {
+            AccessibilityService.FontSize = 16;
+        }
+        AccessibilityService.FontSize = Math.Max(12, (int)(AccessibilityService.FontSize - 2));
+        await ApplyFontSize();
+        AccessibilityService.NotifyStateChanged();
     }
 
-    private async Task SetFontSize()
+    private async Task ApplyFontSize()
     {
-        await Js.InvokeVoidAsync("eval", $"document.documentElement.style.setProperty('--mud-typography-default-size', '{fontSize}px')");
-        StateHasChanged();
+        if (!jsInitialized) return;
+        
+        try
+        {
+            await Js.InvokeVoidAsync("setFontSize", AccessibilityService.FontSize);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy stosowaniu rozmiaru czcionki: {ex.Message}");
+        }
     }
 
     private async Task ToggleContrast()
     {
-        isHighContrast = !isHighContrast;
-        await Js.InvokeVoidAsync("eval", $"document.body.classList.{(isHighContrast ? "add" : "remove")}('high-contrast')");
-        StateHasChanged();
+        AccessibilityService.IsHighContrast = !AccessibilityService.IsHighContrast;
+        await ApplyContrast();
+        AccessibilityService.NotifyStateChanged();
+    }
+    
+    private async Task ApplyContrast()
+    {
+        if (!jsInitialized) return;
+        
+        try
+        {
+            await Js.InvokeVoidAsync("toggleHighContrast", AccessibilityService.IsHighContrast);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy stosowaniu kontrastu: {ex.Message}");
+        }
+    }
+    
+    private async Task ResetSettings()
+    {
+        if (!jsInitialized) return;
+        
+        try
+        {
+            await Js.InvokeVoidAsync("resetAccessibilitySettings");
+            AccessibilityService.FontSize = null;
+            AccessibilityService.IsHighContrast = false;
+            AccessibilityService.NotifyStateChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy resetowaniu ustawień: {ex.Message}");
+        }
+    }
+    
+    private async Task LoadSettings()
+    {
+        if (!jsInitialized) return;
+        
+        try
+        {
+            var savedFontSize = await Js.InvokeAsync<int?>("getSavedFontSize");
+            if (savedFontSize.HasValue)
+            {
+                AccessibilityService.FontSize = savedFontSize.Value;
+            }
+            
+            AccessibilityService.IsHighContrast = await Js.InvokeAsync<bool>("getSavedContrastMode");
+            
+            if (savedFontSize.HasValue)
+            {
+                await ApplyFontSize();
+            }
+            
+            if (AccessibilityService.IsHighContrast)
+            {
+                await ApplyContrast();
+            }
+            
+            AccessibilityService.NotifyStateChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy wczytywaniu ustawień: {ex.Message}");
+        }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        InvokeAsync(async () => await SetFontSize());
+        if (firstRender)
+        {
+            isPrerendering = false;
+            
+            try
+            {
+                await Js.InvokeVoidAsync("eval", "if (!window.accessibilityLoaded) { window.accessibilityLoaded = true; }");
+                
+                jsInitialized = await Js.InvokeAsync<bool>("initAccessibilityUtils");
+                
+                if (jsInitialized)
+                {
+                    await LoadSettings();
+                    
+                    await ApplyFontSize();
+                    await ApplyContrast();
+                }
+                
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Błąd przy inicjalizacji WCAG: {ex.Message}");
+            }
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        AccessibilityService.OnChange -= StateHasChanged;
+        return ValueTask.CompletedTask;
     }
 }

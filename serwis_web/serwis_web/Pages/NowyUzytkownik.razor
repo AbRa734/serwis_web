@@ -3,6 +3,7 @@
 @using Color = MudBlazor.Color
 @using Size = MudBlazor.Size
 @using System.ComponentModel.DataAnnotations
+@using serwis_web.Components
 @rendermode InteractiveServer
 @inject ApiService.ApiService ApiService
 @inject NavigationManager NavigationManager
@@ -285,6 +286,10 @@
 			</EditForm>
 		}
 	</div>
+</div>
+
+<div class="help-button-container">
+	<AccessibilityWidget/>
 </div>
 
 @code {

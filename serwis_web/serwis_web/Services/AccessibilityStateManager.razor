@@ -1,0 +1,25 @@
+@using Console = System.Console
+@inject IJSRuntime Js
+@inject AccessibilityService AccessibilityService
+@rendermode InteractiveServer
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            try
+            {
+                if (AccessibilityService.FontSize != null)
+                {
+                    await Js.InvokeVoidAsync("setFontSize", AccessibilityService.FontSize);
+                }
+                await Js.InvokeVoidAsync("toggleHighContrast", AccessibilityService.IsHighContrast);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error applying accessibility settings: {ex.Message}");
+            }
+        }
+    }
+}

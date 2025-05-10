@@ -194,9 +194,9 @@
             <MudTd DataLabel="Aktualizacja" Class="status-default">@(context.DataAktualizacji?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
             <MudTd Class="status-default">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Class="edit"
-                                OnClick="@(() => OpenDialog(MapToDto(context)))" />
+                               OnClick="@(() => OpenDialog(MapToDto(context)))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Class="delete"
-                                OnClick="@(() => DeleteConfirm(context.MetodaPlatnosciId))" />
+                               OnClick="@(() => DeleteConfirm(context.MetodaPlatnosciId))" />
             </MudTd>
         </RowTemplate>
 
@@ -209,6 +209,11 @@
         </NoRecordsContent>
     </MudTable>
 </MudContainer>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
+
 
 @code {
     private List<DicMetodaPlatnosci> _metodyPlatnosci = new();

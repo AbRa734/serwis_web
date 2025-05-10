@@ -1,4 +1,5 @@
 ﻿@using serwis_web.Components
+@using serwis_web.Services
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 
@@ -7,10 +8,10 @@
     <MudPopoverProvider @rendermode="InteractiveServer"/>
     <div class="layout-container">
         <div class="navbar-topbar">
-            <TopNavMenu />
+            <TopNavMenu/>
         </div>
         <div class="navbar-leftbar">
-            <LeftNavMenu />
+            <LeftNavMenu/>
             <div class="body-content">
                 @Body
             </div>
@@ -25,11 +26,7 @@
         </footer>
     </div>
     <MudSnackbarProvider @rendermode="InteractiveServer"/>
-    <MudDialogProvider @rendermode="InteractiveServer" />
-
-    <div class="help-button-container">
-        <AccessibilityWidget/>
-    </div>
+    <MudDialogProvider @rendermode="InteractiveServer"/>
 </BootstrapBlazorRoot>
 
 @code{

@@ -191,9 +191,9 @@
             <MudTd DataLabel="Aktualizacja" Class="status-default">@(context.DataAktualizacji?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
             <MudTd Class="status-default">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Class="edit"
-                                OnClick="@(() => OpenDialog(MapToDto(context)))" />
+                               OnClick="@(() => OpenDialog(MapToDto(context)))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Class="delete"
-                                OnClick="@(() => DeleteConfirm(context.TypKlientaId))" />
+                               OnClick="@(() => DeleteConfirm(context.TypKlientaId))" />
             </MudTd>
         </RowTemplate>
         <PagerContent>
@@ -204,6 +204,11 @@
         </NoRecordsContent>
     </MudTable>
 </MudContainer>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
+
 
 @code {
     private List<DicTypKlienta> _typyKlienta = new();

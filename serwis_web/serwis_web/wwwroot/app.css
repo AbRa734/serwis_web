@@ -50,16 +50,32 @@ h1:focus {
     border-color: #929292;
 }
 
-.high-contrast {
-    background-color: black;
+.wcag-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #594ae2;
     color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1000;
+    font-weight: bold;
+    font-size: 18px;
 }
 
-.high-contrast button {
-    background-color: #333;
-    color: yellow;
+.wcag-button:hover {
+    background-color: #4a3dd1;
 }
 
-.high-contrast a {
-    color: #00ff00;
+.wcag-icon {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.wcag-font-skip {
 }

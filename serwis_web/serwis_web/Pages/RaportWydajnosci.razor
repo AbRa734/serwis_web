@@ -8,6 +8,7 @@
 @using QuestPDF.Helpers
 @using Colors = QuestPDF.Helpers.Colors
 @using System.Text.Json
+@using serwis_web.Components
 @inject ApiService.ApiService ApiService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
@@ -472,6 +473,11 @@
         </MudTabPanel>
     </MudTabs>
 </MudContainer>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
+
 
 @code {
 

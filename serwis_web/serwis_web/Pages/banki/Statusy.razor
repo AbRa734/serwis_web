@@ -196,9 +196,9 @@
             <MudTd Class="status-default">
 
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Class="edit"
-                                OnClick="@(() => OpenDialog(MapToDto(context)))" />
+                               OnClick="@(() => OpenDialog(MapToDto(context)))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Class="delete"
-                                OnClick="@(() => DeleteConfirm(context.StatusId))" />
+                               OnClick="@(() => DeleteConfirm(context.StatusId))" />
 
             </MudTd>
         </RowTemplate>
@@ -210,6 +210,11 @@
         </NoRecordsContent>
     </MudTable>
 </MudContainer>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
+
 
 @code {
     private List<DicStatus> _statusy = new();

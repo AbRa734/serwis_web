@@ -4,6 +4,7 @@
 @using System.Linq
 @using Color = MudBlazor.Color
 @using Size = MudBlazor.Size
+@using serwis_web.Components
 
 <PageTitle>Statystyki</PageTitle>
 
@@ -157,6 +158,10 @@
         border-radius: 5px;
     }
 </style>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
 
 @code {
     private double[] _orderStatusData = Array.Empty<double>();

@@ -3,6 +3,7 @@
 @using ApiService.Models
 @using Color = MudBlazor.Color
 @using Size = MudBlazor.Size
+@using serwis_web.Components
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 @rendermode InteractiveServer
@@ -50,7 +51,7 @@
                                             </MudCardContent>
                                             <MudCardActions>
                                                 <MudButton Variant="Variant.Text" Color="Color.Primary"
-                                                          Href="@($"/users/{user.UzytkownikId}")">
+                                                           Href="@($"/users/{user.UzytkownikId}")">
                                                     Szczegóły
                                                 </MudButton>
                                             </MudCardActions>
@@ -88,7 +89,7 @@
                                         </MudCardContent>
                                         <MudCardActions>
                                             <MudButton Variant="Variant.Text" Color="Color.Primary"
-                                                      Href="@($"/orders/{order.ZamowienieId}")">
+                                                       Href="@($"/orders/{order.ZamowienieId}")">
                                                 Szczegóły
                                             </MudButton>
                                         </MudCardActions>
@@ -126,7 +127,7 @@
                                             </MudCardContent>
                                             <MudCardActions>
                                                 <MudButton Variant="Variant.Text" Color="Color.Primary"
-                                                          Href="@($"/services/{service.SerwisId}")">
+                                                           Href="@($"/services/{service.SerwisId}")">
                                                     Szczegóły
                                                 </MudButton>
                                             </MudCardActions>
@@ -147,6 +148,11 @@
         }
     </div>
 </div>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
+
 
 @code {
     [Parameter]

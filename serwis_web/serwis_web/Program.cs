@@ -28,6 +28,7 @@ builder.Services.AddHttpClient("ApiWithAuth",
 builder.Services.AddScoped<TokenService.TokenService>();
 builder.Services.AddScoped<ApiService.ApiService>();
 builder.Services.AddScoped<CheckoutSessionService>();
+builder.Services.AddSingleton<AccessibilityService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CircuitHandler, AuthService.AuthenticationService>();
 builder.Services.AddAuthentication(options =>

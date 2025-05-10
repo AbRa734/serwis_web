@@ -3,6 +3,7 @@
 @using ApiService.Models
 @using ApiService.Repositories
 @using System.ComponentModel.DataAnnotations
+@using serwis_web.Components
 @rendermode InteractiveServer
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
@@ -117,6 +118,11 @@
         border-color: #ff5252;
     }
 </style>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
+
 
 @code {
     private bool _isSending = false;

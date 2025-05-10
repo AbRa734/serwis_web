@@ -7,6 +7,7 @@
 @using QuestPDF.Helpers
 @using Colors = QuestPDF.Helpers.Colors
 @using Console = System.Console
+@using serwis_web.Components
 @inject ApiService.ApiService ApiService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
@@ -388,6 +389,11 @@
         </div>
     </div>
 </div>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
+
 
 @code {
     private List<Zamowienie> _zamowienia = new();

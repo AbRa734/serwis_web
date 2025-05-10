@@ -5,6 +5,7 @@
 @using Color = MudBlazor.Color
 @using Placement = MudBlazor.Placement
 @using Size = MudBlazor.Size
+@using serwis_web.Components
 @inject ApiService ApiService
 @inject ISnackbar Snackbar
 
@@ -528,6 +529,11 @@
         </NoRecordsContent>
     </MudDataGrid>
 </MudContainer>
+
+<div class="help-button-container">
+    <AccessibilityWidget/>
+</div>
+
 
 @code {
     private string _searchString = "";

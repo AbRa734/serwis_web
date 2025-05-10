@@ -55,6 +55,158 @@
         }
     };
 
+    window.initAccessibilityUtils = function() {
+        if (!document.getElementById('high-contrast-styles')) {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'high-contrast-styles';
+            styleEl.textContent = `
+            .high-contrast-mode {
+                --text-color: #ffffff;
+                --background-color: #000000;
+                --link-color: #00ff00;
+                --button-bg: #333333;
+                --button-text: #ffff00;
+                --border-color: #ffffff;
+                --focus-color: #ff0000;
+                color: var(--text-color) !important;
+                background-color: var(--background-color) !important;
+            }
+            
+            .high-contrast-mode body,
+            .high-contrast-mode div,
+            .high-contrast-mode nav,
+            .high-contrast-mode main,
+            .high-contrast-mode footer,
+            .high-contrast-mode header,
+            .high-contrast-mode section,
+            .high-contrast-mode aside {
+                color: var(--text-color) !important;
+                background-color: var(--background-color) !important;
+            }
+            
+            .high-contrast-mode a,
+            .high-contrast-mode a:visited {
+                color: var(--link-color) !important;
+                text-decoration: underline !important;
+            }
+            
+            .high-contrast-mode a:hover,
+            .high-contrast-mode a:active,
+            .high-contrast-mode a:focus {
+                color: var(--link-color) !important;
+                text-decoration: underline !important;
+                outline: 2px solid var(--focus-color) !important;
+            }
+            
+            .high-contrast-mode button,
+            .high-contrast-mode .mud-button,
+            .high-contrast-mode input[type="button"],
+            .high-contrast-mode input[type="submit"] {
+                background-color: var(--button-bg) !important;
+                color: var(--button-text) !important;
+                border: 2px solid var(--border-color) !important;
+            }
+            
+            .high-contrast-mode input[type="text"],
+            .high-contrast-mode input[type="email"],
+            .high-contrast-mode input[type="password"],
+            .high-contrast-mode input[type="number"],
+            .high-contrast-mode input[type="search"],
+            .high-contrast-mode textarea,
+            .high-contrast-mode select {
+                background-color: var(--background-color) !important;
+                color: var(--text-color) !important;
+                border: 2px solid var(--border-color) !important;
+            }
+            
+            .high-contrast-mode .mud-paper,
+            .high-contrast-mode .mud-card,
+            .high-contrast-mode .mud-dialog,
+            .high-contrast-mode .mud-appbar {
+                background-color: var(--background-color) !important;
+                color: var(--text-color) !important;
+                border: 2px solid var(--border-color) !important;
+            }
+        `;
+            document.head.appendChild(styleEl);
+        }
+        return true;
+    };
+
+    window.setFontSize = function(size) {
+        document.documentElement.style.fontSize = size + 'px';
+        document.documentElement.style.setProperty('--mud-typography-default-size', size + 'px');
+        document.documentElement.style.setProperty('--mud-typography-body1-size', size + 'px');
+        document.documentElement.style.setProperty('--mud-typography-body2-size', size + 'px');
+        document.documentElement.style.setProperty('--mud-typography-button-size', size + 'px');
+
+        const elements = document.querySelectorAll('p, span, div, button, a, input, textarea, label, h1, h2, h3, h4, h5, h6');
+        elements.forEach(el => {
+            if (!el.classList.contains('wcag-font-skip')) {
+                el.style.fontSize = size + 'px';
+            }
+        });
+
+        localStorage.setItem('wcag_font_size', size);
+        return true;
+    };
+
+    window.toggleHighContrast = function(enabled) {
+        if (enabled) {
+            document.documentElement.classList.add('high-contrast-mode');
+        } else {
+            document.documentElement.classList.remove('high-contrast-mode');
+        }
+
+        localStorage.setItem('wcag_high_contrast', enabled);
+        console.log("Tryb wysokiego kontrastu: " + (enabled ? "włączony" : "wyłączony"));
+        return true;
+    };
+
+    window.getSavedFontSize = function() {
+        const savedSize = localStorage.getItem('wcag_font_size');
+        return savedSize ? parseInt(savedSize, 10) : null;
+    };
+
+    window.getSavedContrastMode = function() {
+        const savedContrast = localStorage.getItem('wcag_high_contrast');
+        return savedContrast === 'true';
+    };
+
+    window.resetAccessibilitySettings = function() {
+        localStorage.removeItem('wcag_font_size');
+        localStorage.removeItem('wcag_high_contrast');
+
+        document.documentElement.style.fontSize = '';
+        document.documentElement.style.removeProperty('--mud-typography-default-size');
+        document.documentElement.style.removeProperty('--mud-typography-body1-size');
+        document.documentElement.style.removeProperty('--mud-typography-body2-size');
+        document.documentElement.style.removeProperty('--mud-typography-button-size');
+        document.documentElement.classList.remove('high-contrast-mode');
+
+        const elements = document.querySelectorAll('[style*="font-size"]');
+        elements.forEach(el => {
+            el.style.removeProperty('font-size');
+        });
+        return true;
+    };
+    window.toggleHighContrast = function(enabled) {
+        if (enabled) {
+            document.documentElement.classList.add('high-contrast-mode');
+        } else {
+            document.documentElement.classList.remove('high-contrast-mode');
+        }
+
+        localStorage.setItem('wcag_high_contrast', enabled ? 'true' : 'false');
+        console.log("Tryb wysokiego kontrastu: " + (enabled ? "włączony" : "wyłączony"));
+        return true;
+    };
+
+    window.getSavedContrastMode = function() {
+        const savedContrast = localStorage.getItem('wcag_high_contrast');
+        return savedContrast === 'true';
+    };
+
 </script>
 </body>
 

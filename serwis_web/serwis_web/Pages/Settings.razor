@@ -6,6 +6,7 @@
 @using ApiService.Models
 @using ApiService.Repositories
 @using Size = MudBlazor.Size
+@using serwis_web.Components
 @inject IJSRuntime JSRuntime
 
 <style>
@@ -333,6 +334,11 @@
 		</div>
 	</div>
 </div>
+
+<div class="help-button-container">
+	<AccessibilityWidget/>
+</div>
+
 
 @code {
 	private UserDataModel _userDataModel = new();
