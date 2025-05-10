@@ -113,12 +113,17 @@ else
     private bool _showDataMarkers = false;
     private string _selectedViewOption = "month";
     
+    public Uzytkownik? _uzytkownikZalogowany;
+    private Zamowienie _zamowienie = new Zamowienie();
+    public List<int>? _komentarzeIds { get; set; }
+    
     
     protected override async Task OnInitializedAsync()
     {
         _isLoading = true;
         try
         {
+            await LoadUserData();
             await LoadOrdersAsync();
             await LoadUsersAsync();
             await LoadServicesAsync();
@@ -131,6 +136,18 @@ else
         finally
         {
             _isLoading = false;
+        }
+    }
+    
+    private async Task LoadUserData()
+    {
+        try
+        {
+            _uzytkownikZalogowany = await ApiService.GetUzytkownik();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd podczas ładowania danych użytkownika.", Severity.Error);
         }
     }
     
@@ -353,10 +370,9 @@ else
         var parameters = new DialogParameters
         {
             ["Orders"] = _zamowienia,
-            ["CommentText"] = string.Empty,
-            ["SelectedOrderId"] = 0
+            ["User"] = _uzytkownikZalogowany,
         };
-
+        
         var options = new DialogOptions
         {
             CloseOnEscapeKey = true,
@@ -366,32 +382,60 @@ else
             Position = DialogPosition.Center
         };
 
-        var dialog = await DialogService.ShowAsync<CommentDialog>("", parameters, options);
+        var dialog = await DialogService.ShowAsync<AddCommentToOrderFromList>("", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
-            var commentResult = (CommentDialog.CommentDialogResult)result.Data;
+            var commentResult = (AddCommentToOrderFromList.CommentDialogResult)result.Data;
+            
             try
             {
-                var logDto = new LogDto
+                var orderResult = await ApiService.ZamowieniaRepo.ZamowienieGet(commentResult.OrderId);
+
+                if (orderResult.Error != null)
                 {
-                    ZamowienieId = commentResult.OrderId,
-                    StatusId = null,
-                    Komentarz = commentResult.Comment
+                    Snackbar.Add($"Błąd podczas pobierania danych zlecenia.", Severity.Error);
+                    return;
+                }
+                _zamowienie = orderResult.Data;
+                
+                _komentarzeIds = _zamowienie.Komentarze
+                    .Select(k => k.KomentarzId)
+                    .ToList();
+                
+                _komentarzeIds.Add(commentResult.CommentId);
+                
+                var zamowienieDto = new ZamowienieDto
+                {
+                    SerwisantId = _zamowienie.SerwisantId,
+                    KlientId = _zamowienie.KlientId,
+                    SerwisId = _zamowienie.Serwis.SerwisId,
+                    StatusId = _zamowienie.StatusId,
+                    PriorytetId = _zamowienie.PriorytetId,
+                    MetodaPlatnosciId = _zamowienie.MetodaPlatnosciId,
+                    KomentarzeIds = _komentarzeIds,
+                    NumerTelefonuId = _zamowienie.NumerTelefonuId,
+                    AdresEmailId = _zamowienie.AdresEmailId,
+                    Koszt100 = _zamowienie.Koszt100,
+                    Opis = _zamowienie.Opis,
+                    AdresId = _zamowienie.AdresId,
+                    PlanowanaDataRealizacjiOd = _zamowienie.PlanowanaDataRealizacjiOd,
+                    PlanowanaDataRealizacjiDo = _zamowienie.PlanowanaDataRealizacjiDo,
+                    ZrealizowanaDataRealizacjiOd = _zamowienie.ZrealizowanaDataRealizacjiOd,
+                    ZrealizowanaDataRealizacjiDo = _zamowienie.ZrealizowanaDataRealizacjiDo
                 };
-
-                var apiResult = await ApiService.LogiRepo.LogPost(logDto);
-
-                if (apiResult.Data != null)
+                
+                var resultOrder = await ApiService.ZamowieniaRepo.ZamowieniePut(commentResult.OrderId, zamowienieDto);
+                if (resultOrder.Data != null)
                 {
                     Snackbar.Add("Komentarz został dodany pomyślnie", Severity.Success);
-                    await LoadServicesAsync(); 
                 }
                 else
                 {
                     Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
                 }
+                
             }
             catch (Exception ex)
             {

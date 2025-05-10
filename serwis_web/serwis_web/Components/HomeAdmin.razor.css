@@ -125,6 +125,12 @@ i {
     box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1), 0 3px 10px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
 }
+.add-comment p {
+    font-size: 17px;
+    font-weight: 500;
+    color: #979797;
+    margin: 0;
+}
 
 .comment-top, .rate-top {
     display: flex;

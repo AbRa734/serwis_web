@@ -85,7 +85,7 @@
                         <div class="d-flex flex-column justify-center align-center" style="height:100%; padding: 24px;">
                             <MudAvatar Style="width: 80px; height: 80px; margin-bottom: 16px;" Color="Color.Primary">
                                 <MudText
-                                    Typo="Typo.h4">@GetInitials(ocena.Serwisant?.Uzytkownik?.Imie, ocena.Serwisant?.Uzytkownik?.Nazwisko)</MudText>
+                                    Typo="Typo.h4">@GetInitials(GetServicemenFirstname(ocena.SerwisantId), GetServicemenLastname(ocena.SerwisantId))</MudText>
                             </MudAvatar>
 
                             <MudRating ReadOnly="true" SelectedValue="@GetRatingValue(ocena.TypOcenyId)"
@@ -97,13 +97,13 @@
                             </MudText>
 
                             <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">
-                                @($"{(ocena.Serwisant?.Uzytkownik?.Imie ?? "Nieznany")} {(ocena.Serwisant?.Uzytkownik?.Nazwisko ?? "")}")
+                                Usługa: @(GetServiceName(ocena.SerwisId))
                             </MudText>
-
-                            <MudText Typo="Typo.caption" Class="mud-palette-text-secondary">
-                                @(ocena.Serwis?.Nazwa ?? "Brak nazwy serwisu")
+                            
+                            <MudText Typo="Typo.caption" >
+                                Serwisant: @($"{GetServicemenFirstname(ocena.SerwisantId)} {GetServicemenLastname(ocena.SerwisantId)}")
                             </MudText>
-
+                            
                             <MudText Typo="Typo.caption" Class="mud-palette-text-secondary">
                                 @(ocena.DataDodania.ToString("dd.MM.yyyy"))
                             </MudText>
@@ -124,9 +124,14 @@
     private bool _loading = true;
     private List<Zamowienie> _zamowienia = new();
     private List<OcenaSerwisu> _ocenySerwisu = new();
+    private Serwisant? _serwisant;
+    private List<DicTypSerwisu> _serwisy = new();
+    private List<Serwisant> _serwisanci = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadServicemenAsync();
+        await LoadServiceTypesAsync();
         await LoadServicesAsync();
         await LoadRatingsAsync();
         await LoadTypyOcenyAsync();
@@ -152,6 +157,46 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Wystąpił błąd, spróbuj ponownie później.", Severity.Error);
+        }
+    }
+    
+    private async Task LoadServicemenAsync()
+    {
+        try
+        {
+            var result = await ApiService.SerwisanciRepo.SerwisanciGet();
+            if (result.Data != null)
+            {
+                _serwisanci = result.Data;
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania serwisantów.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd, podczas ładowania serwisantów.", Severity.Error);
+        }
+    }
+    
+    private async Task LoadServiceTypesAsync()
+    {
+        try
+        {
+            var result = await ApiService.TypySerwisuRepo.TypySerwisuGet();
+            if (result.Data != null)
+            {
+                _serwisy = result.Data;
+            }
+            else
+            {
+                Snackbar.Add($"Błąd podczas ładowania serwisantów.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd, podczas ładowania serwisantów.", Severity.Error);
         }
     }
 
@@ -221,58 +266,76 @@
         return typOceny?.Ocena ?? 3;
     }
 
-    private async Task OpenCommentDialog()
+    private string GetServicemenFirstname(int serwisantId)
     {
-        var parameters = new DialogParameters
-        {
-            ["Orders"] = _zamowienia,
-            ["CommentText"] = string.Empty,
-            ["SelectedOrderId"] = 0
-        };
-
-        var options = new DialogOptions
-        {
-            CloseOnEscapeKey = true,
-            MaxWidth = MaxWidth.Medium,
-            FullWidth = true,
-            CloseButton = true,
-            Position = DialogPosition.Center
-        };
-
-        var dialog = await DialogService.ShowAsync<CommentDialog>("", parameters, options);
-        var result = await dialog.Result;
-
-        if (!result.Canceled)
-        {
-            var commentResult = (CommentDialog.CommentDialogResult)result.Data;
-            try
-            {
-                var ocenaDto = new OcenaSerwisuDto
-                {
-                    SerwisId = commentResult.OrderId,
-                    SerwisantId = 1, 
-                    TypOcenyId = 5,
-                    Komentarz = commentResult.Comment
-                };
-
-                var apiResult = await ApiService.OcenySerwisuRepo.OcenaSerwisuPost(ocenaDto);
-
-                if (apiResult.Data != null)
-                {
-                    Snackbar.Add("Komentarz został dodany pomyślnie", Severity.Success);
-                    await LoadRatingsAsync(); 
-                }
-                else
-                {
-                    Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
-            }
-        }
+        var result = _serwisanci.Where(s => s.SerwisantId == serwisantId).Single();
+        return result.Uzytkownik.Imie;
     }
+    
+    private string GetServicemenLastname(int serwisantId)
+    {
+        var result = _serwisanci.Where(s => s.SerwisantId == serwisantId).Single();
+        return result.Uzytkownik.Nazwisko;
+    }
+    
+    private string GetServiceName(int serviceId)
+    {
+        var result = _serwisy.Where(s => s.TypSerwisuId == serviceId).Single();
+        return result.Nazwa;
+    }
+
+    // private async Task OpenCommentDialog()
+    // {
+    //     var parameters = new DialogParameters
+    //     {
+    //         ["Orders"] = _zamowienia,
+    //         ["CommentText"] = string.Empty,
+    //         ["SelectedOrderId"] = 0
+    //     };
+    //
+    //     var options = new DialogOptions
+    //     {
+    //         CloseOnEscapeKey = true,
+    //         MaxWidth = MaxWidth.Medium,
+    //         FullWidth = true,
+    //         CloseButton = true,
+    //         Position = DialogPosition.Center
+    //     };
+    //
+    //     var dialog = await DialogService.ShowAsync<CommentDialog>("", parameters, options);
+    //     var result = await dialog.Result;
+    //
+    //     if (!result.Canceled)
+    //     {
+    //         var commentResult = (CommentDialog.CommentDialogResult)result.Data;
+    //         try
+    //         {
+    //             var ocenaDto = new OcenaSerwisuDto
+    //             {
+    //                 SerwisId = commentResult.OrderId,
+    //                 SerwisantId = 1, 
+    //                 TypOcenyId = 5,
+    //                 Komentarz = commentResult.Comment
+    //             };
+    //
+    //             var apiResult = await ApiService.OcenySerwisuRepo.OcenaSerwisuPost(ocenaDto);
+    //
+    //             if (apiResult.Data != null)
+    //             {
+    //                 Snackbar.Add("Komentarz został dodany pomyślnie", Severity.Success);
+    //                 await LoadRatingsAsync(); 
+    //             }
+    //             else
+    //             {
+    //                 Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
+    //             }
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             Snackbar.Add($"Błąd podczas dodawania komentarza.", Severity.Error);
+    //         }
+    //     }
+    // }
 
     private async Task OpenRatingDialog()
     {
@@ -308,6 +371,8 @@
                     Snackbar.Add("Nie znaleziono wybranego zamówienia", Severity.Error);
                     return;
                 }
+
+                // _serwisant = selectedOrder.Serwisant;
 
                 var ocenaDto = new OcenaSerwisuDto
                 {
