@@ -7,6 +7,8 @@ public class Log
     public Zamowienie Zamowienie { get; set; } = null!;
     public int? StatusId { get; set; }
     public DicStatus? Status { get; set; }
+    public int? UzytkownikId { get; set; }
+    public Uzytkownik? Uzytkownik { get; set; }
     public string? Komentarz { get; set; }
     public DateTime? DataAktualizacji { get; set; }
     public DateTime DataDodania { get; init; } 
@@ -17,4 +19,5 @@ public class LogDto
     public int ZamowienieId { get; set; }
     public int? StatusId { get; set; }
     public string? Komentarz { get; set; }
+    public int UzytkownikId { get; set; }
 }
