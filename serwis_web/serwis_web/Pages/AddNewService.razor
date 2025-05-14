@@ -438,6 +438,7 @@
 			if (klientResult.Data != null)
 			{
 				_clients = klientResult.Data;
+				_clients = _clients.Where(c => c.Uzytkownik.CzyAktywny).ToList();
 				if (_clients.Any())
 				{
 					_selectedClientId = _clients.FirstOrDefault(client => client.UzytkownikId == _currentUser.UzytkownikId)?.KlientId ?? _clients.First().KlientId;
@@ -718,7 +719,8 @@
 				{
 					ZamowienieId = createResult.Data.ZamowienieId,
 					StatusId = 0,
-					Komentarz = "Utworzono nowe zlecenie"
+					Komentarz = "Utworzono nowe zlecenie",
+					UzytkownikId = _currentUser.UzytkownikId,
 				};
 
 				var logResult = await ApiService.LogiRepo.LogPost(logDto);
