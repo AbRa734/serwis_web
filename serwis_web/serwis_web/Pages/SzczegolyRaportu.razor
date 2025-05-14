@@ -116,6 +116,12 @@
     ::deep .mud-carousel-indicators {
         display: none !important;
     }
+    
+    @@media(max-width: 640px) {
+        .new-button {
+            padding: 0 15px;
+        }
+    }
 </style>
 
 <div class="order-container">
@@ -343,18 +349,6 @@
                         </div>
                     </div>
                 }
-                
-                @if (_selectedOrder.Status?.Nazwa == "Zakończony")
-                {
-                    <h4>Oceń Wykonaną Usługę</h4>
-                    <div class="order-rate">
-                        <i class="fa-solid fa-star" style="color: #FEC53D"></i>
-                        <i class="fa-solid fa-star" style="color: #FEC53D"></i>
-                        <i class="fa-solid fa-star" style="color: #FEC53D"></i>
-                        <i class="fa-solid fa-star" style="color: #FEC53D"></i>
-                        <i class="fa-regular fa-star" style="color: #545353"></i>
-                    </div>
-                }
 
                 @if (_selectedOrder.Komentarze != null && _selectedOrder.Komentarze.Any())
                 {
@@ -404,10 +398,6 @@
     private bool _isLoading = false;
     private bool _generatingPdf = false;
     private Uzytkownik _currentUser;
-    private bool _isSerwisant = false;
-    private bool _isKlient = false;
-    private int? _serwisantId = null;
-    private int? _klientId = null;
     public List<NumerTelefonu> _NumerTelefonu = new();
     public List<AdresEmail> _adresyEmail = new();
     public NumerTelefonu? _currentPhoneSerwisant;
@@ -478,6 +468,14 @@
             _ => Color.Default
         };
     }
+    
+    private string GetUserRole()
+    {
+        if (_currentUser?.RolaUzytkownika == null)
+            return "Brak roli";
+
+        return _currentUser.RolaUzytkownika.Nazwa;
+    }
 
     private void FilterOrders(string searchText)
     {
@@ -491,41 +489,6 @@
         try
         {
             _currentUser = await ApiService.GetUzytkownik();
-
-            Console.WriteLine(_currentUser.RolaUzytkownika.Nazwa);
-
-            if (_currentUser.RolaUzytkownika.Nazwa == "Serwisant")
-            {
-                _isSerwisant = true;
-
-                var serwisanci = await ApiService.SerwisanciRepo.SerwisanciGet();
-                if (serwisanci.Data != null)
-                {
-                    var serwisant = serwisanci.Data.FirstOrDefault(s => s.UzytkownikId == _currentUser.UzytkownikId);
-                    if (serwisant != null)
-                    {
-                        _serwisantId = serwisant.SerwisantId;
-                    }
-                }
-            }
-            else if (_currentUser.RolaUzytkownika.Nazwa == "Klient")
-            {
-                _isKlient = true;
-
-                var klienci = await ApiService.KlienciRepo.KlienciGet();
-                if (klienci.Data != null)
-                {
-                    var klient = klienci.Data.FirstOrDefault(k => k.UzytkownikId == _currentUser.UzytkownikId);
-                    if (klient != null)
-                    {
-                        _klientId = klient.KlientId;
-                    }
-                    else
-                    {
-                        _klientId = _currentUser.UzytkownikId;
-                    }
-                }
-            }
         }
         catch (Exception ex)
         {
@@ -543,16 +506,17 @@
             {
                 _zamowienia = result.Data;
 
-                Console.WriteLine(_isKlient);
-                Console.WriteLine(_klientId);
-
-                if (_isSerwisant && _serwisantId.HasValue)
+                if (GetUserRole() == "Klient")
                 {
-                    _filteredZamowienia = _zamowienia.Where(z => z.SerwisantId == _serwisantId.Value).ToList();
+                    _filteredZamowienia = _zamowienia
+                        .Where(z => z.Klient.UzytkownikId == _currentUser?.UzytkownikId)
+                        .ToList();
                 }
-                else if (_isKlient)
+                else if (GetUserRole() == "Serwisant")
                 {
-                    _filteredZamowienia = _zamowienia.Where(z => z.Klient.UzytkownikId == _klientId).ToList();
+                    _filteredZamowienia = _zamowienia
+                        .Where(z => z.Serwisant?.UzytkownikId == _currentUser?.UzytkownikId || z.Klient.UzytkownikId == _currentUser?.UzytkownikId)
+                        .ToList();
                 }
                 else
                 {
@@ -616,15 +580,7 @@
             var result = await ApiService.ZamowieniaRepo.ZamowienieGet(_selectedOrderId ?? 0);
             if (result.Data != null)
             {
-                if (_isKlient && _klientId.HasValue && result.Data.KlientId != _klientId.Value)
-                {
-                    Snackbar.Add("Brak dostępu do tego zamówienia", Severity.Error);
-                    _selectedOrder = null;
-                }
-                else
-                {
-                    _selectedOrder = result.Data;
-                }
+                _selectedOrder = result.Data;
             }
             else
             {

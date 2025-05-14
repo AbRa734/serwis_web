@@ -420,8 +420,8 @@
                     <InputNumber @bind-Value="_orderDataModel.ZamowienieId" placeholder="Id zamówienia" class="form-input" readonly />
                 </div>
                 <div class="single-col">
-                    <h4>Rodzaj zlecenia</h4>
-                    <select @bind="_orderDataModel.SerwisId" disabled="@(GetUserRole() == "Klient")">
+                <h4>Rodzaj zlecenia</h4>
+                    <select @bind="_orderDataModel.SerwisId" disabled="@((GetUserRole() == "Klient") || (GetUserRole() == "Serwisant" && !IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)))">
                         @foreach (var serwis in _serwisy)
                         {
                             <option value="@serwis.TypSerwisuId">@serwis.Nazwa</option>
@@ -552,7 +552,9 @@
             <div class="order-row">
                 <div class="single-col">
                     <h4>Data Rozpoczęcia Realizacji</h4>
-                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiOd" style="font-weight: bold" min="@DateTime.Today.ToString("yyyy-MM-dd")" placeholder="" class="@(_formSubmitted &&!string.IsNullOrEmpty(_zrealizowanoDataRealizacjiValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() == "Klient")"/>
+                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiOd" style="font-weight: bold" min="@DateTime.Today.ToString("yyyy-MM-dd")" placeholder="" 
+                               class="@(_formSubmitted &&!string.IsNullOrEmpty(_zrealizowanoDataRealizacjiValidationMessage) ? "form-input invalid-field" : "form-input")" 
+                               disabled="@((GetUserRole() == "Klient") || (GetUserRole() == "Serwisant" && !IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)))"/>
                     @if (_formSubmitted && !string.IsNullOrEmpty(_zrealizowanoDataRealizacjiValidationMessage))
                     {
                         <div class="validation-message">@_zrealizowanoDataRealizacjiValidationMessage</div>
@@ -561,7 +563,9 @@
                 
                 <div class="single-col">
                     <h4>Data Zakończenia Realizacji</h4>
-                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiDo" style="font-weight: bold"  min="@DateTime.Today.ToString("yyyy-MM-dd")" placeholder="" class="@(_formSubmitted && !string.IsNullOrEmpty(_zrealizowanoDataZakonczeniaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() == "Klient")"/>
+                    <InputDate @bind-Value="_orderDataModel.ZrealizowanaDataRealizacjiDo" style="font-weight: bold"  min="@DateTime.Today.ToString("yyyy-MM-dd")" placeholder=""
+                               class="@(_formSubmitted && !string.IsNullOrEmpty(_zrealizowanoDataZakonczeniaValidationMessage) ? "form-input invalid-field" : "form-input")"
+                               disabled="@((GetUserRole() == "Klient") || (GetUserRole() == "Serwisant" && !IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)))"/>
                     @if (_formSubmitted && !string.IsNullOrEmpty(_zrealizowanoDataZakonczeniaValidationMessage))
                     {
                         <div class="validation-message">@_zrealizowanoDataZakonczeniaValidationMessage</div>
@@ -581,7 +585,8 @@
             <div class="order-row"> 
                 <div class="single-col"> 
                     <h4>Adres Email Serwisanta</h4>
-                    <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="@(_formSubmitted && !string.IsNullOrEmpty(_emailSerwisantaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() == "Klient")"/>
+                    <InputText @bind-Value="_orderDataModel.EmailSerwisanta" placeholder="Email" class="@(_formSubmitted && !string.IsNullOrEmpty(_emailSerwisantaValidationMessage) ? "form-input invalid-field" : "form-input")"
+                               disabled="@((GetUserRole() == "Klient") || (GetUserRole() == "Serwisant" && !IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)))"/>
                     @if (_formSubmitted && !string.IsNullOrEmpty(_emailSerwisantaValidationMessage))
                     {
                         <div class="validation-message">@_emailSerwisantaValidationMessage</div>
@@ -590,7 +595,8 @@
                 
                 <div class="single-col">
                     <h4>Numer Telefonu Serwisanta</h4>
-                    <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuSerwisantaValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() == "Klient")"/>
+                    <InputText @bind-Value="_orderDataModel.NumerTelefonuSerwisanta" placeholder="Numer telefonu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuSerwisantaValidationMessage) ? "form-input invalid-field" : "form-input")"
+                               disabled="@((GetUserRole() == "Klient") || (GetUserRole() == "Serwisant" && !IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)))"/>
                     @if (_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuSerwisantaValidationMessage))
                     {
                         <div class="validation-message">@_numerTelefonuSerwisantaValidationMessage</div>
@@ -615,7 +621,7 @@
             </select>
 
             <h4>Status zlecenia</h4>
-            <select @bind="_orderDataModel.StatusId" class="@GetStatusClass(GetSelectedStatusName())" disabled="@(GetUserRole() == "Klient")">
+            <select @bind="_orderDataModel.StatusId" class="@GetStatusClass(GetSelectedStatusName())" disabled="@((GetUserRole() == "Klient") || (GetUserRole() == "Serwisant" && !IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)))">
                 @foreach (var status in _statusy)
                 {
                     <option value="@status.StatusId">@status.Nazwa</option>
@@ -623,7 +629,7 @@
             </select>
 
             <h4>Kwota do zapłaty</h4>
-            <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" disabled="@(GetUserRole() == "Klient")"/>
+            <InputNumber @bind-Value="_orderDataModel.Koszt100" placeholder="Koszt (zł)" class="form-input" disabled="@((GetUserRole() == "Klient") || (GetUserRole() == "Serwisant" && !IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)))"/>
             @{
                 var metodaPlatnosciNazwa = _platnosci.FirstOrDefault(p => p.MetodaPlatnosciId == _orderDataModel.MetodaPlatnosciId)?.Nazwa?.ToLower() ?? "";
                 var metodaPlatnosciTyp = "stripe"; 
@@ -636,9 +642,10 @@
                     _ => "stripe"
                 };
             }
-
-            <StripePay Amount="@(_orderDataModel.Koszt100)" MetodaPlatnosci="@metodaPlatnosciTyp" />
-            
+            @if (GetUserRole() == "Klient")
+            {
+                <StripePay Amount="@(_orderDataModel.Koszt100)" MetodaPlatnosci="@metodaPlatnosciTyp" />
+            }
             
             @if (_komentarze?.Any() == true)
             {
@@ -667,17 +674,19 @@
                 </div>
             }
 
-            @if (GetUserRole() == "Serwisant" || GetUserRole() == "Administrator")
+            @if ((GetUserRole() == "Serwisant" && IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)) || GetUserRole() == "Administrator")
             {
                 <button type="submit">Zapisz zmiany</button>
             }
-            <button type="button" @onclick="OpenCommentDialog">Dodaj komentarz</button>
+            @if ((GetUserRole() == "Serwisant" && IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)) || GetUserRole() == "Administrator" || GetUserRole() == "Klient")
+            {
+                <button type="button" @onclick="OpenCommentDialog">Dodaj komentarz</button>
+            }
         </div>
 
     </div>
     }
-
-
+    
     </EditForm>
     
     
@@ -994,8 +1003,8 @@
         var convertedChanges = orderLogs.Select(log => new HistoryDialog.DefaultChangeHistory
         {
             Date = log.DataDodania,
-            UserRole = GetUserRole(),
-            UserName = $"{_uzytkownikZalogowany?.Imie} {_uzytkownikZalogowany?.Nazwisko}",
+            UserRole = GetUserRoleHistoryDialog(log.UzytkownikId),
+            UserName = $"{log.Uzytkownik?.Imie} {log.Uzytkownik?.Nazwisko}",
             Status = log.Status?.Nazwa ?? "Aktualizacja",
             Note = log.Komentarz ?? "Zmieniono status zlecenia"
         }).ToList<HistoryDialog.IChangeHistory>();
@@ -1385,7 +1394,8 @@
                     {
                         ZamowienieId = OrderId,
                         StatusId = _orderDataModel.StatusId,
-                        Komentarz = "Aktualizacja danych zlecenia"
+                        Komentarz = "Aktualizacja danych zlecenia",
+                        UzytkownikId = _uzytkownikZalogowany.UzytkownikId,
                     };
                     await ApiService.LogiRepo.LogPost(logDto);
                     await LoadOrderLogs();
@@ -1589,12 +1599,32 @@
         return _uzytkownikZalogowany.RolaUzytkownika.Nazwa;
     }
     
+    private string GetUserRoleHistoryDialog(int? userId)
+    {
+        
+        var user = _uzytkownicy.FirstOrDefault(u => u.UzytkownikId == userId);
+        if (user?.RolaUzytkownika == null)
+            return "Brak roli";
+        
+        return user.RolaUzytkownika.Nazwa;
+    }
+    
     private string GetCommentUserRole(int userId)
     {
         var user = _uzytkownicy.FirstOrDefault(s => s.UzytkownikId == userId);
         return user.RolaUzytkownika.Nazwa;
     }
 
+    private bool IsServicemanBelongsToOrder(int? servicemanId)
+    {
+        var serviceman = _serwisanci.FirstOrDefault(s => s.SerwisantId == servicemanId);
+        if (serviceman != null)
+        {
+            return serviceman.UzytkownikId == _uzytkownikZalogowany?.UzytkownikId;
+        }
+
+        return false;
+    }
 
     public class OrderDataModel
     {
