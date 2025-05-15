@@ -213,53 +213,65 @@
 						}
 
 						<h4>Imię <span style="color: #F44336">*</span></h4>
-						<InputText @bind-Value="_newUser.Imie" placeholder="Imię użytkownika" class="@(_formSubmitted && string.IsNullOrEmpty(_newUser.Imie) ? "form-control invalid-field" : "form-control")" />
-						@if (_formSubmitted && string.IsNullOrEmpty(_newUser.Imie))
+						<InputText @bind-Value="_newUser.Imie" placeholder="Imię użytkownika" class="@(_formSubmitted && !string.IsNullOrEmpty(_firstnameValidationMessage) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_firstnameValidationMessage))
 						{
-							<div class="validation-message">Imię jest wymagane</div>
+							<div class="validation-message">@_firstnameValidationMessage</div>
 						}
 
 						<h4>Nazwisko <span style="color: #F44336">*</span></h4>
-						<InputText @bind-Value="_newUser.Nazwisko" placeholder="Nazwisko użytkownika" class="@(_formSubmitted && string.IsNullOrEmpty(_newUser.Nazwisko) ? "form-control invalid-field" : "form-control")" />
-						@if (_formSubmitted && string.IsNullOrEmpty(_newUser.Nazwisko))
+						<InputText @bind-Value="_newUser.Nazwisko" placeholder="Nazwisko użytkownika" class="@(_formSubmitted && !string.IsNullOrEmpty(_lastnameValidationMessage) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_lastnameValidationMessage))
 						{
-							<div class="validation-message">Nazwisko jest wymagane</div>
+							<div class="validation-message">@_lastnameValidationMessage</div>
 						}
 
 						<h4>Numer Telefonu</h4>
-						<InputText @bind-Value="_phone" placeholder="Numer telefonu" class="@(_formSubmitted && _phoneValidationMessage != string.Empty ? "form-control invalid-field" : "form-control")" />
-						@if (_formSubmitted && _phoneValidationMessage != string.Empty)
+						<InputText @bind-Value="_phone" placeholder="Numer telefonu" class="@(_formSubmitted && !string.IsNullOrEmpty(_phoneValidationMessage) ? "form-control invalid-field" : "form-control")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_phoneValidationMessage))
 						{
 							<div class="validation-message">@_phoneValidationMessage</div>
 						}
 
 						<h4>Adres Email <span style="color: #F44336">*</span></h4>
-						<InputText @bind-Value="_email" placeholder="Adres email" class="@(_formSubmitted && _emailValidationMessage != string.Empty ? "form-control invalid-field" : "form-control")" type="email" />
-						@if (_formSubmitted && _emailValidationMessage != string.Empty)
+						<InputText @bind-Value="_email" placeholder="Adres email" class="@(_formSubmitted && !string.IsNullOrEmpty(_emailValidationMessage) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_emailValidationMessage))
 						{
 							<div class="validation-message">@_emailValidationMessage</div>
 						}
 					</div>
 					<div class="service-col">
 						<h4>Państwo</h4>
-						<InputText @bind-Value="_adres.Kraj" placeholder="Państwo" class="form-control" />
+						<InputText @bind-Value="_adres.Kraj" placeholder="Państwo" class="@(_formSubmitted && !string.IsNullOrEmpty(_panstwoValidationMessage) ? "form-control invalid-field" : "form-control")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_panstwoValidationMessage))
+						{
+							<div class="validation-message">@_panstwoValidationMessage</div>
+						}
 
 						<h4>Ulica</h4>
-						<InputText @bind-Value="_adres.Ulica" placeholder="Ulica" class="form-control" />
+						<InputText @bind-Value="_adres.Ulica" placeholder="Ulica" class="@(_formSubmitted && !string.IsNullOrEmpty(_ulicaValidationMessage) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_ulicaValidationMessage))
+						{
+							<div class="validation-message">@_ulicaValidationMessage</div>
+						}
 
 						<h4>Numer Domu</h4>
-						<InputText @bind-Value="_adres.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && _numerDomuValidationMessage != string.Empty ? "form-control invalid-field" : "form-control")" />
-						@if (_formSubmitted && _numerDomuValidationMessage != string.Empty)
+						<InputText @bind-Value="_adres.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage))
 						{
 							<div class="validation-message">@_numerDomuValidationMessage</div>
 						}
 
 						<h4>Miasto</h4>
-						<InputText @bind-Value="_adres.Miasto" placeholder="Miasto" class="form-control" />
+						<InputText @bind-Value="_adres.Miasto" placeholder="Miasto" class="@(_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage))
+						{
+							<div class="validation-message">@_miastoValidationMessage</div>
+						}
 
 						<h4>Kod pocztowy</h4>
-						<InputText @bind-Value="_adres.KodPocztowy" placeholder="Kod pocztowy" class="@(_formSubmitted && _kodPocztowyValidationMessage != string.Empty ? "form-control invalid-field" : "form-control")" />
-						@if (_formSubmitted && _kodPocztowyValidationMessage != string.Empty)
+						<InputText @bind-Value="_adres.KodPocztowy" placeholder="Kod pocztowy" class="@(_formSubmitted && !string.IsNullOrEmpty(_kodPocztowyValidationMessage) ? "form-control invalid-field" : "form-control")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_kodPocztowyValidationMessage))
 						{
 							<div class="validation-message">@_kodPocztowyValidationMessage</div>
 						}
@@ -305,11 +317,16 @@
 	private int _uzytkownikId;
 	private bool _formSubmitted = false;
 
+	private string _firstnameValidationMessage = string.Empty;
+	private string _lastnameValidationMessage = string.Empty;
 	private string _emailValidationMessage = string.Empty;
 	private string _phoneValidationMessage = string.Empty;
 	private string _roleValidationMessage = string.Empty;
 	private string _numerDomuValidationMessage = string.Empty;
 	private string _kodPocztowyValidationMessage = string.Empty;
+	private string _panstwoValidationMessage = string.Empty;
+	private string _ulicaValidationMessage = string.Empty;
+	private string _miastoValidationMessage = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -340,11 +357,16 @@
 	{
 		bool isValid = true;
 
-		_emailValidationMessage = string.Empty;
-		_phoneValidationMessage = string.Empty;
-		_roleValidationMessage = string.Empty;
-		_numerDomuValidationMessage = string.Empty;
-		_kodPocztowyValidationMessage = string.Empty;
+		 _firstnameValidationMessage = string.Empty;
+		 _lastnameValidationMessage = string.Empty;
+		 _emailValidationMessage = string.Empty;
+		 _phoneValidationMessage = string.Empty;
+		 _roleValidationMessage = string.Empty;
+		 _numerDomuValidationMessage = string.Empty;
+		 _kodPocztowyValidationMessage = string.Empty;
+		 _panstwoValidationMessage = string.Empty;
+		 _ulicaValidationMessage = string.Empty;
+		 _miastoValidationMessage = string.Empty;
 
 		if (_selectedRoleId <= 0)
 		{
@@ -363,32 +385,49 @@
 			isValid = false;
 		}
 
-		if (!string.IsNullOrWhiteSpace(_phone) && !IsValidPhoneNumber(_phone))
+		if (string.IsNullOrWhiteSpace(_phone) || !IsValidPhoneNumber(_phone))
 		{
 			_phoneValidationMessage = "Nieprawidłowy format numeru telefonu";
 			isValid = false;
 		}
 
-		if (string.IsNullOrWhiteSpace(_newUser.Imie))
+		if (string.IsNullOrWhiteSpace(_newUser.Imie) || _newUser.Imie.Length < 2)
 		{
+			_firstnameValidationMessage = "Imie musi miec przynajmniej 2 litery";
 			isValid = false;
 		}
 
-		if (string.IsNullOrWhiteSpace(_newUser.Nazwisko))
+		if (string.IsNullOrWhiteSpace(_newUser.Nazwisko) || _newUser.Nazwisko.Length < 2)
 		{
+			_lastnameValidationMessage = "Nazwisko musi miec przynajmniej 2 litery";
+			isValid = false;
+		}
+		
+		if (!int.TryParse(_adres.NumerDomu, out int numerDomu) || numerDomu < 1 || numerDomu > 1000)
+		{
+			_numerDomuValidationMessage = "Numer domu musi być z przedziału od 1 do 1000";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_adres.Kraj) || _adres.Kraj.Length > 64 || _adres.Kraj.Length < 2)
+		{
+			_panstwoValidationMessage = "Państwo musi mieć od 2 do 64 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_adres.Ulica) || _adres.Ulica.Length > 100 || _adres.Ulica.Length < 2)
+		{
+			_ulicaValidationMessage = "Ulica musi mieć od 2 do 100 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_adres.Miasto) || _adres.Miasto.Length > 85 || _adres.Miasto.Length < 2)
+		{
+			_miastoValidationMessage = "Miasto musi mieć od 2 do 85 znaków";
 			isValid = false;
 		}
 
-		if (!string.IsNullOrWhiteSpace(_adres.NumerDomu))
-		{
-			if (!int.TryParse(_adres.NumerDomu, out _))
-			{
-				_numerDomuValidationMessage = "Numer domu musi być liczbą";
-				isValid = false;
-			}
-		}
-
-		if (!string.IsNullOrWhiteSpace(_adres.KodPocztowy) && !IsValidPostalCode(_adres.KodPocztowy))
+		if (string.IsNullOrWhiteSpace(_adres.KodPocztowy) || !IsValidPostalCode(_adres.KodPocztowy))
 		{
 			_kodPocztowyValidationMessage = "Nieprawidłowy format kodu pocztowego";
 			isValid = false;
@@ -412,7 +451,7 @@
 
 	private bool IsValidPhoneNumber(string phone)
 	{
-		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^(\+)?[\d\s-]{9,15}$");
+		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{9}$");
 	}
 
 	private bool IsValidPostalCode(string postalCode)

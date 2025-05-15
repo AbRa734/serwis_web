@@ -504,7 +504,7 @@
 
 	private bool IsValidPhoneNumber(string phone)
 	{
-		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^(\+)?[\d\s-]{9,15}$");
+		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{9}$");
 	}
 
 	private bool IsValidPostalCode(string postalCode)
@@ -692,6 +692,21 @@
 			// }
 			//
 			// clientId = clientResult.Data.KlientId;
+			
+			
+			if (!(_currentUser.AdresEmailId > 0) || !(_currentUser.NumerTelefonuId.HasValue && _currentUser.NumerTelefonuId.Value > 0) || _currentUser.Adres == null)
+			{
+				var email = await ApiService.UzytkownicyRepo.UzytkownikPut(_currentUser.UzytkownikId,new UzytkownikDto()
+				{
+					RolaUzytkownikaId = _currentUser.RolaUzytkownika.RolaUzytkownikaId,
+					Imie = _currentUser.Imie,
+					Nazwisko = _currentUser.Nazwisko,
+					AdresEmailId = _currentUser.AdresEmailId > 0 ?_currentUser.AdresEmailId : emailResult.Data.AdresEmailId,
+					NumerTelefonuId = _currentUser.NumerTelefonuId > 0 ?_currentUser.NumerTelefonuId : phoneId,
+					CzyAktywny = _currentUser.CzyAktywny,
+					AdresId = _currentUser?.Adres?.AdresId > 0 ? _currentUser.Adres.AdresId : addressId
+				});
+			}
 			
 			
 			var createResult = await ApiService.ZamowieniaRepo.ZamowieniePost(new ZamowienieDto
