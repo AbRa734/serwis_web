@@ -280,7 +280,7 @@
 
         if (ordersResult.Data != null)
         {
-            var currentYear = DateTime.Now.Year;
+            var currentYear = DateTimeOffset.Now.Year;
             var monthlyNewOrders = new double[12];
             var monthlyCompletedOrders = new double[12];
 

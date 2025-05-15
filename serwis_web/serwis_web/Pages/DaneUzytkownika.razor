@@ -641,10 +641,10 @@
 		[StringLength(50, ErrorMessage = "Kraj nie może przekraczać 50 znaków")]
 		public string? Kraj { get; set; }
 
-		public DateTime? DataAktualizacji { get; set; }
+		public DateTimeOffset? DataAktualizacji { get; set; }
 
 		[Required(ErrorMessage = "Data dodania jest wymagana")]
-		public DateTime DataDodania { get; set; }
+		public DateTimeOffset DataDodania { get; set; }
 
 		[Required(ErrorMessage = "Rola użytkownika jest wymagana")]
 		public int RoleId { get; set; }

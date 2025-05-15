@@ -203,7 +203,7 @@
                     </CellTemplate>
                 </PropertyColumn>
 
-                <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.DataDodania"
+                <PropertyColumn T="Zamowienie" TProperty="DateTimeOffset?" Property="x => x.DataDodania"
                                 Title="Data utworzenia" HeaderClass="order-category">
                     <CellTemplate>
                         <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
@@ -213,7 +213,7 @@
                 </PropertyColumn>
 
 
-                <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
+                <PropertyColumn T="Zamowienie" TProperty="DateTimeOffset?" Property="x => x.ZrealizowanaDataRealizacjiDo" Title="Data Wykonania" HeaderClass="order-category">
                     <CellTemplate>
                         <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
                             <MudText Class="order-category-single-item">@(context.Item.ZrealizowanaDataRealizacjiDo?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>

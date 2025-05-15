@@ -482,8 +482,8 @@
 @code {
 
     private int? _selectedTechnicianId;
-    private DateRange _dateRange = new DateRange(DateTime.Now.AddMonths(-1), DateTime.Now);
-    private DateRange _companyDateRange = new DateRange(DateTime.Now.AddMonths(-3), DateTime.Now);
+    private DateRange _dateRange = new DateRange(DateTimeOffset.Now.AddMonths(-1).DateTime, DateTimeOffset.Now.DateTime);
+    private DateRange _companyDateRange = new DateRange(DateTimeOffset.Now.AddMonths(-3).DateTime, DateTimeOffset.Now.DateTime);
 
     private List<Uzytkownik> _technicians = new();
     private List<Zamowienie> _allOrders = new();
@@ -955,7 +955,7 @@
                                 row.RelativeItem().Column(column =>
                                 {
                                     column.Item().Text("© Serwis IT").FontSize(10);
-                                    column.Item().Text($"Raport wygenerowany: {DateTime.Now:dd.MM.yyyy HH:mm}").FontSize(8);
+                                    column.Item().Text($"Raport wygenerowany: {DateTimeOffset.Now:dd.MM.yyyy HH:mm}").FontSize(8);
                                 });
 
                                 row.RelativeItem().AlignRight().Text(text =>
@@ -1094,7 +1094,7 @@
                                 row.RelativeItem().Column(column =>
                                 {
                                     column.Item().Text("© Serwis IT").FontSize(10);
-                                    column.Item().Text($"Raport wygenerowany: {DateTime.Now:dd.MM.yyyy HH:mm}").FontSize(8);
+                                    column.Item().Text($"Raport wygenerowany: {DateTimeOffset.Now:dd.MM.yyyy HH:mm}").FontSize(8);
                                 });
 
                                 row.RelativeItem().AlignRight().Text(text =>
@@ -1111,7 +1111,7 @@
 
             byte[] pdfBytes = pdfDocument.GeneratePdf();
             string base64String = Convert.ToBase64String(pdfBytes);
-            string fileName = $"raport_zaangazowania_firmy_{DateTime.Now:yyyyMMdd}.pdf";
+            string fileName = $"raport_zaangazowania_firmy_{DateTimeOffset.Now:yyyyMMdd}.pdf";
 
             await JsRuntime.InvokeVoidAsync("downloadFileFromBase64", fileName, base64String, "application/pdf");
             Snackbar.Add("Raport został wygenerowany i pobrany", Severity.Success);

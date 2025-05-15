@@ -71,7 +71,7 @@
                             <MudPaper Elevation="2" Class="pa-3 mb-3">
                                 <MudText>
                                     <strong>Data: </strong>
-                                    @if (GetPropertyValue(change, "Date") is DateTime date)
+                                    @if (GetPropertyValue(change, "Date") is DateTimeOffset date)
                                     {
                                         @date.ToString("dd.MM.yyyy HH:mm")
                                     }
@@ -161,7 +161,7 @@
             
         var newChange = new DefaultChangeHistory
         {
-            Date = DateTime.Now,
+            Date = DateTimeOffset.Now,
             UserRole = "Admin", 
             UserName = "Uzytkownik", 
             Status = newStatus,
@@ -176,7 +176,7 @@
     
     public interface IChangeHistory
     {
-        DateTime Date { get; set; }
+        DateTimeOffset Date { get; set; }
         string UserRole { get; set; }
         string UserName { get; set; }
         string Status { get; set; }
@@ -185,7 +185,7 @@
     
     public class DefaultChangeHistory : IChangeHistory
     {
-        public DateTime Date { get; set; }
+        public DateTimeOffset Date { get; set; }
         public string UserRole { get; set; }
         public string UserName { get; set; }
         public string Status { get; set; }

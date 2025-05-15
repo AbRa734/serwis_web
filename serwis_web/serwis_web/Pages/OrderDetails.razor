@@ -1563,7 +1563,7 @@
         _messageClass = "error-message";
     }
 
-    private string FormatDate(DateTime? date)
+    private string FormatDate(DateTimeOffset? date)
     {
         return date?.ToString("dd.MM.yyyy HH:mm") ?? "Nie określono";
     }
@@ -1642,12 +1642,12 @@
         public int? AdresId { get; set; }
         public int Koszt100 { get; set; }
         public String Opis { get; set; }
-        public DateTime? DataAktualizacji { get; set; }
-        public DateTime DataDodania { get; set; }
-        public DateTime? PlanowanaDataRealizacjiOd { get; set; }
-        public DateTime? PlanowanaDataRealizacjiDo { get; set; }
-        public DateTime? ZrealizowanaDataRealizacjiOd { get; set; }
-        public DateTime? ZrealizowanaDataRealizacjiDo { get; set; }
+        public DateTimeOffset? DataAktualizacji { get; set; }
+        public DateTimeOffset DataDodania { get; set; }
+        public DateTimeOffset? PlanowanaDataRealizacjiOd { get; set; }
+        public DateTimeOffset? PlanowanaDataRealizacjiDo { get; set; }
+        public DateTimeOffset? ZrealizowanaDataRealizacjiOd { get; set; }
+        public DateTimeOffset? ZrealizowanaDataRealizacjiDo { get; set; }
         public DicStatus Status { get; set; }
 
 

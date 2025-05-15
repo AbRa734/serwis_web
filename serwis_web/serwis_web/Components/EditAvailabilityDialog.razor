@@ -28,7 +28,7 @@
 
                 <MudItem xs="12">
                     <MudDatePicker Label="Data od" @bind-Date="_model.DataOd" Required
-                                   Validation="@(new Func<DateTime?, string>(ValidateStartDate))"
+                                   Validation="@(new Func<DateTimeOffset?, string>(ValidateStartDate))"
                                    For="@(() => _model.DataOd)" />
                 </MudItem>
 
@@ -40,7 +40,7 @@
 
                 <MudItem xs="12">
                     <MudDatePicker Label="Data do" @bind-Date="_model.DataDo" Required
-                                   Validation="@(new Func<DateTime?, string>(ValidateEndDate))"
+                                   Validation="@(new Func<DateTimeOffset?, string>(ValidateEndDate))"
                                    For="@(() => _model.DataDo)" />
                 </MudItem>
 
@@ -117,7 +117,7 @@
         _model.CzasDo = Dostepnosc.DataDo.TimeOfDay;
     }
 
-    private string ValidateStartDate(DateTime? date)
+    private string ValidateStartDate(DateTimeOffset? date)
     {
         if (date == null)
             return "Data rozpoczęcia jest wymagana";
@@ -131,7 +131,7 @@
         return null;
     }
 
-    private string ValidateEndDate(DateTime? date)
+    private string ValidateEndDate(DateTimeOffset? date)
     {
         if (date == null)
             return "Data zakończenia jest wymagana";

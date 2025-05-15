@@ -11,8 +11,8 @@ public class OcenaSerwisu
     public int TypOcenyId { get; set; }
     public DicTypOceny TypOceny { get; set; } = null!;
     public string? Komentarz { get; set; }
-    public DateTime? DataAktualizacji { get; set; }
-    public DateTime DataDodania { get; init; }
+    public DateTimeOffset? DataAktualizacji { get; set; }
+    public DateTimeOffset DataDodania { get; init; }
 }
 
 public class OcenaSerwisuDto

@@ -248,7 +248,7 @@
                 </CellTemplate>
             </PropertyColumn>
 
-            <PropertyColumn T="Uzytkownik" TProperty="DateTime" Property="x => x.DataDodania" Title="Data utworzenia" HeaderClass="order-category">
+            <PropertyColumn T="Uzytkownik" TProperty="DateTimeOffset" Property="x => x.DataDodania" Title="Data utworzenia" HeaderClass="order-category">
                 <CellTemplate>
                     <MudChip Size="Size.Medium" Class="@GetRoleStyle("")">
                         <MudText Class="order-category-single-item">@context.Item.DataDodania.ToString("dd MMMM yyyy")</MudText>
@@ -256,7 +256,7 @@
                 </CellTemplate>
             </PropertyColumn>
 
-            <PropertyColumn T="Uzytkownik" TProperty="DateTime?" Property="x => x.DataAktualizacji" Title="Data Aktualizacji" HeaderClass="order-category">
+            <PropertyColumn T="Uzytkownik" TProperty="DateTimeOffset?" Property="x => x.DataAktualizacji" Title="Data Aktualizacji" HeaderClass="order-category">
                 <CellTemplate>
                     <MudChip Size="Size.Medium" Class="@GetRoleStyle("")">
                         <MudText Class="order-category-single-item">@(context.Item.DataAktualizacji?.ToString("dd MMMM yyyy") ?? "Nie określono")</MudText>

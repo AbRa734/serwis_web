@@ -458,7 +458,7 @@
                 </CellTemplate>
             </PropertyColumn>
 
-            <PropertyColumn T="Zamowienie" TProperty="DateTime?" Property="x => x.DataDodania"
+            <PropertyColumn T="Zamowienie" TProperty="DateTimeOffset?" Property="x => x.DataDodania"
                             Title="Data utworzenia" HeaderClass="order-category">
                 <CellTemplate>
                     <MudChip Size="Size.Medium" Class="@GetStatusStyle("")">
@@ -563,7 +563,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _creationDateRange = new DateRange(DateTime.Now.AddMonths(-1), DateTime.Now);
+        _creationDateRange = new DateRange(DateTimeOffset.Now.AddMonths(-1).DateTime, DateTimeOffset.Now.DateTime);
         _completionDateRange = new DateRange(null, null);
 
         await LoadOrdersAsync();

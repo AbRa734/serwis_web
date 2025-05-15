@@ -299,8 +299,8 @@
                     {
                         var item = new CalendarItem
                         {
-                            Start = d.DataOd,
-                            End = d.DataDo,
+                            Start = d.DataOd.DateTime,
+                            End = d.DataDo.DateTime,
                             Text = imieNazwisko,
                         };
                         _events.Add(item);
@@ -311,8 +311,8 @@
                         var name = $"{d.Serwisant.Uzytkownik.Imie} {d.Serwisant.Uzytkownik.Nazwisko}".Trim();
                         var item = new CalendarItem
                         {
-                            Start = d.DataOd,
-                            End = d.DataDo,
+                            Start = d.DataOd.DateTime,
+                            End = d.DataDo.DateTime,
                             Text = name,
                         };
                         _events.Add(item);
@@ -414,17 +414,17 @@
         }
     }
     
-    private async Task CellClicked(DateTime dateTime)
+    private async Task CellClicked(DateTime DateTimeOffset)
     {
-        var dzien = dateTime.Date;
-        var godzina = dateTime.TimeOfDay;
+        var dzien = DateTimeOffset.Date;
+        var godzina = DateTimeOffset.TimeOfDay;
     
         var validSerwisantIds = _allSerwisants.Select(s => s.SerwisantId).ToHashSet();
         
         var dostepniSerwisanci = _wszystkieDostepnosci
             .Where(d => 
-                d.DataOd <= dateTime && 
-                d.DataDo >= dateTime && 
+                d.DataOd <= DateTimeOffset && 
+                d.DataDo >= DateTimeOffset && 
                 d.CzyDostepny &&
                 validSerwisantIds.Contains(d.SerwisantId))
             .Select(d => {
@@ -439,8 +439,8 @@
         
         var niedostepniSerwisanci = _wszystkieDostepnosci
             .Where(d => 
-                d.DataOd <= dateTime && 
-                d.DataDo >= dateTime && 
+                d.DataOd <= DateTimeOffset && 
+                d.DataDo >= DateTimeOffset && 
                 !d.CzyDostepny &&
                 validSerwisantIds.Contains(d.SerwisantId))
             .Select(d => {
@@ -455,7 +455,7 @@
 
         var parameters = new DialogParameters
         {
-            ["Date"] = dateTime,
+            ["Date"] = DateTimeOffset,
             ["AvailableTechnicians"] = dostepniSerwisanci,
             ["UnavailableTechnicians"] = niedostepniSerwisanci
         };

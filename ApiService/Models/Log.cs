@@ -10,8 +10,8 @@ public class Log
     public int? UzytkownikId { get; set; }
     public Uzytkownik? Uzytkownik { get; set; }
     public string? Komentarz { get; set; }
-    public DateTime? DataAktualizacji { get; set; }
-    public DateTime DataDodania { get; init; } 
+    public DateTimeOffset? DataAktualizacji { get; set; }
+    public DateTimeOffset DataDodania { get; init; } 
 }
 
 public class LogDto

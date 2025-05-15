@@ -233,7 +233,7 @@ else
 
     private void ProcessMonthlyData()
     {
-        var today = DateTime.Today;
+        var today = DateTimeOffset.UtcNow;
         var sixMonthsAgo = today.AddMonths(-6);
 
         var dateRanges = Enumerable.Range(0, 6)

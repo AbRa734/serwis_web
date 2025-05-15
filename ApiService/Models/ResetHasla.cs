@@ -7,7 +7,7 @@ public class ResetHasla
     public String Token { get; set; } = null!;
     public bool CzyLinkKlikniety { get; set; } = false;
     public bool CzyZrestartowanoHaslo { get; set; } = false;
-    public DateTime DataDodania { get; init; } = DateTime.UtcNow;
+    public DateTimeOffset DataDodania { get; init; } = DateTimeOffset.UtcNow;
 }
 
 public class ResetHaslaDto

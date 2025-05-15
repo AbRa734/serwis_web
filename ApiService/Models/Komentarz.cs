@@ -6,8 +6,8 @@ public class Komentarz
     public string Tresc { get; set; } = null!;
     public int UzytkownikId { get; set; }
     public Uzytkownik Uzytkownik { get; set; } = null!;
-    public DateTime? DataAktualizacji { get; set; }
-    public DateTime DataDodania { get; init; } 
+    public DateTimeOffset? DataAktualizacji { get; set; }
+    public DateTimeOffset DataDodania { get; init; } 
 }
 
 public class KomentarzDto

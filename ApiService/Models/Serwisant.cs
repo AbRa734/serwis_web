@@ -6,8 +6,8 @@ public class Serwisant
     public int UzytkownikId { get; set; }
     public Uzytkownik Uzytkownik { get; set; } = null!;
     public ICollection<Serwis> Serwisy { get; set; } = new List<Serwis>();
-    public DateTime? DataAktualizacji { get; set; }
-    public DateTime DataDodania { get; init; }
+    public DateTimeOffset? DataAktualizacji { get; set; }
+    public DateTimeOffset DataDodania { get; init; }
     public bool CzyAktywny { get; set; } = true;
 }
 

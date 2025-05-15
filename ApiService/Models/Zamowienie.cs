@@ -23,12 +23,12 @@ public class Zamowienie
     public Adres? Adres { get; set; }
     public int Koszt100 { get; set; }
     public String Opis { get; set; } = "";
-    public DateTime? PlanowanaDataRealizacjiOd { get; set; }
-    public DateTime? PlanowanaDataRealizacjiDo { get; set; }
-    public DateTime? ZrealizowanaDataRealizacjiOd { get; set; }
-    public DateTime? ZrealizowanaDataRealizacjiDo { get; set; }
-    public DateTime? DataAktualizacji { get; set; }
-    public DateTime DataDodania { get; init; }
+    public DateTimeOffset? PlanowanaDataRealizacjiOd { get; set; }
+    public DateTimeOffset? PlanowanaDataRealizacjiDo { get; set; }
+    public DateTimeOffset? ZrealizowanaDataRealizacjiOd { get; set; }
+    public DateTimeOffset? ZrealizowanaDataRealizacjiDo { get; set; }
+    public DateTimeOffset? DataAktualizacji { get; set; }
+    public DateTimeOffset DataDodania { get; init; }
 }
 
 public class ZamowienieDto
@@ -45,8 +45,8 @@ public class ZamowienieDto
     public int? AdresId { get; set; }
     public int Koszt100 { get; set; }
     public String Opis { get; set; } = "";
-    public DateTime? PlanowanaDataRealizacjiOd { get; set; }
-    public DateTime? PlanowanaDataRealizacjiDo { get; set; }
-    public DateTime? ZrealizowanaDataRealizacjiOd { get; set; }
-    public DateTime? ZrealizowanaDataRealizacjiDo { get; set; }
+    public DateTimeOffset? PlanowanaDataRealizacjiOd { get; set; }
+    public DateTimeOffset? PlanowanaDataRealizacjiDo { get; set; }
+    public DateTimeOffset? ZrealizowanaDataRealizacjiOd { get; set; }
+    public DateTimeOffset? ZrealizowanaDataRealizacjiDo { get; set; }
 }
