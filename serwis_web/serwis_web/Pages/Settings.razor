@@ -562,6 +562,7 @@
 				NumerTelefonuId = numerTelefonuId,
 				AdresId = adresId,
 				RolaUzytkownikaId = _currentUser.RolaUzytkownika.RolaUzytkownikaId,
+				CzyAktywny = _currentUser.CzyAktywny
 			};
 
 			var updateResult = await ApiService.UzytkownicyRepo.UzytkownikPut(_currentUser.UzytkownikId, updatedUser);

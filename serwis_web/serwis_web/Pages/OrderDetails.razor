@@ -613,7 +613,7 @@
             </select>
 
             <h4>Metoda Płatności</h4>
-            <select @bind="_orderDataModel.MetodaPlatnosciId" disabled="@(GetUserRole() != "Administrator")">
+            <select @bind="_orderDataModel.MetodaPlatnosciId" disabled="@(GetUserRole() == "Serwisant" && !IsServicemanBelongsToOrder(_orderDataModel.SerwisantId))">
                 @foreach (var platnosc in _platnosci)
                 {
                     <option value="@platnosc.MetodaPlatnosciId">@platnosc.Nazwa</option>
@@ -674,7 +674,7 @@
                 </div>
             }
 
-            @if ((GetUserRole() == "Serwisant" && IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)) || GetUserRole() == "Administrator")
+            @if ((GetUserRole() == "Serwisant" && IsServicemanBelongsToOrder(_orderDataModel.SerwisantId)) || GetUserRole() == "Administrator" || GetUserRole() == "Klient")
             {
                 <button type="submit">Zapisz zmiany</button>
             }
@@ -1428,7 +1428,7 @@
 
 	private bool IsValidPhoneNumber(string phone)
 	{
-		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^(\+)?[\d\s-]{9,15}$");
+        return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{9}$");
 	}
 
 	private bool IsValidPostalCode(string postalCode)

@@ -291,11 +291,6 @@
                 // }
                 
                 _latestZamowienia = _zamowienia.Take(3).ToList();
-
-                if (_zamowienia.Count == 0)
-                {
-                    Snackbar.Add("Nie znaleziono żadnych zleceń", Severity.Info);
-                }
             }
             else
             {
