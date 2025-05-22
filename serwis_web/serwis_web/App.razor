@@ -61,72 +61,242 @@
             styleEl.id = 'high-contrast-styles';
             styleEl.textContent = `
             .high-contrast-mode {
-                --text-color: #ffffff;
-                --background-color: #000000;
-                --link-color: #00ff00;
-                --button-bg: #333333;
-                --button-text: #ffff00;
-                --border-color: #ffffff;
-                --focus-color: #ff0000;
-                color: var(--text-color) !important;
-                background-color: var(--background-color) !important;
-            }
-            
-            .high-contrast-mode body,
-            .high-contrast-mode div,
-            .high-contrast-mode nav,
-            .high-contrast-mode main,
-            .high-contrast-mode footer,
-            .high-contrast-mode header,
-            .high-contrast-mode section,
-            .high-contrast-mode aside {
-                color: var(--text-color) !important;
-                background-color: var(--background-color) !important;
-            }
-            
-            .high-contrast-mode a,
-            .high-contrast-mode a:visited {
-                color: var(--link-color) !important;
-                text-decoration: underline !important;
-            }
-            
-            .high-contrast-mode a:hover,
-            .high-contrast-mode a:active,
-            .high-contrast-mode a:focus {
-                color: var(--link-color) !important;
-                text-decoration: underline !important;
-                outline: 2px solid var(--focus-color) !important;
-            }
-            
-            .high-contrast-mode button,
-            .high-contrast-mode .mud-button,
-            .high-contrast-mode input[type="button"],
-            .high-contrast-mode input[type="submit"] {
-                background-color: var(--button-bg) !important;
-                color: var(--button-text) !important;
-                border: 2px solid var(--border-color) !important;
-            }
-            
-            .high-contrast-mode input[type="text"],
-            .high-contrast-mode input[type="email"],
-            .high-contrast-mode input[type="password"],
-            .high-contrast-mode input[type="number"],
-            .high-contrast-mode input[type="search"],
-            .high-contrast-mode textarea,
-            .high-contrast-mode select {
-                background-color: var(--background-color) !important;
-                color: var(--text-color) !important;
-                border: 2px solid var(--border-color) !important;
-            }
-            
-            .high-contrast-mode .mud-paper,
-            .high-contrast-mode .mud-card,
-            .high-contrast-mode .mud-dialog,
-            .high-contrast-mode .mud-appbar {
-                background-color: var(--background-color) !important;
-                color: var(--text-color) !important;
-                border: 2px solid var(--border-color) !important;
-            }
+            --text-color: #ffffff;
+            --background-color: #000000;
+            --link-color: #00ff00;
+            --button-bg: #333333;
+            --button-text: #ffff00;
+            --border-color: #ffffff;
+            --focus-color: #ff0000;
+            --accent-color: #ffff00;
+            --secondary-bg: #222222;
+            --success-color: #00ff00;
+            --error-color: #ff0000;
+            --warning-color: #ffff00;
+            --info-color: #00ffff;
+            color: var(--text-color) !important;
+            background-color: var(--background-color) !important;
+        }
+        
+        /* Basic elements */
+        .high-contrast-mode body,
+        .high-contrast-mode div,
+        .high-contrast-mode nav,
+        .high-contrast-mode main,
+        .high-contrast-mode footer,
+        .high-contrast-mode header,
+        .high-contrast-mode section,
+        .high-contrast-mode aside {
+            color: var(--text-color) !important;
+            background-color: var(--background-color) !important;
+        }
+        
+        /* Links */
+        .high-contrast-mode a,
+        .high-contrast-mode a:visited,
+        .high-contrast-mode .mud-nav-link {
+            color: var(--link-color) !important;
+            text-decoration: underline !important;
+        }
+        
+        .high-contrast-mode a:hover,
+        .high-contrast-mode a:active,
+        .high-contrast-mode a:focus,
+        .high-contrast-mode .mud-nav-link:hover,
+        .high-contrast-mode .mud-nav-link.active {
+            color: var(--link-color) !important;
+            text-decoration: underline !important;
+            outline: 2px solid var(--focus-color) !important;
+            background-color: var(--secondary-bg) !important;
+        }
+        
+        /* Buttons */
+        .high-contrast-mode button,
+        .high-contrast-mode .mud-button,
+        .high-contrast-mode .mud-button-root,
+        .high-contrast-mode .mud-icon-button,
+        .high-contrast-mode input[type="button"],
+        .high-contrast-mode input[type="submit"] {
+            background-color: var(--button-bg) !important;
+            color: var(--button-text) !important;
+            border: 2px solid var(--border-color) !important;
+            outline: none !important;
+        }
+        
+        .high-contrast-mode .mud-button:hover,
+        .high-contrast-mode .mud-button-root:hover,
+        .high-contrast-mode .mud-icon-button:hover {
+            background-color: var(--secondary-bg) !important;
+            outline: 2px solid var(--focus-color) !important;
+        }
+        
+        /* Form elements */
+        .high-contrast-mode input[type="text"],
+        .high-contrast-mode input[type="email"],
+        .high-contrast-mode input[type="password"],
+        .high-contrast-mode input[type="number"],
+        .high-contrast-mode input[type="search"],
+        .high-contrast-mode textarea,
+        .high-contrast-mode select,
+        .high-contrast-mode .mud-input,
+        .high-contrast-mode .mud-input-control,
+        .high-contrast-mode .mud-select,
+        .high-contrast-mode .mud-input-slot {
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+            border: 2px solid var(--border-color) !important;
+        }
+        
+        .high-contrast-mode .mud-input:focus-within,
+        .high-contrast-mode .mud-select:focus-within {
+            border-color: var(--focus-color) !important;
+            outline: 2px solid var(--focus-color) !important;
+        }
+        
+        /* Labels */
+        .high-contrast-mode label,
+        .high-contrast-mode .mud-input-label,
+        .high-contrast-mode .mud-input-label-inputcontrol,
+        .high-contrast-mode .mud-checkbox-label,
+        .high-contrast-mode .mud-radio-label {
+            color: var(--text-color) !important;
+        }
+        
+        /* MudBlazor specific components */
+        .high-contrast-mode .mud-paper,
+        .high-contrast-mode .mud-card,
+        .high-contrast-mode .mud-card-content,
+        .high-contrast-mode .mud-card-header,
+        .high-contrast-mode .mud-card-actions,
+        .high-contrast-mode .mud-dialog,
+        .high-contrast-mode .mud-dialog-title,
+        .high-contrast-mode .mud-dialog-content,
+        .high-contrast-mode .mud-dialog-actions,
+        .high-contrast-mode .mud-drawer,
+        .high-contrast-mode .mud-appbar,
+        .high-contrast-mode .mud-toolbar,
+        .high-contrast-mode .mud-table,
+        .high-contrast-mode .mud-table-container {
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+            border: 2px solid var(--border-color) !important;
+        }
+        
+        /* Table cells */
+        .high-contrast-mode .mud-table-cell,
+        .high-contrast-mode .mud-table-head,
+        .high-contrast-mode .mud-table-row {
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        .high-contrast-mode .mud-table-row:hover {
+            background-color: var(--secondary-bg) !important;
+        }
+        
+        /* Tabs */
+        .high-contrast-mode .mud-tabs,
+        .high-contrast-mode .mud-tab,
+        .high-contrast-mode .mud-tab-panel {
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+        }
+        
+        .high-contrast-mode .mud-tab.mud-tab-active {
+            background-color: var(--secondary-bg) !important;
+            border: 2px solid var(--border-color) !important;
+        }
+        
+        /* Chips */
+        .high-contrast-mode .mud-chip {
+            background-color: var(--secondary-bg) !important;
+            color: var(--text-color) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+        
+        /* Menus */
+        .high-contrast-mode .mud-menu,
+        .high-contrast-mode .mud-menu-list,
+        .high-contrast-mode .mud-menu-item {
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+        
+        .high-contrast-mode .mud-menu-item:hover {
+            background-color: var(--secondary-bg) !important;
+        }
+        
+        /* Alert/message components */
+        .high-contrast-mode .mud-alert {
+            border: 2px solid var(--border-color) !important;
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+        }
+        
+        .high-contrast-mode .mud-alert-message {
+            color: var(--text-color) !important;
+        }
+        
+        .high-contrast-mode .mud-alert.mud-alert-success {
+            border-color: var(--success-color) !important;
+        }
+        
+        .high-contrast-mode .mud-alert.mud-alert-error {
+            border-color: var(--error-color) !important;
+        }
+        
+        .high-contrast-mode .mud-alert.mud-alert-warning {
+            border-color: var(--warning-color) !important;
+        }
+        
+        .high-contrast-mode .mud-alert.mud-alert-info {
+            border-color: var(--info-color) !important;
+        }
+        
+        /* Toast notifications */
+        .high-contrast-mode .mud-snackbar,
+        .high-contrast-mode .mud-snackbar-content {
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+            border: 2px solid var(--border-color) !important;
+        }
+        
+        /* Progress indicators */
+        .high-contrast-mode .mud-progress-circular,
+        .high-contrast-mode .mud-progress-linear {
+            color: var(--accent-color) !important;
+        }
+        
+        /* Icons */
+        .high-contrast-mode .mud-icon-root,
+        .high-contrast-mode .mud-svg-icon {
+            color: var(--text-color) !important;
+        }
+        
+        /* Typography */
+        .high-contrast-mode .mud-typography,
+        .high-contrast-mode h1, 
+        .high-contrast-mode h2, 
+        .high-contrast-mode h3, 
+        .high-contrast-mode h4, 
+        .high-contrast-mode h5, 
+        .high-contrast-mode h6,
+        .high-contrast-mode p, 
+        .high-contrast-mode span {
+            color: var(--text-color) !important;
+        }
+        
+        /* Calendar component */
+        .high-contrast-mode .mud-picker,
+        .high-contrast-mode .mud-picker-content,
+        .high-contrast-mode .mud-picker-container,
+        .high-contrast-mode .mud-picker-calendar {
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+            border: 2px solid var(--border-color) !important;
+        }
         `;
             document.head.appendChild(styleEl);
         }
