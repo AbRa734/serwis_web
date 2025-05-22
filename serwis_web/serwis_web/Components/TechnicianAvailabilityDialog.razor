@@ -4,7 +4,7 @@
 @using DialogResult = MudBlazor.DialogResult
 
 <style>
-    .container {
+    .containerDialog {
         border-radius: 15px;
         box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
         padding: 10px 10px 15px 10px;
@@ -55,7 +55,7 @@
     }
 </style>
 
-<MudDialog Class="container">
+<MudDialog Class="containerDialog">
     <TitleContent>
         <MudText Class="title">Dostępność serwisantów na @Date.ToString("dd.MM.yyyy")</MudText>
     </TitleContent>
@@ -142,7 +142,7 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
-    [Parameter] public DateTimeOffset Date { get; set; }
+    [Parameter] public DateTime Date { get; set; }
     [Parameter] public List<string> AvailableTechnicians { get; set; } = new();
     [Parameter] public List<string> UnavailableTechnicians { get; set; } = new();
     

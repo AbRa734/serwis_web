@@ -24,10 +24,6 @@
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudSwitch T="bool" @bind-Checked="_model.CzyDostepny" Color="Color.Primary" Label="Dostępny" />
-                </MudItem>
-
-                <MudItem xs="12">
                     <MudDatePicker Label="Data od" @bind-Date="_model.DataOd" Required
                                   Validation="@(new Func<DateTimeOffset?, string>(ValidateStartDate))"
                                   For="@(() => _model.DataOd)" />
