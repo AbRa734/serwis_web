@@ -37,7 +37,7 @@
                             @if (users.Any())
                             {
                                 <div class="search-results">
-                                    @foreach (var user in users)
+                                    @foreach (var user in GetPagedUsers())
                                     {
                                         <MudCard Elevation="2" Class="my-2">
                                             <MudCardContent>
@@ -58,6 +58,19 @@
                                         </MudCard>
                                     }
                                 </div>
+                                
+                                @if (users.Count > pageSize)
+                                {
+                                    <div class="d-flex justify-center mt-4">
+                                        <MudPagination 
+                                            Count="@GetTotalPages(users.Count)" 
+                                            Selected="@currentUsersPage" 
+                                            SelectedChanged="@((int page) => OnUsersPageChanged(page))"
+                                            Color="Color.Primary"
+                                            Variant="Variant.Filled"
+                                            Size="Size.Medium" />
+                                    </div>
+                                }
                             }
                             else
                             {
@@ -72,7 +85,7 @@
                         @if (orders.Any())
                         {
                             <div class="search-results">
-                                @foreach (var order in orders)
+                                @foreach (var order in GetPagedOrders())
                                 {
                                     <MudCard Elevation="2" Class="my-2">
                                         <MudCardContent>
@@ -96,6 +109,19 @@
                                     </MudCard>
                                 }
                             </div>
+                            
+                            @if (orders.Count > pageSize)
+                            {
+                                <div class="d-flex justify-center mt-4">
+                                    <MudPagination 
+                                        Count="@GetTotalPages(orders.Count)" 
+                                        Selected="@currentOrdersPage" 
+                                        SelectedChanged="@((int page) => OnOrdersPageChanged(page))"
+                                        Color="Color.Primary"
+                                        Variant="Variant.Filled"
+                                        Size="Size.Medium" />
+                                </div>
+                            }
                         }
                         else
                         {
@@ -107,33 +133,43 @@
                     
                     @if (!isKlient)
                     {
-                        <MudTabPanel Text="@($"Serwisy ({services.Count})")" Icon="@Icons.Material.Filled.Build">
+                        <MudTabPanel Text="@($"Usługi ({services.Count})")" Icon="@Icons.Material.Filled.Build">
                             @if (services.Any())
                             {
                                 <div class="search-results">
-                                    @foreach (var service in services)
+                                    @foreach (var service in GetPagedServices())
                                     {
                                         <MudCard Elevation="2" Class="my-2">
                                             <MudCardContent>
                                                 <MudText Typo="Typo.h6">@service.Nazwa</MudText>
-                                                <MudText Typo="Typo.subtitle1">Serwis #@service.SerwisId</MudText>
-                                                <MudText Typo="Typo.body2">@service.Opis</MudText>
-                                                <MudText Typo="Typo.body2">
-                                                    Typ: @(service.TypSerwisu?.Nazwa ?? "Nieznany")
-                                                </MudText>
+                                                <MudText Typo="Typo.subtitle1">Serwis #@service.TypSerwisuId</MudText>
+                                                <MudText Typo="Typo.body2">Opis: @service.Opis</MudText>
                                                 <MudText Typo="Typo.body2">
                                                     Dodano: @service.DataDodania.ToString("dd.MM.yyyy")
                                                 </MudText>
                                             </MudCardContent>
                                             <MudCardActions>
                                                 <MudButton Variant="Variant.Text" Color="Color.Primary"
-                                                           Href="@($"/services/{service.SerwisId}")">
+                                                           Href="@($"/services/{service.TypSerwisuId}")">
                                                     Szczegóły
                                                 </MudButton>
                                             </MudCardActions>
                                         </MudCard>
                                     }
                                 </div>
+                                
+                                @if (services.Count > pageSize)
+                                {
+                                    <div class="d-flex justify-center mt-4">
+                                        <MudPagination 
+                                            Count="@GetTotalPages(services.Count)" 
+                                            Selected="@currentServicesPage" 
+                                            SelectedChanged="@((int page) => OnServicesPageChanged(page))"
+                                            Color="Color.Primary"
+                                            Variant="Variant.Filled"
+                                            Size="Size.Medium" />
+                                    </div>
+                                }
                             }
                             else
                             {
@@ -163,12 +199,17 @@
     private bool showNoResults = false;
     private List<Uzytkownik> users = new();
     private List<Zamowienie> orders = new();
-    private List<Serwis> services = new();
+    private List<DicTypSerwisu> services = new();
     private Uzytkownik? currentUser;
     private bool isSerwisant = false;
     private bool isKlient = false;
     private int? serwisantId = null;
     private int? klientId = null;
+
+    private const int pageSize = 10;
+    private int currentUsersPage = 1;
+    private int currentOrdersPage = 1;
+    private int currentServicesPage = 1;
 
     protected override async Task OnInitializedAsync()
     {
@@ -183,6 +224,10 @@
             showNoResults = true;
             return;
         }
+
+        currentUsersPage = 1;
+        currentOrdersPage = 1;
+        currentServicesPage = 1;
 
         await PerformSearch();
     }
@@ -239,7 +284,7 @@
 
             var usersResult = await ApiService.UzytkownicyRepo.UzytkownicyGet();
             var ordersResult = await ApiService.ZamowieniaRepo.ZamowieniaGet();
-            var servicesResult = await ApiService.SerwisyRepo.SerwisyGet();
+            var servicesResult = await ApiService.TypySerwisuRepo.TypySerwisuGet();
 
             if (usersResult.Data != null)
             {
@@ -281,11 +326,9 @@
             {
                 services = servicesResult.Data.Where(s =>
                     searchTerms.Any(term =>
-                        s.SerwisId.ToString() == term ||
+                        s.TypSerwisuId.ToString() == term ||
                         (s.Nazwa != null && s.Nazwa.ToLower().Contains(term)) ||
-                        (s.Opis != null && s.Opis.ToLower().Contains(term)) ||
-                        (s.TypSerwisu != null && s.TypSerwisu.Nazwa != null &&
-                         s.TypSerwisu.Nazwa.ToLower().Contains(term))
+                        (s.Opis != null && s.Opis.ToLower().Contains(term))
                     )
                 ).ToList();
             }
@@ -300,5 +343,49 @@
         {
             isLoading = false;
         }
+    }
+
+    private int GetTotalPages(int totalItems)
+    {
+        return (int)Math.Ceiling((double)totalItems / pageSize);
+    }
+
+    private List<Uzytkownik> GetPagedUsers()
+    {
+        return users.Skip((currentUsersPage - 1) * pageSize)
+                   .Take(pageSize)
+                   .ToList();
+    }
+
+    private List<Zamowienie> GetPagedOrders()
+    {
+        return orders.Skip((currentOrdersPage - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+    }
+
+    private List<DicTypSerwisu> GetPagedServices()
+    {
+        return services.Skip((currentServicesPage - 1) * pageSize)
+                      .Take(pageSize)
+                      .ToList();
+    }
+
+    private async Task OnUsersPageChanged(int page)
+    {
+        currentUsersPage = page;
+        StateHasChanged();
+    }
+
+    private async Task OnOrdersPageChanged(int page)
+    {
+        currentOrdersPage = page;
+        StateHasChanged();
+    }
+
+    private async Task OnServicesPageChanged(int page)
+    {
+        currentServicesPage = page;
+        StateHasChanged();
     }
 }

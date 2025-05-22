@@ -1,0 +1,156 @@
+﻿.authors-container {
+    display: flex;
+    flex-direction: column;
+    gap: 23px;
+    padding: 0;
+    margin: 0;
+    padding-left: 5px;
+    padding-right: 20px;
+}
+
+.authors-container h2 {
+    font-size: 30px;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+.authors-back {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+    padding: 30px 30px 40px 30px;
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+    margin: 0;
+}
+
+.team-section {
+    margin-bottom: 20px;
+}
+
+.team-section h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+
+.team-members {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.team-member {
+    flex: 1;
+    min-width: 200px;
+    text-align: center;
+    background-color: #F5F6FA;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.member-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 15px;
+}
+
+.member-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.team-member h4 {
+    font-size: 18px;
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.team-member p {
+    margin: 0;
+    color: #606060;
+}
+
+.team-member .email {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #4880FF;
+}
+.line{
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: #D5D5D5;
+    margin: 10px 0 15px 0;
+}
+
+.about-us-container h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+
+.about-us{
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.about-us-box
+{
+    flex: 1;
+    min-width: 200px;
+    text-align: center;
+    background-color: #F5F6FA;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.about-us-box h4 {
+    font-size: 20px;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.about-us-box p {
+    font-size: 16px;
+    margin: 0;
+    color: #606060;
+}
+
+.about-us-box i{
+    font-size: 28px;
+    margin-bottom: 15px;
+    padding: 0;
+    color: #4880FF;
+}
+
+@media (max-width: 1280px) {
+    .authors    -container {
+        gap: 30px;
+        padding-right: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .authors-container {
+        padding-right: 5px;
+        padding-top: 10px;
+    }
+
+    .team-members {
+        flex-direction: column;
+    }
+    .about-us{
+        flex-direction: column;
+    }
+}
+

@@ -10,7 +10,9 @@
 
 <div>
     <div>
-        <h2>Statystyki serwisu</h2>
+        <MudCardHeader Class="statistics-header">
+            <MudText Class="statistics-header-tittle">Statystyki serwisu</MudText>
+        </MudCardHeader>
         
         @if (_isLoading)
         {
@@ -156,6 +158,15 @@
     
     .mud-chart-serie {
         border-radius: 5px;
+    }
+    .statistics-header {
+        margin: 0 0 20px 0;
+        padding: 0;
+    }
+
+    .statistics-header-tittle {
+        font-size: 30px;
+        font-weight: 600;
     }
 </style>
 

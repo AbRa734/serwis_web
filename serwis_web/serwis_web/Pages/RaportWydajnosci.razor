@@ -20,7 +20,7 @@
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
-        padding: 16px;
+        padding: 0 16px 16px 5px;
     }
 
     .report-card {
@@ -46,9 +46,9 @@
         margin-bottom: 20px;
     }
 
-    .date-selector {
-        margin-bottom: 20px;
-    }
+    /*.date-selector {*/
+    /*    margin-bottom: 20px;*/
+    /*}*/
 
     .metrics-card {
         height: 100%;
@@ -168,14 +168,45 @@
         height: 100%;
         border-radius: 4px;
     }
+
+    .new-button {
+        width: 100%;
+        background-color: #4880FF;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 0;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+        margin-top: 5px;
+    }
+
+    .new-button:hover {
+        background-color: #336ff5;
+    }
+    
+    .report-header {
+        margin: 0 0 25px 0;
+        padding: 0;
+    }
+
+    .report-header-tittle {
+        font-size: 30px;
+        font-weight: 600;
+    }
+    
 </style>
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="report-container">
-    <MudText Typo="Typo.h4" Class="mb-4">Raporty wydajności</MudText>
+<div class="report-container">
+    <MudCardHeader Class="report-header">
+        <MudText Class="report-header-tittle">Raport zlecenia</MudText>
+    </MudCardHeader>
 
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
         <MudTabPanel Text="Efektywność serwisanta" Icon="@Icons.Material.Filled.Person">
-            <MudGrid>
+            <MudGrid Style="align-items: center">
                 <MudItem xs="12" md="4">
                     <MudSelect T="int?" Label="Wybierz serwisanta" @bind-Value="_selectedTechnicianId"
                                Class="technician-selector" Variant="Variant.Outlined">
@@ -192,9 +223,8 @@
                     <MudDateRangePicker Label="Zakres dat" @bind-DateRange="_dateRange"
                                         Class="date-selector" Variant="Variant.Outlined"/>
                 </MudItem>
-                <MudItem xs="12" md="4" Class="d-flex align-center">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                               OnClick="GenerateTechnicianReport">
+                <MudItem xs="12" md="4">
+                    <MudButton OnClick="GenerateTechnicianReport" Class="new-button">
                         Generuj raport
                     </MudButton>
                 </MudItem>
@@ -321,14 +351,13 @@
         </MudTabPanel>
 
         <MudTabPanel Text="Zaangażowanie firmy" Icon="@Icons.Material.Filled.Business">
-            <MudGrid>
+            <MudGrid Style="align-items: center">
                 <MudItem xs="12" md="6">
                     <MudDateRangePicker Label="Zakres dat" @bind-DateRange="_companyDateRange"
                                         Class="date-selector" Variant="Variant.Outlined"/>
                 </MudItem>
-                <MudItem xs="12" md="6" Class="d-flex align-center">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                               OnClick="GenerateCompanyReport">
+                <MudItem xs="12" md="6">
+                    <MudButton OnClick="GenerateCompanyReport" Class="new-button">
                         Generuj raport zaangażowania
                     </MudButton>
                 </MudItem>
@@ -472,7 +501,7 @@
             }
         </MudTabPanel>
     </MudTabs>
-</MudContainer>
+</div>
 
 <div class="help-button-container">
     <AccessibilityWidget/>

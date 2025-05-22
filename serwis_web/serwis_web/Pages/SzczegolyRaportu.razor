@@ -98,6 +98,16 @@
         padding: 16px;
     }
 
+    .order-header {
+        margin: 0;
+        padding: 0;
+    }
+
+    .order-header-tittle {
+        font-size: 30px;
+        font-weight: 600;
+    }
+
     .narrower-paper {
         display: flex;
         flex-direction: column;
@@ -125,7 +135,10 @@
 </style>
 
 <div class="order-container">
-    <h2>Raport zlecenia</h2>
+    <MudCardHeader Class="order-header">
+        <MudText Class="order-header-tittle">Raport zlecenia</MudText>
+    </MudCardHeader>
+    
     <div class="order-back">
         <div class="order-tab">
             <MudText Typo="Typo.h6" Class="mb-3">Wybierz zamówienie</MudText>
@@ -565,7 +578,7 @@
 
     private async Task LoadSelectedOrder()
     {
-        if (_selectedOrderId <= 0)
+        if (_selectedOrderId < 0)
         {
             _selectedOrder = null;
             StateHasChanged();

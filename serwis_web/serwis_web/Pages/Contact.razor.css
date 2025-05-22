@@ -91,62 +91,19 @@ button:hover {
     background-color: #336ff5;
 }
 
-/* Team section styles */
-.team-section {
-    margin-bottom: 20px;
+.line{
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: #D5D5D5;
+    margin: 15px 0;
 }
 
-.team-section h3 {
+.map-container h3 {
     font-size: 22px;
     font-weight: 600;
-    margin: 0 0 20px 0;
+    margin: 0 0 10px 0;
     padding: 0;
-}
-
-.team-members {
-    display: flex;
-    gap: 30px;
-    flex-wrap: wrap;
-}
-
-.team-member {
-    flex: 1;
-    min-width: 200px;
-    text-align: center;
-    background-color: #F5F6FA;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-.member-photo {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin: 0 auto 15px;
-}
-
-.member-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.team-member h4 {
-    font-size: 18px;
-    margin: 0 0 5px 0;
-    color: #333;
-}
-
-.team-member p {
-    margin: 0;
-    color: #606060;
-}
-
-.team-member .email {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #4880FF;
 }
 
 @media (max-width: 1366px) {
@@ -175,10 +132,6 @@ button:hover {
     .services-container {
         padding-right: 5px;
         padding-top: 10px;
-    }
-
-    .team-members {
-        flex-direction: column;
     }
 }
 
