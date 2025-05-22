@@ -12,54 +12,8 @@
 
 <div class="services-container">
     <h2>Kontakt</h2>
-
+    
     <div class="service-back">
-        <div class="team-section">
-            <h3>Zespół projektowy</h3>
-            <div class="team-members">
-                <div class="team-member">
-                    <div class="member-photo">
-                        <img src="placeholder.png" alt="Kornelia Kołowska" />
-                    </div>
-                    <h4>Kornelia Kołowska</h4>
-                    <p>Mobile Developer</p>
-                    <p class="email">245845@edu.p.lodz.pl</p>
-                </div>
-                <div class="team-member">
-                    <div class="member-photo">
-                        <img src="placeholder.png" alt="Bartłomiej Mielnicki" />
-                    </div>
-                    <h4>Bartłomiej Mielnicki</h4>
-                    <p>Mobile Developer</p>
-                    <p class="email">245876@edu.p.lodz.pl</p>
-                </div>
-                <div class="team-member">
-                    <div class="member-photo">
-                        <img src="placeholder.png" alt="Jakub Borkiewicz" />
-                    </div>
-                    <h4>Jakub Borkiewicz</h4>
-                    <p>Mobile Developer</p>
-                    <p class="email">245775@edu.p.lodz.pl</p>
-                </div>
-                <div class="team-member">
-                    <div class="member-photo">
-                        <img src="placeholder.png" alt="Daniel Karolak" />
-                    </div>
-                    <h4>Daniel Karolak</h4>
-                    <p>Frontend Developer</p>
-                    <p class="email">245838@edu.p.lodz.pl</p>
-                </div>
-                <div class="team-member">
-                    <div class="member-photo">
-                        <img src="placeholder.png" alt="Oliwier Szafrański" />
-                    </div>
-                    <h4>Oliwier Szafrański</h4>
-                    <p>Fullstack Developer</p>
-                    <p class="email">245935@edu.p.lodz.pl</p>
-                </div>
-            </div>
-        </div>
-
         <EditForm Model="@_contactModel" OnValidSubmit="SendMessage">
             <DataAnnotationsValidator />
             <div class="service-tab">
@@ -96,6 +50,8 @@
                 }
             </button>
         </EditForm>
+        
+        <span class="line"></span>
 
         <div class="map-container">
             <h3>Nasza lokalizacja</h3>
