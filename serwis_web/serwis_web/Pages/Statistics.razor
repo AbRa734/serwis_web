@@ -61,7 +61,7 @@
                     </MudCard>
                 </MudItem>
 
-                <MudItem xs="12" md="6">
+                @**<MudItem xs="12" md="6">
                     <MudCard Elevation="3" Class="rounded-lg overflow-hidden h-100">
                         <MudCardHeader Class="pb-0">
                             <CardHeaderContent>
@@ -72,10 +72,30 @@
                         </MudCardHeader>
                         <MudCardContent>
                             <MudChart ChartType="ChartType.Bar" 
-                                     Width="100%" 
-                                     Height="300px" 
-                                     ChartSeries="@_technicianWorkloadSeries" 
-                                     XAxisLabels="@_technicianNames" />
+                                      Width="100%" 
+                                      Height="300px" 
+                                      ChartSeries="@_technicianWorkloadSeries" 
+                                      XAxisLabels="@_technicianNames" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>**@
+                
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="3" Class="rounded-lg overflow-hidden h-100">
+                        <MudCardHeader Class="pb-0">
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Color="Color.Primary">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="mr-2" /> Średni czas realizacji zamówień
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="d-flex justify-center">
+                            <MudChart ChartType="ChartType.Donut" 
+                                      Width="90%" 
+                                      Height="300px" 
+                                      InputData="@_avgTimeData" 
+                                      InputLabels="@_avgTimeLabels" 
+                                      LegendPosition="Position.Right" />
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
@@ -99,27 +119,9 @@
                     </MudCard>
                 </MudItem>
 
-                <MudItem xs="12" md="6">
-                    <MudCard Elevation="3" Class="rounded-lg overflow-hidden h-100">
-                        <MudCardHeader Class="pb-0">
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6" Color="Color.Primary">
-                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="mr-2" /> Średni czas realizacji zamówień
-                                </MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent Class="d-flex justify-center">
-                            <MudChart ChartType="ChartType.Donut" 
-                                     Width="90%" 
-                                     Height="300px" 
-                                     InputData="@_avgTimeData" 
-                                     InputLabels="@_avgTimeLabels" 
-                                     LegendPosition="Position.Right" />
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
 
-                <MudItem xs="12" md="6">
+
+                @**<MudItem xs="12" md="6">
                     <MudCard Elevation="3" Class="rounded-lg overflow-hidden h-100">
                         <MudCardHeader Class="pb-0">
                             <CardHeaderContent>
@@ -136,7 +138,7 @@
                                      XAxisLabels="@_weekdayLabels" />
                         </MudCardContent>
                     </MudCard>
-                </MudItem>
+                </MudItem>**@
             </MudGrid>
         }
     </div>
