@@ -56,6 +56,23 @@
         background-color: #336ff5;
     }
 
+    .save-filters-button {
+        background-color: #4880FF;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 0;
+        width: 100%;
+        color: #FFFFFF;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        text-transform: none;
+    }
+
+    .save-filters-button:hover {
+        background-color: #336ff5;
+    }
+
     .filter-button {
         /*background-color: #f1f4f9;*/
         /*border: 1px solid #e0e0e0;*/
@@ -395,8 +412,7 @@
                             }
                         </MudSelect>
                     }
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="ApplyFilters"
-                               Class="mt-4">
+                    <MudButton Class="save-filters-button" OnClick="ApplyFilters">
                         Zastosuj filtry
                     </MudButton>
                 </MudItem>
