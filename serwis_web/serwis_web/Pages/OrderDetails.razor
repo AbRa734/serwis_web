@@ -1496,7 +1496,7 @@
 		
 		if (_orderDataModel.NumerDomu < 1 || _orderDataModel.NumerDomu > 1000)
 		{
-			_numerDomuValidationMessage = "Numer domu musi być z przedzialu od 0 do 1000";
+			_numerDomuValidationMessage = "Numer domu musi być z przedzialu od 1 do 1000";
 			isValid = false;
 		}
 
@@ -1514,13 +1514,13 @@
         
         if (string.IsNullOrWhiteSpace(_orderDataModel.ImieKlienta) || _orderDataModel.ImieKlienta.Length < 1)
         {
-            _imieKlientaValidationMessage = "Wprodzadz prawidlowe format imienia";
+            _imieKlientaValidationMessage = "Wprowadz prawidlowe format imienia";
             isValid = false;
         }
         
         if (string.IsNullOrWhiteSpace(_orderDataModel.NazwiskoKlienta) || _orderDataModel.NazwiskoKlienta.Length < 1)
         {
-            _nazwiskoKlientaValidationMessage = "Wprodzadz prawidlowe format nazwiska";
+            _nazwiskoKlientaValidationMessage = "Wprowadz prawidlowe format nazwiska";
             isValid = false;
         }
         

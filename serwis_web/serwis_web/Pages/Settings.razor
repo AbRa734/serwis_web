@@ -8,6 +8,7 @@
 @using Size = MudBlazor.Size
 @using serwis_web.Components
 @inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
 
 <style>
 	.settings-container {
@@ -225,77 +226,82 @@
 
 	<div class="settings-back">
 		<div class="settings-tab">
-			<EditForm Model="@_userDataModel" OnSubmit="HandleFormSubmit" class="settings-col">
+			<EditForm Model="@_userDataModel" OnSubmit="SaveUserData" class="settings-col">
 				<DataAnnotationsValidator/>
 				
 				<h4>Imię <span style="color: #F44336">*</span></h4>
-				<InputText @bind-Value="_userDataModel.Imie" placeholder="Imię użytkownika" class="@(ValidationErrors.ContainsKey("Imie") ? "invalid-field" : "")" />
-				@if (ValidationErrors.ContainsKey("Imie"))
+				<InputText @bind-Value="_userDataModel.Imie" placeholder="Imię użytkownika" class="@(_formSubmitted && !string.IsNullOrEmpty(_imieValidationMessage) ? "invalid-field" : "")" />
+				@if (_formSubmitted && !string.IsNullOrEmpty(_imieValidationMessage))
 				{
-					<div class="validation-message">@ValidationErrors["Imie"]</div>
+					<div class="validation-message">@_imieValidationMessage</div>
 				}
 
 				<h4>Nazwisko <span style="color: #F44336">*</span></h4>
-				<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nazwisko użytkownika" class="@(ValidationErrors.ContainsKey("Nazwisko") ? "invalid-field" : "")" />
-				@if (ValidationErrors.ContainsKey("Nazwisko"))
+				<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nazwisko użytkownika" class="@(_formSubmitted && !string.IsNullOrEmpty(_nazwiskoValidationMessage) ? "invalid-field" : "")" />
+				@if (_formSubmitted && !string.IsNullOrEmpty(_nazwiskoValidationMessage))
 				{
-					<div class="validation-message">@ValidationErrors["Nazwisko"]</div>
+					<div class="validation-message">@_nazwiskoValidationMessage</div>
 				}
 
 				<div class="settings-row">
 					<div class="single-col">
 						<h4>Numer Telefonu</h4>
-						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="@(ValidationErrors.ContainsKey("NumerTelefonu") ? "invalid-field" : "")" />
-						@if (ValidationErrors.ContainsKey("NumerTelefonu"))
+						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuValidationMessage) ? "invalid-field" : "")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuValidationMessage))
 						{
-							<div class="validation-message">@ValidationErrors["NumerTelefonu"]</div>
+							<div class="validation-message">@_numerTelefonuValidationMessage</div>
 						}
 					</div>
 					<div class="single-col">
 						<h4>Adres Email <span style="color: #F44336">*</span></h4>
-						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" readonly class="@(ValidationErrors.ContainsKey("Email") ? "invalid-field" : "")" />
-						@if (ValidationErrors.ContainsKey("Email"))
-						{
-							<div class="validation-message">@ValidationErrors["Email"]</div>
-						}
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" readonly />
 					</div>
 				</div>
 
 				<h4>Państwo</h4>
-				<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" />
+				<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" class="@(_formSubmitted && !string.IsNullOrEmpty(_panstwoValidationMessage) ? "invalid-field" : "")"/>
+				@if (_formSubmitted && !string.IsNullOrEmpty(_panstwoValidationMessage))
+				{
+					<div class="validation-message">@_panstwoValidationMessage</div>
+				}
 
 				<div class="settings-row">
 					<div class="single-col">
 						<h4>Ulica</h4>
-						<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" />
+						<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" class="@(_formSubmitted && !string.IsNullOrEmpty(_ulicaValidationMessage) ? "invalid-field" : "")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_ulicaValidationMessage))
+						{
+							<div class="validation-message">@_ulicaValidationMessage</div>
+						}
 					</div>
 					<div class="single-col">
 						<h4>Numer Domu</h4>
-						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" />
+						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "invalid-field" : "")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage))
+						{
+							<div class="validation-message">@_numerDomuValidationMessage</div>
+						}
 					</div>
 				</div>
 
 				<div class="settings-row">
 					<div class="single-col">
 						<h4>Miasto</h4>
-						<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" />
+						<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" class="@(_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage) ? "invalid-field" : "")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage))
+						{
+							<div class="validation-message">@_miastoValidationMessage</div>
+						}
 					</div>
 					<div class="single-col">
 						<h4>Kod pocztowy</h4>
-						<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="@(ValidationErrors.ContainsKey("KodPocztowy") ? "invalid-field" : "")" />
-						@if (ValidationErrors.ContainsKey("KodPocztowy"))
+						<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="@(_formSubmitted && !string.IsNullOrEmpty(_kodPocztowyValidationMessage) ? "invalid-field" : "")" />
+						@if (_formSubmitted && !string.IsNullOrEmpty(_kodPocztowyValidationMessage))
 						{
-							<div class="validation-message">@ValidationErrors["KodPocztowy"]</div>
+							<div class="validation-message">@_kodPocztowyValidationMessage</div>
 						}
 					</div>
 				</div>
-
-				@if (HasValidationErrors)
-				{
-					<div class="error-message">
-						Proszę poprawić błędy w formularzu przed zapisaniem zmian.
-					</div>
-				}
 
 				<button type="submit" class="setting-btn" disabled="@_isSaving">
 					@if (_isSaving)
@@ -353,11 +359,18 @@
 	private bool _isSocialLogin = false;
 	private bool _isEmailSending = false;
 	private bool _isSaving = false;
+	private bool _formSubmitted = false;
+	private string _imieValidationMessage = string.Empty;
+	private string _nazwiskoValidationMessage = string.Empty;
+	private string _numerTelefonuValidationMessage = string.Empty;
+	private string _panstwoValidationMessage = string.Empty;
+	private string _ulicaValidationMessage = string.Empty;
+	private string _numerDomuValidationMessage = string.Empty;
+	private string _miastoValidationMessage = string.Empty;
+	private string _kodPocztowyValidationMessage = string.Empty;
 	
 	private Dictionary<string, string> ValidationErrors = new Dictionary<string, string>();
 	
-	public bool HasValidationErrors => ValidationErrors.Count > 0;
-
 	protected override async Task OnInitializedAsync()
 	{
 		await LoadUser();
@@ -430,62 +443,6 @@
 		}
 	}
 
-	private async Task HandleFormSubmit()
-	{
-		ValidationErrors.Clear();
-		ValidateForm();
-		StateHasChanged();
-		if (!HasValidationErrors)
-		{
-			await SaveUserData();
-		}
-	}
-
-	private void ValidateForm()
-	{
-		if (string.IsNullOrWhiteSpace(_userDataModel.Imie))
-		{
-			ValidationErrors["Imie"] = "Imię jest wymagane";
-		}
-		
-		if (string.IsNullOrWhiteSpace(_userDataModel.Nazwisko))
-		{
-			ValidationErrors["Nazwisko"] = "Nazwisko jest wymagane";
-		}
-		
-		if (string.IsNullOrWhiteSpace(_userDataModel.Email))
-		{
-			ValidationErrors["Email"] = "Adres email jest wymagany";
-		}
-		else if (!IsValidEmail(_userDataModel.Email))
-		{
-			ValidationErrors["Email"] = "Nieprawidłowy format adresu email";
-		}
-		
-		if (!string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu) && !IsValidPhoneNumber(_userDataModel.NumerTelefonu))
-		{
-			ValidationErrors["NumerTelefonu"] = "Nieprawidłowy format numeru telefonu, powinien zawierać 9 cyfr";
-		}
-		
-		if (!string.IsNullOrWhiteSpace(_userDataModel.KodPocztowy) && !IsValidPostalCode(_userDataModel.KodPocztowy))
-		{
-			ValidationErrors["KodPocztowy"] = "Nieprawidłowy format kodu pocztowego (XX-XXX)";
-		}
-	}
-	
-	private bool IsValidEmail(string email)
-	{
-		try
-		{
-			var addr = new System.Net.Mail.MailAddress(email);
-			return addr.Address == email;
-		}
-		catch
-		{
-			return false;
-		}
-	}
-
 	private bool IsValidPhoneNumber(string phone)
 	{
 		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{9}$");
@@ -498,6 +455,13 @@
 
 	private async Task SaveUserData()
 	{
+		_formSubmitted = true;
+		
+		if (!ValidateForm())
+		{
+			return;
+		}
+		
 		try
 		{
 			_isSaving = true;
@@ -571,8 +535,8 @@
 				ShowError("Błąd podczas zapisywania danych użytkownika.");
 				return;
 			}
-
-			ShowSuccess("Dane zostały zapisane poprawnie.");
+			Snackbar.Add("Dane zostały zapisane poprawnie.", Severity.Success);
+			// ShowSuccess("Dane zostały zapisane poprawnie.");
 			await LoadUserData(); 
 		}
 		catch (Exception ex)
@@ -583,6 +547,70 @@
 		{
 			_isSaving = false;
 		}
+	}
+	
+	private bool ValidateForm()
+	{
+		bool isValid = true;
+			
+		_imieValidationMessage = string.Empty;
+		_nazwiskoValidationMessage = string.Empty;
+		_numerTelefonuValidationMessage = string.Empty;
+		_panstwoValidationMessage = string.Empty;
+		_ulicaValidationMessage = string.Empty;
+		_numerDomuValidationMessage = string.Empty;
+		_miastoValidationMessage = string.Empty;
+		_kodPocztowyValidationMessage = string.Empty;
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Imie) || _userDataModel.Imie.Length < 2 || _userDataModel.Imie.Length > 100)
+		{
+			_imieValidationMessage = "Imię musi mieć od 2 do 100 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Nazwisko) || _userDataModel.Nazwisko.Length < 2 || _userDataModel.Nazwisko.Length > 100)
+		{
+			_nazwiskoValidationMessage = "Nazwisko musi mieć od 2 do 100 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu) || !IsValidPhoneNumber(_userDataModel.NumerTelefonu))
+		{
+			_numerTelefonuValidationMessage = "Nieprawidłowy format numeru telefonu";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Kraj) || _userDataModel.Kraj.Length > 64 || _userDataModel.Kraj.Length < 2)
+		{
+			_panstwoValidationMessage = "Państwo musi mieć od 2 do 64 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Ulica) || _userDataModel.Ulica.Length > 100 || _userDataModel.Ulica.Length < 2)
+		{
+			_ulicaValidationMessage = "Ulica musi mieć od 2 do 100 znaków";
+			isValid = false;
+		}
+		
+		if (_userDataModel.NumerDomu < 1 || _userDataModel.NumerDomu > 1000)
+		{
+			_numerDomuValidationMessage = "Numer domu musi być z przedzialu od 1 do 1000";
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(_userDataModel.Miasto) || _userDataModel.Miasto.Length > 85 || _userDataModel.Miasto.Length < 2)
+		{
+			_miastoValidationMessage = "Miasto musi mieć od 2 do 85 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.KodPocztowy) || !IsValidPostalCode(_userDataModel.KodPocztowy))
+		{
+			_kodPocztowyValidationMessage = "Kod pocztowy powinien mieć format XX-XXX";
+			isValid = false;
+		}
+        
+		return isValid;
 	}
 
 

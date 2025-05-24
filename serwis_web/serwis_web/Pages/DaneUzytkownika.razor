@@ -164,6 +164,16 @@
 		cursor: pointer;
 	}
 
+	.validation-message {
+		color: #F44336;
+		font-size: 12px;
+		margin-top: -5px;
+		margin-bottom: 10px;
+	}
+	
+	.invalid-field {
+		border: 1px solid #F44336 !important;
+	}
 
 	@@media (max-width: 1366px) {
 		.service-tab {
@@ -253,58 +263,84 @@
 		<div class="@_messageClass">@_message</div>
 	}
 
-	<EditForm Model="@_userDataModel" OnValidSubmit="SaveUserData" class="service-back">
+	<EditForm Model="@_userDataModel" OnSubmit="SaveUserData" class="service-back">
 		<DataAnnotationsValidator/>
-		<ValidationSummary/>
 
 		<div class="service-tab">
 			<div class="service-col">
 
 				<h4>Imię</h4>
-				<InputText @bind-Value="_userDataModel.Imie" placeholder="Imię użytkownika" class="form-input"/>
+				<InputText @bind-Value="_userDataModel.Imie" placeholder="Imię użytkownika" class="@(_formSubmitted && !string.IsNullOrEmpty(_imieValidationMessage) ? "form-input invalid-field" : "form-input")" />
+				@if (_formSubmitted && !string.IsNullOrEmpty(_imieValidationMessage))
+				{
+					<div class="validation-message">@_imieValidationMessage</div>
+				}
 
 				<h4>Nazwisko</h4>
-				<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nazwisko użytkownika" class="form-input"/>
+				<InputText @bind-Value="_userDataModel.Nazwisko" placeholder="Nazwisko użytkownika" class="@(_formSubmitted && !string.IsNullOrEmpty(_nazwiskoValidationMessage) ? "form-input invalid-field" : "form-input")"/>
+				@if (_formSubmitted && !string.IsNullOrEmpty(_nazwiskoValidationMessage))
+				{
+					<div class="validation-message">@_nazwiskoValidationMessage</div>
+				}
 
 				<div class="service-row">
 					<div class="single-col">
 						<h4>Numer Telefonu</h4>
-						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu"
-						           class="form-input"/>
-						<ValidationMessage For="@(() => _userDataModel.NumerTelefonu)"/>
+						<InputText @bind-Value="_userDataModel.NumerTelefonu" placeholder="Numer telefonu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuValidationMessage) ? "form-input invalid-field" : "form-input")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_numerTelefonuValidationMessage))
+						{
+							<div class="validation-message">@_numerTelefonuValidationMessage</div>
+						}
+
 					</div>
 					<div class="single-col">
 						<h4>Adres Email</h4>
-						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input"
-						           readonly/>
-						<ValidationMessage For="@(() => _userDataModel.Email)"/>
+						<InputText @bind-Value="_userDataModel.Email" placeholder="Adres email" class="form-input" readonly/>
 					</div>
 				</div>
 
 				<h4>Państwo</h4>
-				<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" class="form-input"/>
+				<InputText @bind-Value="_userDataModel.Kraj" placeholder="Państwo" class="@(_formSubmitted && !string.IsNullOrEmpty(_panstwoValidationMessage) ? "form-input invalid-field" : "form-input")"/>
+				@if (_formSubmitted && !string.IsNullOrEmpty(_panstwoValidationMessage))
+				{
+					<div class="validation-message">@_panstwoValidationMessage</div>
+				}
 
 				<div class="service-row">
 					<div class="single-col">
 						<h4>Ulica</h4>
-						<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" class="form-input"/>
+						<InputText @bind-Value="_userDataModel.Ulica" placeholder="Ulica" class="@(_formSubmitted && !string.IsNullOrEmpty(_ulicaValidationMessage) ? "form-input invalid-field" : "form-input")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_ulicaValidationMessage))
+						{
+							<div class="validation-message">@_ulicaValidationMessage</div>
+						}
 					</div>
 					<div class="single-col">
 						<h4>Numer Domu</h4>
-						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu"
-						             class="form-input"/>
+						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "form-input invalid-field" : "form-input")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage))
+						{
+							<div class="validation-message">@_numerDomuValidationMessage</div>
+						}
 					</div>
 				</div>
 
 				<div class="service-row">
 					<div class="single-col">
 						<h4>Miasto</h4>
-						<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" class="form-input"/>
+						<InputText @bind-Value="_userDataModel.Miasto" placeholder="Miasto" class="@(_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage) ? "form-input invalid-field" : "form-input")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage))
+						{
+							<div class="validation-message">@_miastoValidationMessage</div>
+						}
 					</div>
 					<div class="single-col">
 						<h4>Kod pocztowy</h4>
-						<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy"
-						           class="form-input"/>
+						<InputText @bind-Value="_userDataModel.KodPocztowy" placeholder="Kod pocztowy" class="@(_formSubmitted && !string.IsNullOrEmpty(_miastoValidationMessage) ? "form-input invalid-field" : "form-input")"/>
+						@if (_formSubmitted && !string.IsNullOrEmpty(_kodPocztowyValidationMessage))
+						{
+							<div class="validation-message">@_kodPocztowyValidationMessage</div>
+						}
 					</div>
 				</div>
 
@@ -367,6 +403,15 @@
 
 	private string? _message;
 	private string _messageClass = "success-message";
+	private bool _formSubmitted = false;
+	private string _imieValidationMessage = string.Empty;
+	private string _nazwiskoValidationMessage = string.Empty;
+	private string _numerTelefonuValidationMessage = string.Empty;
+	private string _panstwoValidationMessage = string.Empty;
+	private string _ulicaValidationMessage = string.Empty;
+	private string _numerDomuValidationMessage = string.Empty;
+	private string _miastoValidationMessage = string.Empty;
+	private string _kodPocztowyValidationMessage = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -412,7 +457,6 @@
 		_userDataModel.RoleId = _currentUser.RolaUzytkownika.RolaUzytkownikaId;
 		_userDataModel.PreviousRolId = _currentUser.RolaUzytkownika.RolaUzytkownikaId;
 		_userDataModel.CzyAktywny = _currentUser.CzyAktywny;
-		_userDataModel.CzyAktywnyText = _currentUser.CzyAktywny ? "Tak" : "Nie";
 		_userDataModel.AdresEmailId = _currentUser.AdresEmailId;
 		_userDataModel.NumerTelefonuId = _currentUser.NumerTelefonuId;
 		_userDataModel.AdresId = _currentUser.Adres?.AdresId;
@@ -449,6 +493,13 @@
 
 	private async Task SaveUserData()
 	{
+		_formSubmitted = true;
+		
+		if (!ValidateForm())
+		{
+			return;
+		}
+		
 		try
 		{
 			int adresEmailId = _currentUser.AdresEmailId;
@@ -582,6 +633,81 @@
 			ShowError("Wystąpił nieoczekiwany błąd.");
 		}
 	}
+	
+	private bool IsValidPhoneNumber(string phone)
+	{
+		return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{9}$");
+	}
+
+	private bool IsValidPostalCode(string postalCode)
+	{
+		return System.Text.RegularExpressions.Regex.IsMatch(postalCode, @"^\d{2}-\d{3}$");
+	}
+
+	
+	private bool ValidateForm()
+	{
+		bool isValid = true;
+			
+		_imieValidationMessage = string.Empty;
+		_nazwiskoValidationMessage = string.Empty;
+		_numerTelefonuValidationMessage = string.Empty;
+		_panstwoValidationMessage = string.Empty;
+		_ulicaValidationMessage = string.Empty;
+		_numerDomuValidationMessage = string.Empty;
+		_miastoValidationMessage = string.Empty;
+		_kodPocztowyValidationMessage = string.Empty;
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Imie) || _userDataModel.Imie.Length < 2 || _userDataModel.Imie.Length > 100)
+		{
+			_imieValidationMessage = "Imię musi mieć od 2 do 100 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Nazwisko) || _userDataModel.Nazwisko.Length < 2 || _userDataModel.Nazwisko.Length > 100)
+		{
+			_nazwiskoValidationMessage = "Nazwisko musi mieć od 2 do 100 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.NumerTelefonu) || !IsValidPhoneNumber(_userDataModel.NumerTelefonu))
+		{
+			_numerTelefonuValidationMessage = "Nieprawidłowy format numeru telefonu";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Kraj) || _userDataModel.Kraj.Length > 64 || _userDataModel.Kraj.Length < 2)
+		{
+			_panstwoValidationMessage = "Państwo musi mieć od 2 do 64 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.Ulica) || _userDataModel.Ulica.Length > 100 || _userDataModel.Ulica.Length < 2)
+		{
+			_ulicaValidationMessage = "Ulica musi mieć od 2 do 100 znaków";
+			isValid = false;
+		}
+		
+		if (_userDataModel.NumerDomu < 1 || _userDataModel.NumerDomu > 1000)
+		{
+			_numerDomuValidationMessage = "Numer domu musi być z przedzialu od 1 do 1000";
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(_userDataModel.Miasto) || _userDataModel.Miasto.Length > 85 || _userDataModel.Miasto.Length < 2)
+		{
+			_miastoValidationMessage = "Miasto musi mieć od 2 do 85 znaków";
+			isValid = false;
+		}
+		
+		if (string.IsNullOrWhiteSpace(_userDataModel.KodPocztowy) || !IsValidPostalCode(_userDataModel.KodPocztowy))
+		{
+			_kodPocztowyValidationMessage = "Kod pocztowy powinien mieć format XX-XXX";
+			isValid = false;
+		}
+        
+		return isValid;
+	}
 
 	private void ShowSuccess(string message)
 	{
@@ -602,61 +728,57 @@
 
 	public class UserDataModel
 	{
-		[Required(ErrorMessage = "ID użytkownika jest wymagane")]
+		// [Required(ErrorMessage = "ID użytkownika jest wymagane")]
 		public int UzytkownikId { get; set; }
 
-		[Required(ErrorMessage = "Imię jest wymagane")]
-		[StringLength(50, ErrorMessage = "Imię nie może przekraczać 50 znaków")]
+		// [Required(ErrorMessage = "Imię jest wymagane")]
+		// [StringLength(50, ErrorMessage = "Imię nie może przekraczać 50 znaków")]
 		public string? Imie { get; set; }
 
-		[Required(ErrorMessage = "Nazwisko jest wymagane")]
-		[StringLength(50, ErrorMessage = "Nazwisko nie może przekraczać 50 znaków")]
+		// [Required(ErrorMessage = "Nazwisko jest wymagane")]
+		// [StringLength(50, ErrorMessage = "Nazwisko nie może przekraczać 50 znaków")]
 		public string? Nazwisko { get; set; }
 
-		[EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
-		[Required(ErrorMessage = "Email jest wymagany")]
-		[StringLength(100, ErrorMessage = "Email nie może przekraczać 100 znaków")]
+		// [EmailAddress(ErrorMessage = "Proszę podać poprawny adres email")]
+		// [Required(ErrorMessage = "Email jest wymagany")]
+		// [StringLength(100, ErrorMessage = "Email nie może przekraczać 100 znaków")]
 		public string? Email { get; set; }
 
-		[RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
-		[Required(ErrorMessage = "Numer telefonu jest wymagany")]
+		// [RegularExpression(@"^\d{9}$", ErrorMessage = "Numer telefonu powinien składać się z 9 cyfr")]
+		// [Required(ErrorMessage = "Numer telefonu jest wymagany")]
 		public string? NumerTelefonu { get; set; }
 
-		[Required(ErrorMessage = "Ulica jest wymagana")]
-		[StringLength(100, ErrorMessage = "Ulica nie może przekraczać 100 znaków")]
+		// [Required(ErrorMessage = "Ulica jest wymagana")]
+		// [StringLength(100, ErrorMessage = "Ulica nie może przekraczać 100 znaków")]
 		public string? Ulica { get; set; }
 
-		[Required(ErrorMessage = "Numer domu jest wymagany")]
+		// [Required(ErrorMessage = "Numer domu jest wymagany")]
 		public int NumerDomu { get; set; }
 
 		public int? NumerMieszkania { get; set; }
 
-		[RegularExpression(@"^\d{2}-\d{3}$", ErrorMessage = "Kod pocztowy powinien mieć format XX-XXX")]
-		[StringLength(6, ErrorMessage = "Kod pocztowy nie może przekraczać 6 znaków")]
+		// [RegularExpression(@"^\d{2}-\d{3}$", ErrorMessage = "Kod pocztowy powinien mieć format XX-XXX")]
+		// [StringLength(6, ErrorMessage = "Kod pocztowy nie może przekraczać 6 znaków")]
 		public string? KodPocztowy { get; set; }
 
-		[StringLength(50, ErrorMessage = "Miasto nie może przekraczać 50 znaków")]
+		// [StringLength(50, ErrorMessage = "Miasto nie może przekraczać 50 znaków")]
 		public string? Miasto { get; set; }
 
-		[StringLength(50, ErrorMessage = "Kraj nie może przekraczać 50 znaków")]
+		// [StringLength(50, ErrorMessage = "Kraj nie może przekraczać 50 znaków")]
 		public string? Kraj { get; set; }
 
 		public DateTimeOffset? DataAktualizacji { get; set; }
 
-		[Required(ErrorMessage = "Data dodania jest wymagana")]
+		// [Required(ErrorMessage = "Data dodania jest wymagana")]
 		public DateTimeOffset DataDodania { get; set; }
 
-		[Required(ErrorMessage = "Rola użytkownika jest wymagana")]
+		// [Required(ErrorMessage = "Rola użytkownika jest wymagana")]
 		public int RoleId { get; set; }
 
 		public int PreviousRolId { get; set; }
 
 		public bool CzyAktywny { get; set; }
-
-		[Required(ErrorMessage = "Status aktywności jest wymagany")]
-		[StringLength(3, ErrorMessage = "Status aktywności nie może przekraczać 3 znaków")]
-		public string CzyAktywnyText { get; set; }
-
+		
 		public int AdresEmailId { get; set; }
 
 		public int? NumerTelefonuId { get; set; }
