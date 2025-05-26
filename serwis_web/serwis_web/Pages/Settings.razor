@@ -276,7 +276,7 @@
 					</div>
 					<div class="single-col">
 						<h4>Numer Domu</h4>
-						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "invalid-field" : "")"/>
+						<InputText @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "invalid-field" : "")"/>
 						@if (_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage))
 						{
 							<div class="validation-message">@_numerDomuValidationMessage</div>
@@ -420,7 +420,7 @@
 		if (_currentAddress != null)
 		{
 			_userDataModel.Ulica = _currentAddress.Ulica;
-			_userDataModel.NumerDomu = _currentAddress.NumerDomu;
+			_userDataModel.NumerDomu = _currentAddress.NumerDomu.ToString();
 			_userDataModel.NumerMieszkania = _currentAddress.NumerMieszkania;
 			_userDataModel.KodPocztowy = _currentAddress.KodPocztowy;
 			_userDataModel.Miasto = _currentAddress.Miasto;
@@ -493,12 +493,18 @@
 			}
 
 			int adresId = _currentAddress?.AdresId ?? 0;
-			if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
+			if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.NumerDomu) && !string.IsNullOrWhiteSpace(_userDataModel.KodPocztowy) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto) && !string.IsNullOrWhiteSpace(_userDataModel.Kraj))
 			{
+				int numerDomuInt = 0;
+				if (!string.IsNullOrEmpty(_userDataModel.NumerDomu))
+				{
+					int.TryParse(_userDataModel.NumerDomu, out numerDomuInt);
+				}
+				
 				var adresDto = new AdresDto
 				{
 					Ulica = _userDataModel.Ulica,
-					NumerDomu = _userDataModel.NumerDomu,
+					NumerDomu = numerDomuInt,
 					NumerMieszkania = _userDataModel.NumerMieszkania,
 					KodPocztowy = _userDataModel.KodPocztowy,
 					Miasto = _userDataModel.Miasto,
@@ -537,7 +543,7 @@
 			}
 			Snackbar.Add("Dane zostały zapisane poprawnie.", Severity.Success);
 			// ShowSuccess("Dane zostały zapisane poprawnie.");
-			await LoadUserData(); 
+			// await LoadUserData(); 
 		}
 		catch (Exception ex)
 		{
@@ -592,9 +598,15 @@
 			isValid = false;
 		}
 		
-		if (_userDataModel.NumerDomu < 1 || _userDataModel.NumerDomu > 1000)
+		if (string.IsNullOrWhiteSpace(_userDataModel.NumerDomu))
 		{
-			_numerDomuValidationMessage = "Numer domu musi być z przedzialu od 1 do 1000";
+			_numerDomuValidationMessage = "Numer domu nie może być pusty";
+			isValid = false;
+		}
+		
+		else if (!int.TryParse(_userDataModel.NumerDomu, out int numerDomu) || numerDomu < 1 || numerDomu > 1000)
+		{
+			_numerDomuValidationMessage = "Numer domu musi być liczbą z przedziału od 1 do 1000";
 			isValid = false;
 		}
 
@@ -652,7 +664,7 @@
 		public string? Email { get; set; }
 		public string? NumerTelefonu { get; set; }
 		public string? Ulica { get; set; }
-		public int NumerDomu { get; set; }
+		public string? NumerDomu { get; set; }
 		public int? NumerMieszkania { get; set; }
 		public string? KodPocztowy { get; set; }
 		public string? Miasto { get; set; }

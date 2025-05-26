@@ -317,7 +317,7 @@
 					</div>
 					<div class="single-col">
 						<h4>Numer Domu</h4>
-						<InputNumber @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "form-input invalid-field" : "form-input")"/>
+						<InputText @bind-Value="_userDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "form-input invalid-field" : "form-input")"/>
 						@if (_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage))
 						{
 							<div class="validation-message">@_numerDomuValidationMessage</div>
@@ -471,7 +471,7 @@
 		_userDataModel.NumerTelefonu = _currentPhone?.Numer;
 
 		_userDataModel.Ulica = _currentUser.Adres?.Ulica;
-		_userDataModel.NumerDomu = _currentUser.Adres?.NumerDomu ?? 0;
+		_userDataModel.NumerDomu = _currentUser.Adres?.NumerDomu.ToString();
 		_userDataModel.NumerMieszkania = _currentUser.Adres?.NumerMieszkania ?? 0;
 		_userDataModel.KodPocztowy = _currentUser.Adres?.KodPocztowy;
 		_userDataModel.Miasto = _currentUser.Adres?.Miasto;
@@ -526,10 +526,16 @@
 			int adresId = _currentAddress?.AdresId ?? 0;
 			if (!string.IsNullOrWhiteSpace(_userDataModel.Ulica) && !string.IsNullOrWhiteSpace(_userDataModel.Miasto))
 			{
+				int numerDomuInt = 0;
+				if (!string.IsNullOrEmpty(_userDataModel.NumerDomu))
+				{
+					int.TryParse(_userDataModel.NumerDomu, out numerDomuInt);
+				}
+				
 				var adresDto = new AdresDto
 				{
 					Ulica = _userDataModel.Ulica,
-					NumerDomu = _userDataModel.NumerDomu,
+					NumerDomu = numerDomuInt,
 					NumerMieszkania = _userDataModel.NumerMieszkania,
 					KodPocztowy = _userDataModel.KodPocztowy,
 					Miasto = _userDataModel.Miasto,
@@ -687,10 +693,16 @@
 			_ulicaValidationMessage = "Ulica musi mieć od 2 do 100 znaków";
 			isValid = false;
 		}
-		
-		if (_userDataModel.NumerDomu < 1 || _userDataModel.NumerDomu > 1000)
+
+		if (string.IsNullOrWhiteSpace(_userDataModel.NumerDomu))
 		{
-			_numerDomuValidationMessage = "Numer domu musi być z przedzialu od 1 do 1000";
+			_numerDomuValidationMessage = "Numer domu nie może być pusty";
+			isValid = false;
+		}
+		
+		else if (!int.TryParse(_userDataModel.NumerDomu, out int numerDomu) || numerDomu < 1 || numerDomu > 1000)
+		{
+			_numerDomuValidationMessage = "Numer domu musi być liczbą z przedziału od 1 do 1000";
 			isValid = false;
 		}
 
@@ -753,7 +765,7 @@
 		public string? Ulica { get; set; }
 
 		// [Required(ErrorMessage = "Numer domu jest wymagany")]
-		public int NumerDomu { get; set; }
+		public string? NumerDomu { get; set; }
 
 		public int? NumerMieszkania { get; set; }
 
