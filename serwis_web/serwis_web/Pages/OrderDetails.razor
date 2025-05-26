@@ -507,7 +507,7 @@
                 
                 <div class="single-col">
                     <h4>Numer domu</h4>
-                    <InputNumber @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
+                    <InputText @bind-Value="_orderDataModel.NumerDomu" placeholder="Numer domu" class="@(_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage) ? "form-input invalid-field" : "form-input")" disabled="@(GetUserRole() != "Administrator")"/>
                     @if (_formSubmitted && !string.IsNullOrEmpty(_numerDomuValidationMessage))
                     {
                         <div class="validation-message">@_numerDomuValidationMessage</div>
@@ -862,7 +862,7 @@
 
 
             _orderDataModel.Ulica = _order.Adres?.Ulica;
-            _orderDataModel.NumerDomu = _order.Adres?.NumerDomu ?? 0;
+            _orderDataModel.NumerDomu = _order.Adres?.NumerDomu.ToString();
             _orderDataModel.NumerMieszkania = _order.Adres?.NumerMieszkania ?? 0;
             _orderDataModel.KodPocztowy = _order.Adres?.KodPocztowy;
             _orderDataModel.Miasto = _order.Adres?.Miasto;
@@ -1249,11 +1249,17 @@
             int? addressId = null;
             if (!string.IsNullOrWhiteSpace(_orderDataModel.Ulica) || !string.IsNullOrWhiteSpace(_orderDataModel.Miasto))
             {
+                int numerDomuInt = 0;
+                if (!string.IsNullOrEmpty(_orderDataModel.NumerDomu))
+                {
+                    int.TryParse(_orderDataModel.NumerDomu, out numerDomuInt);
+                }
+                
                 var adresResult = await ApiService.AdresyRepo.AdresPost(new AdresDto
                 {
                     Kraj = _orderDataModel.Kraj,
                     Ulica = _orderDataModel.Ulica,
-                    NumerDomu = _orderDataModel.NumerDomu,
+                    NumerDomu = numerDomuInt,
                     NumerMieszkania = _orderDataModel.NumerMieszkania,
                     Miasto = _orderDataModel.Miasto,
                     KodPocztowy = _orderDataModel.KodPocztowy
@@ -1493,12 +1499,18 @@
 			_ulicaValidationMessage = "Ulica musi mieć od 2 do 100 znaków";
 			isValid = false;
 		}
+        
+        if (string.IsNullOrWhiteSpace(_orderDataModel.NumerDomu))
+        {
+            _numerDomuValidationMessage = "Numer domu nie może być pusty";
+            isValid = false;
+        }
 		
-		if (_orderDataModel.NumerDomu < 1 || _orderDataModel.NumerDomu > 1000)
-		{
-			_numerDomuValidationMessage = "Numer domu musi być z przedzialu od 0 do 1000";
-			isValid = false;
-		}
+        else if (!int.TryParse(_orderDataModel.NumerDomu, out int numerDomu) || numerDomu < 1 || numerDomu > 1000)
+        {
+            _numerDomuValidationMessage = "Numer domu musi być liczbą z przedziału od 1 do 1000";
+            isValid = false;
+        }
 
 		if (string.IsNullOrWhiteSpace(_orderDataModel.Miasto) || _orderDataModel.Miasto.Length > 85 || _orderDataModel.Miasto.Length < 2)
 		{
@@ -1514,13 +1526,13 @@
         
         if (string.IsNullOrWhiteSpace(_orderDataModel.ImieKlienta) || _orderDataModel.ImieKlienta.Length < 1)
         {
-            _imieKlientaValidationMessage = "Wprodzadz prawidlowe format imienia";
+            _imieKlientaValidationMessage = "Wprowadz prawidlowe format imienia";
             isValid = false;
         }
         
         if (string.IsNullOrWhiteSpace(_orderDataModel.NazwiskoKlienta) || _orderDataModel.NazwiskoKlienta.Length < 1)
         {
-            _nazwiskoKlientaValidationMessage = "Wprodzadz prawidlowe format nazwiska";
+            _nazwiskoKlientaValidationMessage = "Wprowadz prawidlowe format nazwiska";
             isValid = false;
         }
         
@@ -1667,7 +1679,7 @@
         public string? NazwiskoKlienta { get; set; }
 
         public string? Ulica { get; set; }
-        public int NumerDomu { get; set; }
+        public string? NumerDomu { get; set; }
         public int? NumerMieszkania { get; set; }
         public string? KodPocztowy { get; set; }
         public string? Miasto { get; set; }

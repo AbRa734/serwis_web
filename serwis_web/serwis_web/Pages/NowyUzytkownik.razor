@@ -390,16 +390,16 @@
 			_phoneValidationMessage = "Nieprawidłowy format numeru telefonu";
 			isValid = false;
 		}
-
-		if (string.IsNullOrWhiteSpace(_newUser.Imie) || _newUser.Imie.Length < 2)
+		
+		if (string.IsNullOrWhiteSpace(_newUser.Imie) || _newUser.Imie.Length < 2 || _newUser.Imie.Length > 100)
 		{
-			_firstnameValidationMessage = "Imie musi miec przynajmniej 2 litery";
+			_firstnameValidationMessage = "Imię musi mieć od 2 do 100 znaków";
 			isValid = false;
 		}
 
-		if (string.IsNullOrWhiteSpace(_newUser.Nazwisko) || _newUser.Nazwisko.Length < 2)
+		if (string.IsNullOrWhiteSpace(_newUser.Nazwisko) || _newUser.Nazwisko.Length < 2 || _newUser.Nazwisko.Length > 100)
 		{
-			_lastnameValidationMessage = "Nazwisko musi miec przynajmniej 2 litery";
+			_lastnameValidationMessage = "Nazwisko musi mieć od 2 do 100 znaków";
 			isValid = false;
 		}
 		
@@ -429,7 +429,7 @@
 
 		if (string.IsNullOrWhiteSpace(_adres.KodPocztowy) || !IsValidPostalCode(_adres.KodPocztowy))
 		{
-			_kodPocztowyValidationMessage = "Nieprawidłowy format kodu pocztowego";
+			_kodPocztowyValidationMessage = "Kod pocztowy powinien mieć format XX-XXX";
 			isValid = false;
 		}
 

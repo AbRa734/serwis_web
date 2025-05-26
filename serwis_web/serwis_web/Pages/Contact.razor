@@ -10,6 +10,18 @@
 
 <PageTitle>Kontakt</PageTitle>
 
+<style>
+    .validation-message {
+        color: #F44336;
+        font-size: 12px;
+        margin-top: -5px;
+        margin-bottom: 10px;
+    }
+    .invalid-field {
+        border: 1px solid #F44336 !important;
+    }
+</style>
+
 <div class="services-container">
     <h2>Kontakt</h2>
     
@@ -20,22 +32,34 @@
                 <div class="service-col">
                     <h3>Formularz kontaktowy</h3>
                     <h4>Imię</h4>
-                    <input type="text" placeholder="Podaj swoje imię" @bind="_contactModel.Name" />
-                    <ValidationMessage For="@(() => _contactModel.Name)" class="validation-message" />
-
+                    <input type="text" placeholder="Podaj swoje imię" @bind="_contactModel.Name" class="@(_formSubmitted && !string.IsNullOrEmpty(_nameValidationMessage) ? "invalid-field" : "")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_nameValidationMessage))
+                    {
+                        <div class="validation-message">@_nameValidationMessage</div>
+                    }
+                    
                     <h4>Email</h4>
-                    <input type="email" placeholder="Podaj swój adres email" @bind="_contactModel.Email" />
-                    <ValidationMessage For="@(() => _contactModel.Email)" class="validation-message" />
+                    <input type="text" placeholder="Podaj swój adres email" @bind="_contactModel.Email" class="@(_formSubmitted && !string.IsNullOrEmpty(_emailValidationMessage) ? "invalid-field" : "")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_emailValidationMessage))
+                    {
+                        <div class="validation-message">@_emailValidationMessage</div>
+                    }
 
                     <h4>Temat</h4>
-                    <input type="text" placeholder="Temat wiadomości" @bind="_contactModel.Subject" />
-                    <ValidationMessage For="@(() => _contactModel.Subject)" class="validation-message" />
+                    <input type="text" placeholder="Temat wiadomości" @bind="_contactModel.Subject" class="@(_formSubmitted && !string.IsNullOrEmpty(_subjectValidationMessage) ? "invalid-field" : "")"/>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_subjectValidationMessage))
+                    {
+                        <div class="validation-message">@_subjectValidationMessage</div>
+                    }
                 </div>
                 <div class="service-col">
                     <h3>&nbsp;</h3>
                     <h4>Treść wiadomości</h4>
-                    <textarea class="textarea" placeholder="Opisz swój problem lub pytanie..." @bind="_contactModel.Message"></textarea>
-                    <ValidationMessage For="@(() => _contactModel.Message)" class="validation-message" />
+                    <textarea placeholder="Opisz swój problem lub pytanie..." @bind="_contactModel.Message" class="@(_formSubmitted && !string.IsNullOrEmpty(_messageValidationMessage) ? "textarea invalid-field" : "textarea")"></textarea>
+                    @if (_formSubmitted && !string.IsNullOrEmpty(_messageValidationMessage))
+                    {
+                        <div class="validation-message">@_messageValidationMessage</div>
+                    }
                 </div>
             </div>
 
@@ -82,26 +106,32 @@
 
 @code {
     private bool _isSending = false;
+    private bool _formSubmitted = false;
+    private string _nameValidationMessage = string.Empty;
+    private string _emailValidationMessage = string.Empty;
+    private string _subjectValidationMessage = string.Empty;
+    private string _messageValidationMessage = string.Empty;
+
 
     private class ContactModel
     {
-        [Required(ErrorMessage = "Imię jest wymagane")]
-        [StringLength(100, ErrorMessage = "Imię nie może przekraczać 100 znaków")]
-        [MinLength(2, ErrorMessage = "Imię musi zawierać co najmniej 2 znaki")]
+        // [Required(ErrorMessage = "Imię jest wymagane")]
+        // [StringLength(100, ErrorMessage = "Imię nie może przekraczać 100 znaków")]
+        // [MinLength(2, ErrorMessage = "Imię musi zawierać co najmniej 2 znaki")]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Email jest wymagany")]
-        [EmailAddress(ErrorMessage = "Podaj prawidłowy adres email")]
+        // [Required(ErrorMessage = "Email jest wymagany")]
+        // [EmailAddress(ErrorMessage = "Podaj prawidłowy adres email")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Temat jest wymagany")]
-        [StringLength(100, ErrorMessage = "Temat nie może przekraczać 100 znaków")]
-        [MinLength(2, ErrorMessage = "Temat musi zawierać co najmniej 2 znaki")]
+        // [Required(ErrorMessage = "Temat jest wymagany")]
+        // [StringLength(100, ErrorMessage = "Temat nie może przekraczać 100 znaków")]
+        // [MinLength(2, ErrorMessage = "Temat musi zawierać co najmniej 2 znaki")]
         public string Subject { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Treść wiadomości jest wymagana")]
-        [StringLength(1000, ErrorMessage = "Treść wiadomości nie może przekraczać 1000 znaków")]
-        [MinLength(10, ErrorMessage = "Treść wiadomości musi zawierać co najmniej 10 znaków")]
+        // [Required(ErrorMessage = "Treść wiadomości jest wymagana")]
+        // [StringLength(1000, ErrorMessage = "Treść wiadomości nie może przekraczać 1000 znaków")]
+        // [MinLength(10, ErrorMessage = "Treść wiadomości musi zawierać co najmniej 10 znaków")]
         public string Message { get; set; } = string.Empty;
     }
 
@@ -109,6 +139,13 @@
 
     private async Task SendMessage()
     {
+        _formSubmitted = true;
+        
+        if (!ValidateForm())
+        {
+            return;
+        }
+        
         try
         {
             _isSending = true;
@@ -119,9 +156,9 @@
                 Temat = _contactModel.Subject,
                 Tresc = $"Imie: {_contactModel.Name}{Environment.NewLine}Od: {_contactModel.Email}{Environment.NewLine}Treść: {_contactModel.Message}"
             };
-
+            
             var result = await ApiService.KontaktEmailRepo.KontaktEmailPost(emailRequest);
-
+            
             if (result.Error == null && result.Data)
             {
                 Snackbar.Add("Wiadomość została wysłana! Dziękujemy za kontakt.", Severity.Success);
@@ -146,4 +183,59 @@
     {
         _contactModel = new ContactModel();
     }
+    
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    
+    private bool ValidateForm()
+	{
+		bool isValid = true;
+		
+        _nameValidationMessage = string.Empty;
+        _emailValidationMessage = string.Empty;
+        _subjectValidationMessage = string.Empty;
+        _messageValidationMessage = string.Empty;
+        
+        if (string.IsNullOrWhiteSpace(_contactModel.Name) || _contactModel.Name.Length < 2 || _contactModel.Name.Length > 100)
+        {
+            _nameValidationMessage = "Imię musi mieć od 2 do 100 znaków";
+            isValid = false;
+        }
+        
+        if (string.IsNullOrWhiteSpace(_contactModel.Email))
+        {
+            _emailValidationMessage = "Adres email jest wymagany";
+            isValid = false;
+        }
+		
+        else if (!IsValidEmail(_contactModel.Email))
+        {
+            _emailValidationMessage = "Nieprawidłowy format adresu email";
+            isValid = false;
+        }
+        
+        if (string.IsNullOrWhiteSpace(_contactModel.Subject) || _contactModel.Subject.Length > 50 || _contactModel.Subject.Length < 5)
+        {
+            _subjectValidationMessage = "Temat musi mieć od 5 do 50 znaków";
+            isValid = false;
+        }
+
+		if (string.IsNullOrWhiteSpace(_contactModel.Message) || _contactModel.Message.Length > 500 || _contactModel.Message.Length < 10)
+		{
+            _messageValidationMessage = "Treść musi mieć od 10 do 500 znaków";
+			isValid = false;
+		}
+        
+		return isValid;
+	}
 }
