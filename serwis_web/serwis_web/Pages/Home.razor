@@ -13,9 +13,9 @@
     <div class="home-container">
         <h2>Strona Główna</h2>
         <HomeClient/>
-        <div class="help-button-container">
-            <AccessibilityWidget/>
-        </div>
+        @* <div class="help-button-container"> *@
+        @*     <AccessibilityWidget/> *@
+        @* </div> *@
 
     </div>
 
@@ -27,9 +27,9 @@ else if (GetUserRole() == "Serwisant")
         <h2>Panel kontrolny</h2>
         <HomeServiceman/>
         <HomeOrdersList/>
-        <div class="help-button-container">
-            <AccessibilityWidget/>
-        </div>
+        @* <div class="help-button-container"> *@
+        @*     <AccessibilityWidget/> *@
+        @* </div> *@
 
     </div>
 
@@ -41,9 +41,9 @@ else if (GetUserRole() == "Administrator")
         <h2>Panel kontrolny</h2>
         <HomeAdmin/>
         <HomeOrdersList/>
-        <div class="help-button-container">
-            <AccessibilityWidget/>
-        </div>
+        @* <div class="help-button-container"> *@
+        @*     <AccessibilityWidget/> *@
+        @* </div> *@
     </div>
 }
 
