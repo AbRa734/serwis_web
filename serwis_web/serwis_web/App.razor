@@ -35,7 +35,7 @@
             newWindow.document.write('const stripe = Stripe("pk_test_51RHTepH8Eh2h5xHttcVBC86GELtFrlbst8NKGwoXq9d2m2Atm4VQsAEITLjK5ZF6fsCFdNp1JtOiylWeyjY0nsml00Y8uCQMOz");');
             newWindow.document.write('stripe.redirectToCheckout({ sessionId: "' + sessionId + '" });');
             newWindow.document.write('<\/script>');
-            newWindow.document.write('</head><body><p>Przekierowywanie do płatności Stripe...</p></body></html>');
+            newWindow.document.write(`</head><body><p>Przekierowywanie do płatności Stripe...<\/p><\/body><\/html>`);
             newWindow.document.close();
         } else {
             alert('Wyskakujące okno zostało zablokowane.');
